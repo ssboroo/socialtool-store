@@ -37,7 +37,7 @@ export function Faq({ faqs }: { faqs: Faq[] }) {
                   {f.q}
                 </AccordionTrigger>
                 <AccordionContent className="px-5 pb-5 text-sm text-[#5B7290] leading-relaxed">
-                  {f.a}
+                  {f.a.replace(/wire\.mn/gi, 'Qpay')}
                 </AccordionContent>
               </AccordionItem>
             ))}

@@ -34,7 +34,7 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F1FF] px-3 py-1.5 text-xs font-semibold text-[#0B4DBA]">
-                <ShieldCheck className="size-3.5" /> Wire.mn төлбөр
+                <ShieldCheck className="size-3.5" /> Qpay төлбөр
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E6F7EB] px-3 py-1.5 text-xs font-semibold text-[#16A34A]">
                 <Zap className="size-3.5" /> Шууд хүргэлт

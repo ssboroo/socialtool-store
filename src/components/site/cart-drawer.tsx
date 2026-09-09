@@ -129,7 +129,7 @@ export function CartDrawer() {
                 <ArrowRight className="size-4" />
               </Button>
               <p className="text-center text-xs text-[#5B7290]">
-                Аюулгүй төлбөр — Wire.mn системээр
+                Аюулгүй төлбөр — Qpay системээр
               </p>
             </div>
           </>

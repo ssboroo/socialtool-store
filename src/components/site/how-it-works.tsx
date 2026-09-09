@@ -12,7 +12,7 @@ const STEPS = [
   {
     Icon: CreditCard,
     title: 'Төлбөрөө хийнэ',
-    desc: 'Wire.mn системээр банкны картаар, Qpay-аар аюулгүй төлбөрөө төлнө.',
+    desc: 'Qpay-аар төлбөрөө төлнө.',
     color: 'from-[#0B4DBA] to-[#8B5CF6]',
   },
   {

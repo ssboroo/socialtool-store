@@ -143,8 +143,8 @@ export function CheckoutModal() {
   }
 
   const startPolling = () => {
-    // The status endpoint reads the DB (updated by the Wire.mn webhook) and
-    // also queries the Wire.mn API directly as a server-side fallback — so
+    // The status endpoint reads the DB (updated by the Qpay webhook) and
+    // also queries the Qpay API directly as a server-side fallback — so
     // polling alone confirms the payment, never the frontend redirect.
     setStep('status')
   }
@@ -165,7 +165,7 @@ export function CheckoutModal() {
                   <h2 className="text-base font-bold text-[#102A43]">Төлбөр төлөх</h2>
                   <p className="text-xs text-[#5B7290]">
                     {step === 'form' && 'Хүргэгдэх мэдээлэл'}
-                    {step === 'pay' && 'Wire.mn нэхэмжлэл'}
+                    {step === 'pay' && 'Qpay нэхэмжлэл'}
                     {step === 'status' && 'Төлбөр шалгагдаж байна'}
                     {step === 'success' && 'Төлбөр амжилттай'}
                     {step === 'failed' && 'Төлбөр төлөгдсөнгүй'}
@@ -288,7 +288,7 @@ export function CheckoutModal() {
               <div className="space-y-5 text-center">
                 {invoice.demo && (
                   <div className="rounded-xl bg-[#FFF5E6] border border-[#F59E0B]/20 px-3 py-2 text-xs text-[#92400E] text-left">
-                    <strong>Демо горим:</strong> Wire.mn түлхүүр тохируулаагүй тул &ldquo;Төлбөр төлөгдсөн&rdquo; гэж simulation хийнэ. Админ панелээс төлбөрийг гараар баталгаажуулж болно.
+                    <strong>Демо горим:</strong> Энэ нь туршилтын төлбөрийн дэлгэц. Бодит мөнгө шилжүүлэхгүй.
                   </div>
                 )}
                 <div>
@@ -301,10 +301,10 @@ export function CheckoutModal() {
 
                 <div className="rounded-2xl border border-[#D6E4FF] bg-[#F5F9FF]/60 p-4 text-left">
                   <p className="text-sm font-bold text-[#102A43] flex items-center gap-1.5">
-                    <ShieldCheck className="size-4 text-[#16A34A]" /> Аюулгүй төлбөр — Wire.mn
+                    <ShieldCheck className="size-4 text-[#16A34A]" /> Аюулгүй төлбөр — Qpay
                   </p>
                   <p className="mt-1.5 text-xs text-[#5B7290] leading-relaxed">
-                    Доорх товчийг дарж Wire.mn-ийн аюулгүй төлбөрийн хуудас руу шилжинэ үү. Төлбөрөө хийсний дараа энэ хуудас автомат хариуг хүлээж байна.
+                    Доорх товчийг дарж Qpay төлбөрийн хуудас руу шилжинэ үү. Төлбөрөө хийсний дараа энэ хуудас автомат хариуг хүлээж байна.
                   </p>
                 </div>
 
@@ -316,7 +316,7 @@ export function CheckoutModal() {
                     onClick={() => setStep('status')}
                     className="flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg text-base font-bold transition-all hover:shadow-premium-lg"
                   >
-                    <ExternalLink className="size-5" /> Wire.mn руу үсрэх
+                    <ExternalLink className="size-5" /> Qpay-аар төлөх
                   </a>
                 )}
 
@@ -349,7 +349,7 @@ export function CheckoutModal() {
                 </div>
                 <h3 className="text-lg font-bold text-[#102A43]">Төлбөрийг шалгаж байна</h3>
                 <p className="text-sm text-[#5B7290] max-w-xs mx-auto">
-                  Wire.mn системээс төлбөр баталгаажсан эсэхийг сервер талд шалгаж байна. Та банкны апликейшнд төлбөрөө гүйцэтгээд хүлээнэ үү.
+                  Төлбөр баталгаажсан эсэхийг шалгаж байна. Та банкны апликейшнд төлбөрөө гүйцэтгээд хүлээнэ үү.
                 </p>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[#E8F1FF] px-3 py-1.5 text-xs font-semibold text-[#0B4DBA]">
                   <Clock className="size-3.5" /> Автомат шалгалт хийгдэж байна
