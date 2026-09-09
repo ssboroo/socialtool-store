@@ -253,7 +253,7 @@ const reviews = [
 
 const faqs = [
   { q: 'Худалдан авалт хийсний дараа хэр хурдан ирэх вэ?', a: 'Төлбөрөө баталгаажуулсны дараа таны хэрэгсэл, хандалтын мэдээлэл и-мэйл болон Telegram-аар 5-10 минутын дотор шууд хүргэгдэнэ. Бүтээгдэхүүнийг гар утсанд татан авах боломжтой.' },
-  { q: 'Төлбөрөө хэрхэн хийх вэ?', a: 'Төлбөрийг Wire.mn системээр дамжуулан банкны картаар, Qpay кодоор эсвэл дансаар хийх боломжтой. Төлбөр төлөгдсөний дараа систем автомат баталгаажуулна.' },
+  { q: 'Төлбөрөө хэрхэн хийх вэ?', a: 'Төлбөрийг Qpay-аар банкны апп ашиглан хийх боломжтой. Төлбөр төлөгдсөний дараа систем автомат баталгаажуулна.' },
   { q: 'Бүтээгдэхүүн баталгаатай юу?', a: 'Тийм. Бүх бүтээгдэхүүн 7 хоногийн баталгаатай. Ажиллахгүй бол буцаалт эсвэл солилцоог хийнэ. Бид чанарт анхаардаг.' },
   { q: 'Асуудал гарвал хаана хандах вэ?', a: 'Баруун доод булан дахь чатын товчоор админтай шууд холбогдох эсвэл Telegram хаяг руу бичнэ үү. 24/7 туслах баг бэлэн байна.' },
   { q: 'Буцаалт хийх боломжтой юу?', a: 'Бүтээгдэхүүн ажиллахгүй тохиолдолд 7 хоногийн дотор буцаалт хийгдэнэ. Төлбөрийн буцаалт нь 1-3 ажлын өдөрт хийгдэнэ.' },
@@ -264,7 +264,8 @@ async function main() {
 
   // Admin user
   const adminUsername = process.env.ADMIN_USERNAME || 'admin'
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminPassword) throw new Error('ADMIN_PASSWORD is required to seed the database')
   const passwordHash = await bcrypt.hash(adminPassword, 10)
   await db.adminUser.upsert({
     where: { username: adminUsername },
@@ -426,19 +427,20 @@ async function main() {
   })
   console.log('✓ Promotion created')
 
-  // Demo customer (test@example.com / test123)
+  // Optional demo customer; password must be explicitly configured.
+  const demoPassword = process.env.DEMO_CUSTOMER_PASSWORD
   const existingCustomer = await db.customer.findUnique({ where: { email: 'test@example.com' } })
-  if (!existingCustomer) {
+  if (!existingCustomer && demoPassword) {
     await db.customer.create({
       data: {
         name: 'Демо Хэрэглэгч',
         phone: '99112233',
         email: 'test@example.com',
-        passwordHash: await bcrypt.hash('test123', 10),
+        passwordHash: await bcrypt.hash(demoPassword, 10),
         telegram: 'demouser',
       },
     })
-    console.log('✓ Demo customer created (test@example.com / test123)')
+    console.log('✓ Demo customer created')
   }
 
   console.log('✅ Seed complete')

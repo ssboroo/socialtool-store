@@ -156,37 +156,24 @@ export async function retrievePaymentIntent(paymentIntentId: string): Promise<Wi
   return (await res.json()) as WirePaymentIntentRetrieve
 }
 
-/**
- * Verify the webhook signature. Wire.mn sends an HMAC-SHA256 signature in a
- * header (commonly `Wire-Signature` / `X-Wire-Signature` / `X-Signature`) computed
- * over the raw request body using the endpoint's signing secret (whsec_...).
- *
- * If no webhook secret is configured yet, verification fails — callers should
- * fall back to the polling endpoint which queries the Wire.mn API directly.
+/** Verify WirePayment-Signature: t=<unix seconds>,v1=<HMAC SHA256>.
+ * See https://docs.wire.mn/docs/guides/webhooks. Reject stale/replayed deliveries.
  */
 export function verifyWebhookSignature(rawBody: string, signature: string): boolean {
   const secret = process.env.WIRE_MN_WEBHOOK_SECRET
-  if (!secret || secret === 'whsec_replace_with_your_endpoint_signing_secret') {
-    // No signing secret configured — refuse the webhook so the merchant
-    // is forced to wire it up. The status polling endpoint still verifies
-    // payments server-side via the Wire.mn API as a fallback.
-    return false
-  }
-  if (!signature) return false
-  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex')
-  try {
-    // constant-time compare to prevent timing attacks
-    const a = Buffer.from(expected, 'hex')
-    const b = Buffer.from(signature, 'hex')
-    if (a.length !== b.length) {
-      // also accept the hex string comparison as a fallback for non-hex formats
-      return expected === signature
-    }
-    return crypto.timingSafeEqual(a, b)
-  } catch {
-    // signature wasn't hex — compare as strings
-    return expected === signature
-  }
+  if (!secret || secret === 'whsec_replace_with_your_endpoint_signing_secret') return false
+  const parts = signature.split(',').map((part) => part.trim())
+  const timestamps = parts.filter((part) => part.startsWith('t='))
+  if (timestamps.length !== 1) return false
+  const timestamp = timestamps[0].slice(2)
+  if (!/^\d+$/.test(timestamp)) return false
+  const seconds = Number(timestamp)
+  if (!Number.isSafeInteger(seconds) || Math.abs(Date.now() / 1000 - seconds) > 300) return false
+  const expected = crypto.createHmac('sha256', secret).update(`${timestamp}.${rawBody}`).digest()
+  return parts.filter((part) => part.startsWith('v1=')).some((part) => {
+    const hex = part.slice(3)
+    return /^[a-f0-9]{64}$/i.test(hex) && crypto.timingSafeEqual(expected, Buffer.from(hex, 'hex'))
+  })
 }
 
 /** Map a Wire.mn payment intent status to our internal status. */
@@ -210,10 +197,10 @@ function wireError(action: string, status: number, body: string): string {
   }
   // surface well-known merchant-setup errors clearly
   if (body.includes('connector_required')) {
-    return `${action}ад алдаа: оператор холбоогүй байна (connector_required). Wire.mn dashboard-аас оператор идэвхжүүлнэ үү.`
+    return `${action}ад алдаа: оператор холбоогүй байна (connector_required). Төлбөрийн оператор идэвхгүй байна. Админтай холбогдоно уу.`
   }
   if (body.includes('settlement_account_required')) {
-    return `${action}ад алдаа: орлогын данс холбоогүй байна (settlement_account_required). Wire.mn dashboard-аас төлбөр хүлээн авах данс холгоно уу.`
+    return `${action}ад алдаа: орлогын данс холбоогүй байна (settlement_account_required). Төлбөр хүлээн авах данс холбоогүй байна. Админтай холбогдоно уу.`
   }
   return `${action}ад алдаа (HTTP ${status}): ${detail}`
 }

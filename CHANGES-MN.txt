@@ -1,0 +1,19 @@
+SOCIALTOOL.STORE — лого, Qpay бичвэр, Wire webhook засвар
+
+Суурь commit: 224930f2f4ec4516b2b5c46598096c46c8f4e9e0
+Энэ ZIP зөвхөн өөрчлөгдсөн файлуудыг агуулна. Repository-ийн үндсэн хавтсанд бүтцийг нь хадгалан хуулж, diff-ийг шалгаад commit/push хийнэ. Railway дээр Deploy Latest Commit ажиллуулна.
+
+- Өгсөн JPG логог header/footer/admin-ийн нийтлэг Logo component-д ашиглав.
+- Дэлгэцийн Wire.mn бичвэрийг Qpay болгосон. Өмнө санд хадгалсан FAQ дээр ч харуулах үед солигдоно. Seed-ийг дахин ажиллуулах шаардлагагүй.
+- Backend нь Wire.mn хэвээр. Энэ нь шууд QPay API руу шилжүүлсэн интеграц биш.
+- WirePayment-Signature t=...,v1=... шалгалт, 300 секундийн хязгаар, endpoint.verification дэмжлэг нэмэв.
+- Test endpoint HMAC гарын үсэг буцаадаг байсныг болиулсан.
+- Төлөгдсөн төлбөрийг дараагийн failed event-ээр бууруулахгүй.
+
+Шалгалт: node --test tests/wire-signature.test.mjs (Node 24), 6 тест амжилттай. git diff --check амжилттай.
+Full Next.js build болон browser preview хийгдээгүй: Bun болон төслийн dependencies энэ орчинд байхгүй.
+Бодит төлбөр баталгаажаагүй: socialtool.store руу энэ орчноос холбогдож чадсангүй; Railway merchant variables харах эрхгүй.
+WIRE_MN_API_KEY, WIRE_MN_WEBHOOK_SECRET, NEXT_PUBLIC_SITE_URL=https://socialtool.store болон WIRE_MN_ALLOWED_OPERATORS-ийг Railway дээр шалгах шаардлагатай. Операторын утга байхгүй үед код sandbox ашигладаг. Live операторын ID-г Wire dashboard-аас авна; тааж өөрчлөхгүй.
+Webhook URL: https://socialtool.store/api/payment/wire/callback
+Wire dashboard дээр endpoint verified/enabled, оператор болон орлого хүлээн авах данс идэвхтэй байх ёстой.
+Албан ёсны заавар: https://docs.wire.mn/docs/guides/webhooks

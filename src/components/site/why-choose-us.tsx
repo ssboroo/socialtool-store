@@ -13,7 +13,7 @@ const CARDS = [
   {
     Icon: ShieldCheck,
     title: 'Аюулгүй төлбөр',
-    desc: 'Wire.mn системээр дамжуулан банкны картаар, Qpay кодоор аюулгүй төлбөрөө хийнэ.',
+    desc: 'Qpay-аар банкны апп ашиглан төлбөрөө хийнэ.',
     color: 'from-[#16A34A] to-[#0B4DBA]',
     bg: 'bg-[#E6F7EB]',
   },
