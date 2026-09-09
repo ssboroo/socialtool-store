@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  icon        String    @default("Package")
+  description String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id                String      @id @default(cuid())
+  name              String
+  slug              String      @unique
+  shortDesc         String
+  description       String
+  price             Int
+  oldPrice          Int?
+  discount          Int?
+  image             String?
+  icon              String      @default("Package")
+  category          String
+  categoryId        String
+  rating            Float       @default(5)
+  reviewCount       Int         @default(0)
+  available         Boolean     @default(true)
+  featured          Boolean     @default(false)
+  deliveryInfo      String      @default("Шууд хүргэгдэнэ")
+  features          String?
+  duration          String?
+  tutorialVideoUrl  String?
+  instructionImages String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  categoryRef       Category    @relation(fields: [categoryId], references: [id])
+  orderItems        OrderItem[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  customerName  String
+  phone         String
+  email         String
+  telegram      String?
+  totalAmount    Int
+  status        String      @default("PENDING_PAYMENT")
+  paymentId     String?
+  customerId    String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+  payment       Payment?
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  productId    String
+  productName  String
+  price        Int
+  quantity     Int
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id                    String   @id @default(cuid())
+  orderId               String   @unique
+  invoiceNumber         String?
+  amount                Int
+  status                String   @default("PENDING")
+  method                String   @default("WIRE")
+  wireTransactionId     String?
+  wireInvoiceId         String?
+  wirePaymentIntentId   String?
+  wireCheckoutSessionId String?
+  wireCheckoutUrl       String?
+  paidAt                DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  order                 Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  rating    Int
+  content   String
+  avatar    String?
+  createdAt DateTime @default(now())
+}
+
+model ChatSession {
+  id           String        @id @default(cuid())
+  customerName String
+  phone        String?
+  createdAt    DateTime      @default(now())
+  lastMessageAt DateTime     @default(now())
+  messages     ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  sender    String
+  content   String
+  read      Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Customer {
+  id           String    @id @default(cuid())
+  name         String
+  phone        String
+  email        String    @unique
+  passwordHash String
+  telegram     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orders       Order[]
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Promotion {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  badgeText       String
+  discountPercent Int      @default(0)
+  active          Boolean  @default(true)
+  startAt         DateTime @default(now())
+  endAt           DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
