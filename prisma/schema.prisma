@@ -141,6 +141,8 @@ model Customer {
   email        String    @unique
   passwordHash String
   telegram     String?
+  cartItems    String    @default("[]")
+  cartVersion  Int       @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   orders       Order[]

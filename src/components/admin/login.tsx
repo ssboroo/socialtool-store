@@ -82,8 +82,8 @@ export function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
           </form>
 
           <div className="mt-5 rounded-xl bg-[#F5F9FF] border border-[#D6E4FF] p-3 text-xs text-[#5B7290]">
-            <p className="font-semibold text-[#0B4DBA]">Демо нэвтрэлт:</p>
-            <p className="mt-0.5">Нэр: <code className="bg-white px-1.5 py-0.5 rounded">admin</code> · Нууц үг: <code className="bg-white px-1.5 py-0.5 rounded">admin123</code></p>
+            <p className="font-semibold text-[#0B4DBA]">Админы бүртгэл</p>
+            <p className="mt-0.5">Тохируулсан админ нэр, нууц үгээр нэвтэрнэ. Анхны бүртгэлд серверийн ADMIN_USERNAME, ADMIN_PASSWORD тохиргоо шаардлагатай.</p>
           </div>
         </div>
         <p className="mt-4 text-center text-xs text-[#5B7290]">

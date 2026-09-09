@@ -61,8 +61,14 @@ export function toMinorUnits(mnt: number): number {
 /** Parse the comma-separated WIRE_MN_ALLOWED_OPERATORS env var (default ["sandbox"]). */
 function getAllowedOperators(): string[] {
   const raw = process.env.WIRE_MN_ALLOWED_OPERATORS
+  if (!raw && process.env.WIRE_MN_API_KEY?.startsWith('sk_live_')) {
+    throw new Error('Бодит төлбөрийн оператор тохируулаагүй байна. Админ WIRE_MN_ALLOWED_OPERATORS-ийг шалгана уу.')
+  }
   if (!raw) return ['sandbox']
   const ops = raw.split(',').map((s) => s.trim()).filter(Boolean)
+  if (process.env.WIRE_MN_API_KEY?.startsWith('sk_live_') && (!ops.length || ops.includes('sandbox'))) {
+    throw new Error('Бодит төлбөрт sandbox оператор ашиглах боломжгүй. Админ операторын тохиргоог шалгана уу.')
+  }
   return ops.length > 0 ? ops : ['sandbox']
 }
 
@@ -90,6 +96,7 @@ export async function createPaymentIntent(opts: {
   }
   const res = await fetch(`${API_BASE}/payment_intents`, {
     method: 'POST',
+    signal: AbortSignal.timeout(15000),
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
@@ -122,6 +129,7 @@ export async function createCheckoutSession(opts: {
 
   const res = await fetch(`${API_BASE}/checkout/sessions`, {
     method: 'POST',
+    signal: AbortSignal.timeout(15000),
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -145,6 +153,7 @@ export async function retrievePaymentIntent(paymentIntentId: string): Promise<Wi
   const key = getApiKey()
   const res = await fetch(`${API_BASE}/payment_intents/${paymentIntentId}`, {
     method: 'GET',
+    signal: AbortSignal.timeout(15000),
     headers: {
       Authorization: `Bearer ${key}`,
     },

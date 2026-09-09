@@ -217,7 +217,7 @@ export function AdminOrders({ token }: { token: string }) {
                         <Copy className="size-3 ml-auto" />
                       </button>
                       {selected.telegram && (
-                        <button onClick={() => copy(selected.telegram.replace(/^@/, ''), 'Telegram')} className="flex items-center gap-1.5 text-[#5B7290] hover:text-[#1677FF] w-full">
+                        <button onClick={() => copy((selected.telegram || '').replace(/^@/, ''), 'Telegram')} className="flex items-center gap-1.5 text-[#5B7290] hover:text-[#1677FF] w-full">
                           <Send className="size-3.5" /> {selected.telegram}
                           <Copy className="size-3 ml-auto" />
                         </button>

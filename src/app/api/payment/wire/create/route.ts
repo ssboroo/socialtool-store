@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
     })
     if (!order) return NextResponse.json({ error: 'Захиалга олдсонгүй' }, { status: 404 })
 
+    if (order.payment?.status === 'PAID' || order.status === 'PAID') {
+      return NextResponse.json({ error: 'Энэ захиалгын төлбөр төлөгдсөн байна' }, { status: 409 })
+    }
+
     // If a payment + checkout URL already exists for this order, return it
     // (avoid creating duplicate PaymentIntents on retry).
     if (order.payment?.wireCheckoutUrl) {
@@ -28,56 +32,44 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+    if (!siteUrl || !/^https?:\/\//.test(siteUrl)) {
+      return NextResponse.json({ error: 'Төлбөрийн буцах хаяг тохируулаагүй байна. Админтай холбогдоно уу.' }, { status: 503 })
+    }
     const successUrl = `${siteUrl}/?payment=success&order=${order.id}`
 
-    // 1) Create the PaymentIntent
-    const intent = await createPaymentIntent({
-      orderId: order.id,
-      amount: order.totalAmount,
-      description: `SOCIALTOOL.STORE захиалга #${order.orderNumber}`,
-    })
+    // Persist the intent before checkout creation so failed attempts can resume.
+    let intentId = order.payment?.wirePaymentIntentId
+    if (!intentId) {
+      const intent = await createPaymentIntent({
+        orderId: order.id,
+        amount: order.totalAmount,
+        description: `SOCIALTOOL.STORE захиалга #${order.orderNumber}`,
+      })
+      intentId = intent.id
+      await db.payment.upsert({
+        where: { orderId: order.id },
+        create: { orderId: order.id, amount: order.totalAmount, invoiceNumber: order.orderNumber, method: 'WIRE', wirePaymentIntentId: intentId },
+        update: { wirePaymentIntentId: intentId },
+      })
+    }
 
     // 2) Create the hosted checkout session
     const session = await createCheckoutSession({
-      paymentIntentId: intent.id,
+      paymentIntentId: intentId,
       orderId: order.id,
       successUrl,
     })
 
-    // 3) Persist payment record with Wire IDs + hosted URL
-    if (order.payment) {
-      await db.payment.update({
-        where: { orderId: order.id },
-        data: {
-          invoiceNumber: order.orderNumber,
-          amount: order.totalAmount,
-          status: 'PENDING',
-          method: 'WIRE',
-          wirePaymentIntentId: intent.id,
-          wireCheckoutSessionId: session.id,
-          wireCheckoutUrl: session.url,
-        },
-      })
-    } else {
-      await db.payment.create({
-        data: {
-          orderId: order.id,
-          invoiceNumber: order.orderNumber,
-          amount: order.totalAmount,
-          status: 'PENDING',
-          method: 'WIRE',
-          wirePaymentIntentId: intent.id,
-          wireCheckoutSessionId: session.id,
-          wireCheckoutUrl: session.url,
-        },
-      })
-    }
+    await db.payment.update({
+      where: { orderId: order.id },
+      data: { wireCheckoutSessionId: session.id, wireCheckoutUrl: session.url },
+    })
 
     return NextResponse.json({
       payUrl: session.url,
       invoiceNumber: order.orderNumber,
-      paymentIntentId: intent.id,
+      paymentIntentId: intentId,
       demo: false,
     })
   } catch (e) {

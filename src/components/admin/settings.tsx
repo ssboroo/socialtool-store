@@ -26,6 +26,18 @@ export function AdminSettings({ token }: { token: string }) {
   const [values, setValues] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [checks, setChecks] = useState<{name: string; ok: boolean; detail: string}[]>([])
+  const checkConnections = async () => {
+    setChecking(true)
+    try {
+      const res = await fetch('/api/admin/integrations', { headers: { authorization: `Bearer ${token}` } })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Шалгаж чадсангүй')
+      setChecks(data.checks)
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Шалгаж чадсангүй') }
+    finally { setChecking(false) }
+  }
 
   useEffect(() => {
     fetch('/api/admin/settings', { headers: { authorization: `Bearer ${token}` } })
@@ -65,6 +77,13 @@ export function AdminSettings({ token }: { token: string }) {
           <p className="text-xs text-[#5B7290] mt-0.5">Эдгээр тохиргоог өөрчилснөөр нүүр хуудас, футер, хямдралын баннер шууд шинэчлэгдэнэ.</p>
         </div>
       </div>
+
+      <section className="rounded-2xl border border-[#D6E4FF] bg-white p-5 space-y-3">
+        <h3 className="font-bold text-[#102A43]">Төлбөр, Telegram, бүртгэлийн холболт</h3>
+        <p className="text-sm text-[#5B7290]">Нууц түлхүүрүүдийг серверийн Variables хэсэгт тохируулна. Энэ шалгалт мөнгө шилжүүлэхгүй, Telegram мэдэгдэл илгээхгүй.</p>
+        <Button type="button" onClick={checkConnections} disabled={checking}>{checking ? 'Шалгаж байна…' : 'Холболт шалгах'}</Button>
+        <div aria-live="polite" className="space-y-3">{checks.map(c => <div key={c.name} className="rounded-lg bg-[#F5F9FF] p-3"><p className={c.ok ? 'font-semibold text-green-700' : 'font-semibold text-amber-700'}>{c.ok ? '✓' : '!'} {c.name}</p><p className="text-sm text-[#5B7290] mt-1 break-words">{c.detail}</p></div>)}</div>
+      </section>
 
       {groups.map((g) => (
         <div key={g} className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium p-5">

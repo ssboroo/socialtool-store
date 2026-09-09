@@ -14,6 +14,7 @@ import { ProductImage } from './product-illustration'
 import { formatTugrik } from '@/lib/format'
 import { getYouTubeId, getYouTubeEmbedUrl, getYouTubeThumb, parseImageList } from '@/lib/media'
 import { toast } from 'sonner'
+import ReactMarkdown from 'react-markdown'
 
 interface Product {
   id: string
@@ -62,7 +63,7 @@ export function ProductDetailModal() {
      
     setActiveImage(null)
     fetch(`/api/products/${selectedId}`)
-      .then((r) => r.json())
+      .then(async (r) => { if (!r.ok) throw new Error('Бүтээгдэхүүн татаж чадсангүй'); return r.json() })
       .then((d) => { if (!cancelled) setProduct(d) })
       .catch(() => { if (!cancelled) setProduct(null) })
       .finally(() => { if (!cancelled) setLoading(false) })
@@ -95,14 +96,14 @@ export function ProductDetailModal() {
       open={!!selectedId}
       onOpenChange={(o) => !o && setSelectedProduct(null)}
     >
-      <DialogContent className="sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[92vh]">
+      <DialogContent className="sm:max-w-4xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[92vh]">
         <DialogTitle className="sr-only">{product?.name || 'Хэрэгсэл'}</DialogTitle>
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="size-8 animate-spin text-[#1677FF]" />
           </div>
         ) : product ? (
-          <div className="grid sm:grid-cols-2 max-h-[92vh] overflow-y-auto custom-scroll">
+          <div className="grid sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] max-h-[92vh] overflow-y-auto custom-scroll">
             {/* illustration */}
             <div className="relative bg-gradient-to-br from-[#E8F1FF] to-[#F5F9FF] p-6 sm:p-8">
               <div className="absolute top-4 left-4 flex gap-2">
@@ -119,7 +120,7 @@ export function ProductDetailModal() {
             </div>
 
             {/* info */}
-            <div className="p-6 sm:p-8 flex flex-col">
+            <div className="min-w-0 p-6 sm:p-8 flex flex-col">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -183,9 +184,9 @@ export function ProductDetailModal() {
 
               <div className="mt-5 rounded-xl bg-[#F5F9FF] p-3.5">
                 <h4 className="text-xs font-bold text-[#102A43] uppercase tracking-wide">Тайлбар</h4>
-                <p className="mt-1.5 text-sm text-[#5B7290] leading-relaxed">
-                  {product.description}
-                </p>
+                <div className="mt-3 space-y-3 text-sm text-[#5B7290] leading-7 break-words [overflow-wrap:anywhere] [&_p]:whitespace-pre-line [&_p]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-2 [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-base [&_h4]:text-sm [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h4]:font-bold [&_strong]:text-[#102A43] [&_a]:text-blue-600 [&_a]:underline">
+                  <ReactMarkdown skipHtml components={{a: ({children, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>}}>{product.description}</ReactMarkdown>
+                </div>
               </div>
 
               {/* Tutorial video (YouTube) */}
@@ -197,6 +198,7 @@ export function ProductDetailModal() {
                     <h4 className="text-sm font-bold text-[#102A43] flex items-center gap-1.5">
                       <PlayCircle className="size-4 text-[#1677FF]" /> Ашиглах заавар видео
                     </h4>
+                    <a href={`https://www.youtube.com/watch?v=${ytId}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-[#1677FF] underline">YouTube дээр нээх ↗</a>
                     <div className="mt-2.5 relative overflow-hidden rounded-xl border border-[#D6E4FF] bg-black/5 aspect-video">
                       {videoPlaying ? (
                         <iframe
@@ -204,6 +206,7 @@ export function ProductDetailModal() {
                           title={`${product.name} заавар видео`}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
                           className="absolute inset-0 size-full"
                         />
                       ) : (
@@ -297,7 +300,7 @@ export function ProductDetailModal() {
               </div>
             </div>
           </div>
-        ) : null}
+        ) : <p role="alert" className="p-8 text-center text-sm">Бүтээгдэхүүн татаж чадсангүй. Цонхыг хаагаад дахин нээнэ үү.</p>}
 
         {/* Image lightbox */}
         {activeImage && (

@@ -4,16 +4,17 @@
  * Credentials are read from environment variables — never exposed to the frontend.
  */
 
-async function callTelegramApi(method: string, body: Record<string, unknown>) {
+export async function callTelegramApi(method: string, body: Record<string, unknown>) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   if (!token || token === 'your_telegram_bot_token') {
     // Demo mode: credentials not configured — log instead of sending.
-    console.log(`[Telegram DEMO] ${method}:`, JSON.stringify(body).slice(0, 200))
+    console.warn('Telegram bot token is not configured')
     return { ok: false, demo: true }
   }
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
       method: 'POST',
+      signal: AbortSignal.timeout(10000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
@@ -23,15 +24,15 @@ async function callTelegramApi(method: string, body: Record<string, unknown>) {
     }
     return data
   } catch (e) {
-    console.error('Telegram request failed:', e)
-    return { ok: false, error: e }
+    console.error('Telegram request failed')
+    return { ok: false, error: 'Telegram unavailable' }
   }
 }
 
 export async function sendTelegramMessage(text: string) {
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID
   if (!chatId || chatId === 'your_telegram_admin_chat_id') {
-    console.log('[Telegram DEMO] message:', text.slice(0, 300))
+    console.warn('Telegram admin chat ID is not configured')
     return { ok: false, demo: true }
   }
   return callTelegramApi('sendMessage', {
@@ -40,6 +41,10 @@ export async function sendTelegramMessage(text: string) {
     parse_mode: 'HTML',
     disable_web_page_preview: true,
   })
+}
+
+export function escapeTelegramHtml(value: string) {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 export function formatOrderNotification(opts: {
@@ -54,25 +59,25 @@ export function formatOrderNotification(opts: {
   adminUrl?: string
 }) {
   const itemsText = opts.items
-    .map((i) => `• ${i.name} ×${i.quantity} — ${formatTugrik(i.price * i.quantity)}`)
+    .map((i) => `• ${escapeTelegramHtml(i.name)} ×${i.quantity} — ${formatTugrik(i.price * i.quantity)}`)
     .join('\n')
   const lines = [
     '🛒 <b>Шинэ захиалга</b>',
     '',
-    `📦 Захиалгын дугаар: <b>${opts.orderNumber}</b>`,
-    `👤 Худалдан авагч: ${opts.customerName}`,
-    `📞 Утас: ${opts.phone}`,
-    opts.email ? `✉️ И-мэйл: ${opts.email}` : '',
-    opts.telegram ? `💬 Telegram: @${opts.telegram.replace(/^@/, '')}` : '',
+    `📦 Захиалгын дугаар: <b>${escapeTelegramHtml(opts.orderNumber)}</b>`,
+    `👤 Худалдан авагч: ${escapeTelegramHtml(opts.customerName)}`,
+    `📞 Утас: ${escapeTelegramHtml(opts.phone)}`,
+    opts.email ? `✉️ И-мэйл: ${escapeTelegramHtml(opts.email)}` : '',
+    opts.telegram ? `💬 Telegram: @${escapeTelegramHtml(opts.telegram.replace(/^@/, ''))}` : '',
     '',
     '🧾 <b>Бүтээгдэхүүнүүд:</b>',
     itemsText,
     '',
     `💰 Нийт дүн: <b>${formatTugrik(opts.total)}</b>`,
-    `🏷 Төлөв: ${opts.status}`,
+    `🏷 Төлөв: ${escapeTelegramHtml(opts.status)}`,
   ].filter(Boolean)
   if (opts.adminUrl) {
-    lines.push('', `🔗 <a href="${opts.adminUrl}">Захиалга удирдах</a>`)
+    lines.push('', `🔗 <a href="${escapeTelegramHtml(opts.adminUrl)}">Захиалга удирдах</a>`)
   }
   return lines.join('\n')
 }
@@ -86,13 +91,13 @@ export function formatPaymentConfirmedNotification(opts: {
   const lines = [
     '✅ <b>Төлбөр баталгаажлаа</b>',
     '',
-    `📦 Захиалгаа: <b>${opts.orderNumber}</b>`,
-    `👤 Худалдан авагч: ${opts.customerName}`,
+    `📦 Захиалгаа: <b>${escapeTelegramHtml(opts.orderNumber)}</b>`,
+    `👤 Худалдан авагч: ${escapeTelegramHtml(opts.customerName)}`,
     `💰 Нийт дүн: <b>${formatTugrik(opts.total)}</b>`,
     `🏷 Төлөв: Төлбөр төлөгдсөн`,
   ]
   if (opts.adminUrl) {
-    lines.push('', `🔗 <a href="${opts.adminUrl}">Захиалга удирдах</a>`)
+    lines.push('', `🔗 <a href="${escapeTelegramHtml(opts.adminUrl)}">Захиалга удирдах</a>`)
   }
   return lines.join('\n')
 }
@@ -106,12 +111,12 @@ export function formatChatNotification(opts: {
   const lines = [
     '💬 <b>Шинэ чатын мессеж</b>',
     '',
-    `👤 ${opts.customerName}`,
-    opts.phone ? `📞 ${opts.phone}` : '',
-    `📝 ${opts.message}`,
+    `👤 ${escapeTelegramHtml(opts.customerName)}`,
+    opts.phone ? `📞 ${escapeTelegramHtml(opts.phone)}` : '',
+    `📝 ${escapeTelegramHtml(opts.message)}`,
   ].filter(Boolean)
   if (opts.adminUrl) {
-    lines.push('', `🔗 <a href="${opts.adminUrl}">Чат удирдах</a>`)
+    lines.push('', `🔗 <a href="${escapeTelegramHtml(opts.adminUrl)}">Чат удирдах</a>`)
   }
   return lines.join('\n')
 }

@@ -15,6 +15,7 @@ import { formatTugrik } from '@/lib/format'
 import { ProductImage, ProductIllustration } from '@/components/site/product-illustration'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { getYouTubeId } from '@/lib/media'
 
 interface Category {
   id: string
@@ -208,6 +209,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
       </div>
 
       <ProductFormDialog
+        token={token}
         open={creating || !!editing}
         product={editing}
         categories={categories}
@@ -220,8 +222,9 @@ export function AdminProducts({ token, categories }: { token: string; categories
 }
 
 function ProductFormDialog({
-  open, product, categories, saving, onClose, onSave,
+  open, product, categories, saving, onClose, onSave, token,
 }: {
+  token: string
   open: boolean
   product: Product | null
   categories: Category[]
@@ -313,6 +316,10 @@ function ProductFormDialog({
     e.preventDefault()
     if (!form.name.trim() || !form.price || !form.categoryId) {
       toast.error('Шаардлагатай талбар дутуу байна')
+      return
+    }
+    if (form.tutorialVideoUrl.trim() && !getYouTubeId(form.tutorialVideoUrl)) {
+      toast.error('YouTube холбоос буруу байна. watch, youtu.be, shorts эсвэл live холбоос оруулна уу.')
       return
     }
     const cat = categories.find((c) => c.id === form.categoryId)
@@ -431,6 +438,7 @@ function ProductFormDialog({
                     onChange={(e) => {
                       const f = e.target.files?.[0]
                       if (f) handleImageUpload(f)
+                      e.target.value = ''
                     }}
                   />
                 </label>
@@ -471,7 +479,7 @@ function ProductFormDialog({
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Заавар видео (YouTube URL)</Label>
                 <Input value={form.tutorialVideoUrl} onChange={(e) => setForm({ ...form, tutorialVideoUrl: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="https://www.youtube.com/watch?v=..." />
-                <p className="mt-1 text-[11px] text-[#5B7290]">YouTube link: watch?v=ID эсвэл youtu.be/ID хэлбэрээр оруулна уу</p>
+                <p className="mt-1 text-[11px] text-[#5B7290]">YouTube-ийн watch, youtu.be, shorts, live холбоос оруулж болно.</p>
               </div>
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Зааврын зургууд (";"-аар тусгаарлана)</Label>
@@ -498,7 +506,7 @@ function ProductFormDialog({
           </div>
           <div className="px-6 py-4 border-t border-[#EEF4FF] flex gap-2 bg-[#F5F9FF]/50">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 border-[#D6E4FF]">Цуцлах</Button>
-            <Button type="submit" disabled={saving} className="flex-1 bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
+            <Button type="submit" disabled={saving || uploading} className="flex-1 bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
               {saving ? <Loader2 className="size-4 animate-spin" /> : null}
               Хадгалах
             </Button>

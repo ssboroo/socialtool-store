@@ -2,13 +2,18 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { db } from '@/lib/db'
 
-const SECRET = process.env.JWT_SECRET || 'socialtool-store-jwt-secret-2026'
+function getSecret() {
+  const secret = process.env.JWT_SECRET
+  if (!secret || secret.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters')
+  return secret
+}
 
 export async function ensureDefaultAdmin() {
   const username = process.env.ADMIN_USERNAME || 'admin'
-  const password = process.env.ADMIN_PASSWORD || 'admin123'
   const existing = await db.adminUser.findUnique({ where: { username } })
   if (existing) return existing
+  const password = process.env.ADMIN_PASSWORD
+  if (!password) throw new Error('ADMIN_PASSWORD is required to initialize the admin account')
   const passwordHash = await bcrypt.hash(password, 10)
   return db.adminUser.create({ data: { username, passwordHash } })
 }
@@ -21,14 +26,14 @@ export async function verifyAdminCredentials(username: string, password: string)
 }
 
 export function signAdminToken(user: { id: string; username: string }) {
-  return jwt.sign({ sub: user.id, username: user.username, role: 'admin' }, SECRET, {
+  return jwt.sign({ sub: user.id, username: user.username, role: 'admin' }, getSecret(), {
     expiresIn: '7d',
   })
 }
 
 export function verifyAdminToken(token: string): { sub: string; username: string; role: string } | null {
   try {
-    const decoded = jwt.verify(token, SECRET) as { sub: string; username: string; role: string }
+    const decoded = jwt.verify(token, getSecret()) as { sub: string; username: string; role: string }
     if (decoded.role !== 'admin') return null
     return decoded
   } catch {
@@ -59,14 +64,14 @@ export async function verifyCustomerCredentials(email: string, password: string)
 }
 
 export function signCustomerToken(customer: { id: string; email: string; name: string }) {
-  return jwt.sign({ sub: customer.id, email: customer.email, name: customer.name, role: 'customer' }, SECRET, {
+  return jwt.sign({ sub: customer.id, email: customer.email, name: customer.name, role: 'customer' }, getSecret(), {
     expiresIn: '30d',
   })
 }
 
 export function verifyCustomerToken(token: string): { sub: string; email: string; name: string; role: string } | null {
   try {
-    const decoded = jwt.verify(token, SECRET) as { sub: string; email: string; name: string; role: string }
+    const decoded = jwt.verify(token, getSecret()) as { sub: string; email: string; name: string; role: string }
     if (decoded.role !== 'customer') return null
     return decoded
   } catch {

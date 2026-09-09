@@ -1,0 +1,97 @@
+// Run after next build against an isolated SQLite schema, never production.
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import sharp from 'sharp'
+import { PrismaClient } from '@prisma/client'
+
+test('local production API: registration, admin, image upload and account-isolated carts', async () => {
+  const databaseUrl = process.env.TEST_DATABASE_URL
+  assert.ok(databaseUrl?.startsWith('file:/tmp/'), 'Requires explicit isolated file:/tmp/ TEST_DATABASE_URL')
+  const suffix = randomBytes(6).toString('hex')
+  const password = randomBytes(24).toString('hex')
+  const uploads = await mkdtemp(path.join(tmpdir(), 'socialtool-uploads-'))
+  const server = spawn(process.execPath, ['.next/standalone/server.js'], {
+    env: { ...process.env, DATABASE_URL: databaseUrl, JWT_SECRET: randomBytes(32).toString('hex'), ADMIN_USERNAME: `admin-${suffix}`, ADMIN_PASSWORD: password, PORT: '3217', HOSTNAME: '127.0.0.1', UPLOAD_DIR: uploads, TELEGRAM_BOT_TOKEN: '', TELEGRAM_ADMIN_CHAT_ID: '', WIRE_MN_API_KEY: '', WIRE_MN_ALLOWED_OPERATORS: '', WIRE_MN_WEBHOOK_SECRET: '', NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3217' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  let logs = ''
+  server.stdout.on('data', b => { logs += b })
+  server.stderr.on('data', b => { logs += b })
+  const db = new PrismaClient({ datasources: { db: { url: databaseUrl } } })
+  const base = 'http://127.0.0.1:3217'
+  const request = (route, options) => fetch(base + route, options)
+  const json = (data, cookie) => ({ method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(data) })
+  const cookieOf = res => res.headers.get('set-cookie')?.split(';')[0]
+  try {
+    for (let i = 0; i < 60; i++) {
+      try { if ((await request('/api/payment/wire/test')).ok) break } catch {}
+      if (server.exitCode !== null) throw new Error('Server failed to start: ' + logs)
+      await new Promise(r => setTimeout(r, 250))
+    }
+    const register = email => request('/api/auth/register', json({ name: 'Local Test', phone: '00000000', email, password }))
+    const a = await register(`a-${suffix}@example.invalid`)
+    assert.equal(a.status, 200)
+    const accountA = (await a.json()).customer
+    const cookieA = cookieOf(a)
+    assert.ok(cookieA)
+    assert.equal((await register(`a-${suffix}@example.invalid`)).status, 409)
+    assert.equal((await register('not-an-email')).status, 400)
+    const b = await register(`b-${suffix}@example.invalid`)
+    assert.equal(b.status, 200)
+    const cookieB = cookieOf(b)
+    assert.equal((await request('/api/auth/me', { headers: { cookie: cookieA } })).status, 200)
+    const admin = await request('/api/admin/login', json({ username: `admin-${suffix}`, password }))
+    assert.equal(admin.status, 200)
+    const token = (await admin.json()).token
+    const adminHeaders = { authorization: `Bearer ${token}` }
+    assert.equal((await request('/api/admin/session', { headers: adminHeaders })).status, 200)
+    assert.equal((await request('/api/admin/session', { headers: { authorization: 'Bearer invalid' } })).status, 401)
+    assert.equal((await request('/api/admin/products', { headers: adminHeaders })).status, 200)
+    assert.equal((await request('/api/admin/integrations')).status, 401)
+    const health = await request('/api/admin/integrations', { headers: adminHeaders })
+    assert.equal(health.status, 200)
+    assert.equal((await health.json()).checks.find(c => c.name === 'Telegram').ok, false)
+
+    const category = await db.category.create({ data: { name: 'Local', slug: suffix, icon: 'Package' } })
+    const product = await db.product.create({ data: { name: 'Local Test Product', slug: suffix, shortDesc: 'Test', description: '## Test\n\n- Item one\n- Item two', price: 100, category: category.name, categoryId: category.id } })
+    const png = await sharp({ create: { width: 16, height: 16, channels: 3, background: '#1677ff' } }).png().toBuffer()
+    const form = new FormData()
+    form.append('file', new Blob([png], { type: 'image/png' }), 'test.png')
+    assert.equal((await request('/api/admin/products/upload', { method: 'POST', body: form })).status, 401)
+    const uploaded = await request('/api/admin/products/upload', { method: 'POST', headers: adminHeaders, body: form })
+    assert.equal(uploaded.status, 200)
+    const image = await request((await uploaded.json()).url)
+    assert.equal(image.status, 200)
+    assert.equal(image.headers.get('content-type'), 'image/webp')
+    const invalid = new FormData()
+    invalid.append('file', new Blob(['not an image'], { type: 'image/png' }), 'bad.png')
+    assert.equal((await request('/api/admin/products/upload', { method: 'POST', headers: adminHeaders, body: invalid })).status, 400)
+
+    assert.equal((await request('/api/customer/cart')).status, 401)
+    const cartA = await (await request('/api/customer/cart', { headers: { cookie: cookieA } })).json()
+    assert.equal(cartA.version, 0)
+    const payload = { ownerId: accountA.id, version: 0, items: [{ id: product.id, quantity: 2 }] }
+    const save = await request('/api/customer/cart', { ...json(payload, cookieA), method: 'PUT' })
+    assert.equal(save.status, 200)
+    assert.equal((await request('/api/customer/cart', { ...json(payload, cookieA), method: 'PUT' })).status, 409)
+    assert.equal((await request('/api/customer/cart', { ...json(payload, cookieB), method: 'PUT' })).status, 403)
+    assert.deepEqual((await (await request('/api/customer/cart', { headers: { cookie: cookieB } })).json()).items, [])
+    const loginAgain = await request('/api/auth/login', json({ email: accountA.email, password }))
+    assert.equal(loginAgain.status, 200)
+    const secondDeviceCart = await (await request('/api/customer/cart', { headers: { cookie: cookieOf(loginAgain) } })).json()
+    assert.equal(secondDeviceCart.items[0].quantity, 2)
+    assert.equal(secondDeviceCart.items[0].price, 100)
+    const logout = await request('/api/admin/session', { method: 'DELETE', headers: adminHeaders })
+    assert.match(logout.headers.get('set-cookie'), /Max-Age=0/i)
+    console.log('Verified: registration, duplicate rejection, login, admin session, upload/read, invalid image, two-device cart and account isolation')
+  } finally {
+    server.kill('SIGTERM')
+    await db.$disconnect()
+    await rm(uploads, { recursive: true, force: true })
+  }
+})
