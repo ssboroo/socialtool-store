@@ -54,8 +54,15 @@ export default function AdminPage() {
   useEffect(() => {
     const stored = localStorage.getItem('admin_token')
     if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setToken(stored)
+      fetch('/api/admin/session', { headers: { authorization: `Bearer ${stored}` } })
+        .then(res => {
+          if (res.ok) setToken(stored)
+          else if (res.status === 401) {
+            localStorage.removeItem('admin_token')
+            toast.error('Админ нэвтрэх хугацаа дууссан. Дахин нэвтэрнэ үү.')
+          } else toast.error('Админ сервертэй холбогдож чадсангүй')
+        })
+        .catch(() => toast.error('Админ сервертэй холбогдож чадсангүй'))
     }
   }, [])
 
@@ -65,14 +72,16 @@ export default function AdminPage() {
       .then((r) => r.json())
       .then((d) => setCategories(Array.isArray(d) ? d : []))
       .catch(() => {})
-  }, [token])
+  }, [token, tab])
 
   const handleLogin = (t: string) => {
     localStorage.setItem('admin_token', t)
     setToken(t)
   }
 
-  const logout = () => {
+  const logout = async () => {
+    const res = await fetch('/api/admin/session', { method: 'DELETE' })
+    if (!res.ok) { toast.error('Гарахад алдаа гарлаа'); return }
     localStorage.removeItem('admin_token')
     setToken(null)
     toast.success('Гарлаа')

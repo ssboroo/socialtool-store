@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   const where: {
     category?: string
-    OR?: { name: { contains: string }; shortDesc?: { contains: string }; description?: { contains: string } }[]
+    OR?: { name?: { contains: string }; shortDesc?: { contains: string }; description?: { contains: string } }[]
   } = {}
   if (category && category !== 'all') where.category = category
   if (q) {

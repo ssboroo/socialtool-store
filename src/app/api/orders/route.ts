@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     // send Telegram notification (fire-and-forget)
     const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?order=${order.id}`
-    sendTelegramMessage(
+    await sendTelegramMessage(
       formatOrderNotification({
         orderNumber: order.orderNumber,
         customerName: order.customerName,

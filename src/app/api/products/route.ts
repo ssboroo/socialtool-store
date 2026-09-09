@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     available?: boolean
     featured?: boolean
     category?: string
-    OR?: { name: { contains: string }; shortDesc?: { contains: string }; description?: { contains: string } }[]
+    OR?: { name?: { contains: string }; shortDesc?: { contains: string }; description?: { contains: string } }[]
   } = { available: true }
 
   if (featuredOnly) where.featured = true

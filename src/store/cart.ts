@@ -11,6 +11,8 @@ export interface CartItem {
 }
 
 interface CartState {
+  ownerId: string | null
+  syncBusy: boolean
   items: CartItem[]
   isOpen: boolean
   add: (item: Omit<CartItem, 'quantity'>, qty?: number) => void
@@ -27,28 +29,31 @@ interface CartState {
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
+      ownerId: null,
+      syncBusy: false,
       items: [],
       isOpen: false,
       add: (item, qty = 1) =>
         set((s) => {
+          if (s.syncBusy) return s
           const existing = s.items.find((i) => i.id === item.id)
           if (existing) {
             return {
               items: s.items.map((i) =>
-                i.id === item.id ? { ...i, quantity: i.quantity + qty } : i
+                i.id === item.id ? { ...i, quantity: Math.min(99, i.quantity + qty) } : i
               ),
               isOpen: true,
             }
           }
           return { items: [...s.items, { ...item, quantity: qty }], isOpen: true }
         }),
-      remove: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
+      remove: (id) => { if (!get().syncBusy) set((s) => ({ items: s.items.filter((i) => i.id !== id) })) },
       setQty: (id, qty) =>
-        set((s) => ({
+        set((s) => s.syncBusy ? s : ({
           items:
             qty <= 0
               ? s.items.filter((i) => i.id !== id)
-              : s.items.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
+              : s.items.map((i) => (i.id === id ? { ...i, quantity: Math.min(99, qty) } : i)),
         })),
       clear: () => set({ items: [] }),
       open: () => set({ isOpen: true }),
@@ -57,7 +62,7 @@ export const useCartStore = create<CartState>()(
       total: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       count: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),
-    { name: 'socialtool-cart' }
+    { name: 'socialtool-cart', partialize: (s) => ({ items: s.items, ownerId: s.ownerId }) }
   )
 )
 

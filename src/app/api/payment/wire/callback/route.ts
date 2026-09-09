@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       console.log('[wire-webhook] order marked PAID', { orderNumber: order.orderNumber, paymentIntentId })
 
       const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?order=${order.id}`
-      sendTelegramMessage(
+      await sendTelegramMessage(
         formatPaymentConfirmedNotification({
           orderNumber: order.orderNumber,
           customerName: order.customerName,

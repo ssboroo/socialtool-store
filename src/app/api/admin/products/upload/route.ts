@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
+import { randomUUID } from 'node:crypto'
+import sharp from 'sharp'
+import { getUploadDir } from '@/lib/uploads'
 import path from 'path'
 import { getAdminFromRequest } from '@/lib/auth'
 
@@ -41,19 +43,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
+    const uploadDir = getUploadDir()
+    await mkdir(uploadDir, { recursive: true })
+
+    // Decode and re-encode the upload; never trust the extension or MIME alone.
+    let bytes: Buffer
+    try {
+      bytes = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 40000000 })
+        .rotate().resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 }).toBuffer()
+    } catch {
+      return NextResponse.json({ error: 'Зургийг уншиж чадсангүй. Хүчинтэй JPEG, PNG, WebP эсвэл GIF файл сонгоно уу.' }, { status: 400 })
     }
-
-    // Build a safe unique filename: <timestamp>-<random>.<ext>
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext) ? ext : 'jpg'
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`
-    const filepath = path.join(uploadDir, filename)
-
-    const bytes = await file.arrayBuffer()
-    await writeFile(filepath, Buffer.from(bytes))
+    const filename = `${randomUUID()}.webp`
+    await writeFile(path.join(uploadDir, filename), bytes, { flag: 'wx' })
 
     // Return the public URL path (relative so it works on any domain)
     const url = `/uploads/products/${filename}`
