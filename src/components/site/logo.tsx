@@ -4,22 +4,14 @@ import { cn } from '@/lib/utils'
 export function Logo({ className, withText = true }: { className?: string; withText?: boolean }) {
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
-      <span className="relative grid size-10 shrink-0 place-items-center rounded-[12px] bg-gradient-to-br from-[#1677FF] via-[#126BEE] to-[#0B4DBA] text-white shadow-[0_8px_24px_rgba(22,119,255,.28)] ring-1 ring-white/70">
-        <ShoppingBag className="size-6 stroke-[2.2]" />
-        <span className="absolute inset-0 grid place-items-center pt-1">
-          <Zap className="size-3.5 fill-white stroke-white" />
-        </span>
+      <span className="relative grid size-9 shrink-0 place-items-center rounded-[9px] bg-gradient-to-b from-[#2386FF] to-[#0968E5] text-white shadow-[0_7px_18px_rgba(22,119,255,.25)] ring-1 ring-[#0B67DA]/10">
+        <ShoppingBag className="size-[22px] stroke-[2.2]" />
+        <Zap className="absolute size-[11px] fill-white stroke-white" />
       </span>
-
       {withText && (
-        <div className="flex min-w-0 flex-col leading-none">
-          <span className="whitespace-nowrap text-[16px] font-black tracking-[-0.035em] text-[#102A43] sm:text-[17px]">
-            SOCIALTOOL<span className="text-[#1677FF]">.STORE</span>
-          </span>
-          <span className="mt-1 whitespace-nowrap text-[9px] font-semibold tracking-[0.035em] text-[#7890AC]">
-            DIGITAL TOOLS · SMARTER WORK
-          </span>
-        </div>
+        <span className="whitespace-nowrap text-[16px] font-black leading-none tracking-[-0.04em] text-[#102A43] sm:text-[17px]">
+          SOCIALTOOL<span className="text-[#1677FF]">.STORE</span>
+        </span>
       )}
     </div>
   )
