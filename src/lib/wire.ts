@@ -6,7 +6,7 @@
  *   2. createCheckoutSession()    — POST /v1/checkout/sessions  → returns hosted pay URL
  *   3. Webhook                    — payment_intent.succeeded  → verify signature with whsec_...
  *
- * Amounts are MNT minor units: 50000 = 500.00 ₮ (100 minor units per 1 MNT, per ISO 4217).
+ * MNT amounts are sent as whole tugriks: 139999 = ₮139,999.
  * Idempotency-Key header is required on all mutating POSTs.
  *
  * Credentials are kept in environment variables — never exposed to the frontend.
@@ -53,9 +53,9 @@ function getApiKey(): string {
   return key
 }
 
-/** Convert MNT face value to Wire.mn minor units (1 MNT = 100 minor units). */
+/** Keep the legacy helper name, but Wire live MNT expects whole tugriks (139999 => ₮139,999). */
 export function toMinorUnits(mnt: number): number {
-  return Math.round(mnt * 100)
+  return Math.round(mnt)
 }
 
 /** Parse the comma-separated WIRE_MN_ALLOWED_OPERATORS env var (default ["sandbox"]). */
