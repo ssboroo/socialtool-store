@@ -16,7 +16,7 @@ import { ProductImage } from './product-illustration'
 import { formatTugrik } from '@/lib/format'
 import { getYouTubeId, getYouTubeEmbedUrl, getYouTubeThumb, parseImageList } from '@/lib/media'
 import { toast } from 'sonner'
-import ReactMarkdown from 'react-markdown'
+import { ProductDescription } from './product-description'
 
 interface Product {
   id: string
@@ -108,7 +108,7 @@ export function ProductDetailModal() {
             <Loader2 className="size-8 animate-spin text-[#1677FF]" />
           </div>
         ) : product ? (
-          <div className="grid sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] max-h-[92vh] overflow-y-auto custom-scroll">
+          <div className="flex flex-col max-h-[92vh] overflow-y-auto custom-scroll">
             {/* illustration */}
             <div className="relative bg-gradient-to-br from-[#E8F1FF] to-[#F5F9FF] p-6 sm:p-8">
               <div className="absolute top-4 left-4 flex gap-2">
@@ -121,7 +121,7 @@ export function ProductDetailModal() {
                   </span>
                 ) : null}
               </div>
-              <ProductImage image={product.image} icon={product.icon} alt={product.name} className="aspect-square w-full mt-6" />
+              <ProductImage image={product.image} icon={product.icon} alt={product.name} className="h-[220px] sm:h-[260px] w-full max-w-md mx-auto mt-6" />
             </div>
 
             {/* info */}
@@ -183,12 +183,10 @@ export function ProductDetailModal() {
                 </div>
               )}
 
-              <div className="mt-5 rounded-xl bg-[#F5F9FF] p-3.5">
-                <h4 className="text-xs font-bold text-[#102A43] uppercase tracking-wide">Тайлбар</h4>
-                <div className="mt-3 space-y-3 text-sm text-[#5B7290] leading-7 break-words [overflow-wrap:anywhere] [&_p]:whitespace-pre-line [&_p]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-2 [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-base [&_h4]:text-sm [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_h4]:font-bold [&_strong]:text-[#102A43] [&_a]:text-blue-600 [&_a]:underline">
-                  <ReactMarkdown skipHtml components={{a: ({children, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>}}>{product.description}</ReactMarkdown>
-                </div>
-              </div>
+              <section className="mt-6 border-t border-[#D6E4FF] pt-6">
+                <h4 className="text-xl font-bold text-[#102A43]">Бүтээгдэхүүний тайлбар</h4>
+                <ProductDescription text={product.description} />
+              </section>
 
               {/* Tutorial video (YouTube) */}
               {(() => {

@@ -134,12 +134,12 @@ export async function createPaymentIntent(opts: {
 export async function createCheckoutSession(opts: {
   paymentIntentId: string
   orderId: string
-  successUrl: string
+  successUrl?: string
 }): Promise<WireCheckoutSession> {
   const key = getApiKey()
   const body = new URLSearchParams()
   body.set('payment_intent', opts.paymentIntentId)
-  body.set('success_url', opts.successUrl)
+  if (opts.successUrl) body.set('success_url', opts.successUrl)
 
   const res = await fetch(`${API_BASE}/checkout/sessions`, {
     method: 'POST',

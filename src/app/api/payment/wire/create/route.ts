@@ -37,11 +37,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
-    if (!siteUrl || !/^https?:\/\//.test(siteUrl)) {
-      return NextResponse.json({ error: 'Төлбөрийн буцах хаяг тохируулаагүй байна. Админтай холбогдоно уу.' }, { status: 503 })
+    // Wire hosted checkout supports an omitted success URL and displays its own receipt.
+    // Only use a trusted configured URL; never derive payment redirects from request headers.
+    let successUrl: string | undefined
+    const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+    if (configuredUrl) {
+      try {
+        const url = new URL(configuredUrl)
+        if (url.protocol !== 'https:' || url.username || url.password) throw new Error('invalid URL')
+        const redirect = new URL('/', url.origin)
+        redirect.searchParams.set('payment', 'success')
+        redirect.searchParams.set('order', order.id)
+        successUrl = redirect.toString()
+      } catch {
+        return NextResponse.json({ error: 'NEXT_PUBLIC_SITE_URL буруу байна. https://socialtool.store гэж тохируулах эсвэл хоосон орхино уу.' }, { status: 503 })
+      }
     }
-    const successUrl = `${siteUrl}/?payment=success&order=${order.id}`
 
     // Persist the intent before checkout creation so failed attempts can resume.
     let intentId = expired ? null : previousIntentId
