@@ -2,10 +2,12 @@
 html {
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
+  background: #F5F9FF;
 }
 
 body {
   -moz-osx-font-smoothing: grayscale;
+  font-kerning: normal;
 }
 
 button,
@@ -16,15 +18,13 @@ option {
   font: inherit;
 }
 
-/* Prevent large Mongolian headings from clipping or producing awkward glyph overlap. */
 #top h1 {
-  line-height: 1.12;
-  overflow-wrap: anywhere;
+  line-height: 1.05;
+  overflow-wrap: normal;
   word-break: normal;
   text-wrap: balance;
 }
 
-/* Keep product text readable even when imported content contains unusual spacing. */
 .product-description {
   font-family: inherit;
   letter-spacing: normal;
@@ -36,13 +36,16 @@ option {
   text-wrap: pretty;
 }
 
-/* Better keyboard focus without changing the visual language. */
 #products article:focus-within {
   border-color: rgba(22, 119, 255, 0.55);
 }
 
+#products article img {
+  image-rendering: auto;
+}
+
 @media (max-width: 639px) {
   #top h1 {
-    line-height: 1.16;
+    line-height: 1.09;
   }
 }
