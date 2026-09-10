@@ -1,4 +1,5 @@
 'use client'
+import { licenseOptions, licenseVariants } from '@/lib/license'
 import { DescriptionEditor } from './description-editor'
 
 import { useEffect, useState } from 'react'
@@ -246,6 +247,7 @@ function ProductFormDialog({
     available: true,
     featured: false,
     duration: '',
+    termPrices: {} as Record<string, string>,
     tutorialVideoUrl: '',
     instructionImages: '',
   })
@@ -266,7 +268,8 @@ function ProductFormDialog({
         features: product.features || '',
         available: product.available,
         featured: product.featured,
-        duration: product.duration || '',
+        duration: licenseOptions(product.duration).join(';'),
+        termPrices: Object.fromEntries(licenseVariants(product.duration).map(v => [v.term, String(v.price ?? product.price)])),
         tutorialVideoUrl: product.tutorialVideoUrl || '',
         instructionImages: product.instructionImages || '',
       })
@@ -285,6 +288,7 @@ function ProductFormDialog({
         available: true,
         featured: false,
         duration: '',
+    termPrices: {} as Record<string, string>,
         tutorialVideoUrl: '',
         instructionImages: '',
       })
@@ -337,7 +341,7 @@ function ProductFormDialog({
       features: form.features,
       available: form.available,
       featured: form.featured,
-      duration: form.duration.trim() || null,
+      duration: form.duration ? JSON.stringify(licenseOptions(form.duration).map(term => ({ term, price: Number(form.termPrices[term] || form.price) }))) : null,
       tutorialVideoUrl: form.tutorialVideoUrl.trim() || null,
       instructionImages: form.instructionImages.trim() || null,
     })
@@ -363,7 +367,7 @@ function ProductFormDialog({
             </div>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Бүрэн тайлбар</Label>
-              <DescriptionEditor value={form.description} onChange={description => setForm({ ...form, description })} />
+              <DescriptionEditor key={`${product?.id || "new"}-${open}`} value={form.description} onChange={description => setForm(current => ({ ...current, description }))} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -477,6 +481,7 @@ function ProductFormDialog({
                   <option value="Хугацаагүй">Зөвхөн Хугацаагүй эрх</option>
                   {!['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) && <option value="custom">Одоогийн хугацаа: {form.duration}</option>}
                 </select>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">{licenseOptions(form.duration).map(term => <label key={term} className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-sm font-semibold">{term} · Үнэ (₮)<Input type="number" min="1" step="1" value={form.termPrices[term] ?? ''} placeholder={form.price || 'Үнэ'} onChange={e => setForm(current => ({ ...current, termPrices: { ...current.termPrices, [term]: e.target.value } }))} className="mt-2 bg-white" /><span className="mt-1 block text-xs font-normal text-slate-500">Хоосон бол үндсэн үнэ үйлчилнэ.</span></label>)}</div>
                 <p className="mt-2 text-xs text-[#5B7290]">Ширхгээр борлуулахад хугацаа харагдахгүй. Худалдан авагч тоо ширхэгээ сагсанд оруулна. Хугацааны хувилбарууд одоогийн ижил үнээр борлуулагдана.</p>
               </div>
               <div>

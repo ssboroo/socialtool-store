@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { LicenseSelector } from './license-selector'
-import { licenseOptions, type LicenseTerm } from '@/lib/license'
+import { licensePrice, licenseOptions, type LicenseTerm } from '@/lib/license'
 import { Star, ShoppingCart, ArrowRight, Clock, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from './product-illustration'
@@ -47,7 +47,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       id: product.id,
       duration: selectedDuration,
       name: product.name,
-      price: product.price,
+      price: licensePrice(product, selectedDuration),
       icon: product.icon,
       category: product.category,
     })
@@ -98,7 +98,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
         <div className="mt-3 flex items-end gap-2">
           <span className="text-xl font-extrabold text-[#102A43]">
-            {formatTugrik(product.price)}
+            {formatTugrik(licensePrice(product, selectedDuration))}
           </span>
           {product.oldPrice ? (
             <span className="text-xs text-[#5B7290] line-through">

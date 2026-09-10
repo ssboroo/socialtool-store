@@ -1,4 +1,4 @@
-import { validTerm, licenseOptions } from '@/lib/license'
+import { validTerm, licenseOptions, licensePrice } from '@/lib/license'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { generateOrderNumber } from '@/lib/format'
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       if ((allowed.length && !allowed.includes(it.duration || '')) || (!allowed.length && it.duration)) {
         return NextResponse.json({ error: 'Барааны хугацааны сонголт өөрчлөгдсөн. Сагсаа шинэчилж дахин сонгоно уу.' }, { status: 400 })
       }
-      if (p.price !== it.price) {
+      if (licensePrice(p, it.duration || '') !== it.price) {
         return NextResponse.json({ error: 'Үнийн зөрүү байна' }, { status: 400 })
       }
     }

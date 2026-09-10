@@ -17,13 +17,18 @@ export async function PUT(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, string>
     const allowed = [
-      'privacyPolicy', 'termsOfService', 'heroImage', 'heroHeadline', 'heroSubtext', 'heroPrimaryCta', 'heroSecondaryCta',
+      'privacyPolicy', 'termsOfService', 'heroImage', 'heroImages', 'heroHeadline', 'heroSubtext', 'heroPrimaryCta', 'heroSecondaryCta',
       'promoTitle', 'promoDescription', 'promoCta', 'promoDiscountPercent',
       'contactEmail', 'contactTelegram',
       'footerDescription', 'footerCopyright',
     ]
     if ('heroImage' in body && (typeof body.heroImage !== 'string' || (body.heroImage !== '' && !/^\/uploads\/products\/[A-Za-z0-9_-]+\.webp$/.test(body.heroImage)))) {
       return NextResponse.json({ error: 'Постерын зургийг файл сонгох хэсгээс оруулна уу.' }, { status: 400 })
+    }
+    if ('heroImages' in body) {
+      let images: unknown
+      try { images = JSON.parse(body.heroImages) } catch { images = null }
+      if (!Array.isArray(images) || images.length > 10 || images.some(v => typeof v !== 'string' || !/^\/uploads\/products\/[A-Za-z0-9_-]+\.webp$/.test(v))) return NextResponse.json({ error: 'Слайдын зураг буруу байна.' }, { status: 400 })
     }
     for (const key of allowed) {
       if (key in body) {

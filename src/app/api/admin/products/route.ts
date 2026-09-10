@@ -1,3 +1,4 @@
+import { validLicenseConfig } from '@/lib/license'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+    if (!validLicenseConfig(body.duration) || ('price' in body && (!Number.isSafeInteger(Number(body.price)) || Number(body.price) <= 0))) return NextResponse.json({ error: 'Хугацаа болон үнийг зөв оруулна уу.' }, { status: 400 })
     const { name, shortDesc, description, price, oldPrice, icon, image, category, categoryId, featured, available, features, duration, tutorialVideoUrl, instructionImages } = body
     if (!name || !price || !category || !categoryId) {
       return NextResponse.json({ error: 'Шаардлагатай талбар дутуу' }, { status: 400 })

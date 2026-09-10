@@ -1,6 +1,6 @@
 'use client'
 import { LicenseSelector } from './license-selector'
-import { licenseOptions, type LicenseTerm } from '@/lib/license'
+import { licensePrice, licenseOptions, type LicenseTerm } from '@/lib/license'
 
 import { useEffect, useState } from 'react'
 import {
@@ -84,7 +84,7 @@ export function ProductDetailModal() {
         id: product.id,
         duration: selectedDuration,
         name: product.name,
-        price: product.price,
+        price: licensePrice(product, selectedDuration),
         icon: product.icon,
         category: product.category,
       },
@@ -150,7 +150,7 @@ export function ProductDetailModal() {
 
               <div className="mt-4 flex items-end gap-3">
                 <span className="text-3xl font-extrabold text-[#102A43]">
-                  {formatTugrik(product.price)}
+                  {formatTugrik(licensePrice(product, selectedDuration))}
                 </span>
                 {product.oldPrice ? (
                   <span className="text-sm text-[#5B7290] line-through">
@@ -298,7 +298,7 @@ export function ProductDetailModal() {
                   className="flex-1 h-12 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg gap-2"
                 >
                   <ShoppingCart className="size-4" />
-                  Сагсанд нэмэх · {formatTugrik(product.price * qty)}
+                  Сагсанд нэмэх · {formatTugrik(licensePrice(product, selectedDuration) * qty)}
                 </Button>
               </div>
             </div>
