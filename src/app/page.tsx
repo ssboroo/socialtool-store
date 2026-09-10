@@ -9,7 +9,6 @@ import { Reviews } from '@/components/site/reviews'
 import { Faq } from '@/components/site/faq'
 import { Footer } from '@/components/site/footer'
 import { CartDrawer } from '@/components/site/cart-drawer'
-import { ProductDetailModal } from '@/components/site/product-detail-modal'
 import { CheckoutModal } from '@/components/site/checkout-modal'
 import { LiveChat } from '@/components/site/live-chat'
 import { AuthGate } from '@/components/site/auth-gate'
@@ -69,7 +68,6 @@ export default async function Home() {
       </main>
       <Footer settings={settings} />
       <CartDrawer />
-      <ProductDetailModal />
       <CheckoutModal />
       <LiveChat />
       <AuthGate />
