@@ -1,6 +1,7 @@
+import { confirmPayment, paymentMatches } from '@/lib/confirm-payment'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { verifyWebhookSignature, mapIntentStatus } from '@/lib/wire'
+import { verifyWebhookSignature, mapIntentStatus, retrievePaymentIntent } from '@/lib/wire'
 import { sendTelegramMessage, formatPaymentConfirmedNotification } from '@/lib/telegram'
 
 /** Signed payment callbacks and endpoint.verification pings from Wire.mn. */
@@ -50,20 +51,12 @@ export async function POST(req: NextRequest) {
     const order = payment.order
 
     if (mapped === 'PAID' && payment.status !== 'PAID') {
-      await db.$transaction([
-        db.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: 'PAID',
-            wireTransactionId: transactionId || payment.wireTransactionId,
-            paidAt: new Date(),
-          },
-        }),
-        db.order.update({
-          where: { id: order.id },
-          data: { status: 'PAID', paymentId: payment.id },
-        }),
-      ])
+      const intent = await retrievePaymentIntent(paymentIntentId)
+      if (mapIntentStatus(intent.status) !== 'PAID' || !paymentMatches(intent, payment)) {
+        return NextResponse.json({ error: 'Төлбөрийн төлөв, дүн эсвэл валют зөрж байна' }, { status: 409 })
+      }
+      const changed = await confirmPayment(payment.id, paymentIntentId, transactionId)
+      if (!changed) return NextResponse.json({ ok: true })
       console.log('[wire-webhook] order marked PAID', { orderNumber: order.orderNumber, paymentIntentId })
 
       const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?order=${order.id}`
@@ -76,8 +69,8 @@ export async function POST(req: NextRequest) {
         })
       ).catch(() => {})
     } else if (payment.status !== 'PAID' && (mapped === 'FAILED' || mapped === 'EXPIRED')) {
-      await db.payment.update({
-        where: { id: payment.id },
+      await db.payment.updateMany({
+        where: { id: payment.id, wirePaymentIntentId: paymentIntentId, status: { not: 'PAID' } },
         data: { status: mapped },
       })
       console.log('[wire-webhook] payment marked', { mapped, paymentIntentId })

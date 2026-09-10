@@ -176,3 +176,11 @@ model Promotion {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// Encoded image bytes are backed up with the persistent application database.
+model UploadedImage {
+  filename String @id
+  mimeType String
+  bytes Bytes
+  createdAt DateTime @default(now())
+}

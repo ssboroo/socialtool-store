@@ -1,3 +1,4 @@
+import { confirmPayment, paymentMatches } from '@/lib/confirm-payment'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { retrievePaymentIntent, mapIntentStatus } from '@/lib/wire'
@@ -35,21 +36,13 @@ export async function GET(req: NextRequest) {
   ) {
     try {
       const intent = await retrievePaymentIntent(order.payment.wirePaymentIntentId)
+      if (!paymentMatches(intent, order.payment)) return NextResponse.json({ error: 'Төлбөрийн дүн эсвэл валют зөрж байна' }, { status: 502 })
       const mapped = mapIntentStatus(intent.status)
       if (mapped === 'PAID') {
-        await db.$transaction([
-          db.payment.update({
-            where: { id: order.payment.id },
-            data: { status: 'PAID', paidAt: new Date() },
-          }),
-          db.order.update({
-            where: { id: order.id },
-            data: { status: 'PAID', paymentId: order.payment.id },
-          }),
-        ])
+        const changed = await confirmPayment(order.payment.id, intent.id)
         status = 'PAID'
         const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?order=${order.id}`
-        await sendTelegramMessage(
+        if (changed) await sendTelegramMessage(
           formatPaymentConfirmedNotification({
             orderNumber: order.orderNumber,
             customerName: order.customerName,
@@ -58,8 +51,8 @@ export async function GET(req: NextRequest) {
           })
         ).catch(() => {})
       } else if (mapped === 'FAILED' || mapped === 'EXPIRED') {
-        await db.payment.update({
-          where: { id: order.payment.id },
+        await db.payment.updateMany({
+          where: { id: order.payment.id, wirePaymentIntentId: intent.id, status: { not: 'PAID' } },
           data: { status: mapped },
         })
         status = mapped
@@ -72,7 +65,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     status,
-    orderStatus: order.status,
+    orderStatus: status === 'PAID' && order.status === 'PENDING_PAYMENT' ? 'PAID' : order.status,
     orderNumber: order.orderNumber,
     amount: order.totalAmount,
   })

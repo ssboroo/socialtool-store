@@ -1,3 +1,5 @@
+'use client'
+import { useState } from 'react'
 import {
   Facebook, Music2, Instagram, Twitter, Send, Mail, Sparkles, LayoutGrid, Package,
 } from 'lucide-react'
@@ -65,12 +67,14 @@ export function ProductImage({
   alt: string
   className?: string
 }) {
-  if (image) {
+  const [failedImage, setFailedImage] = useState<string | null>(null)
+  if (image && failedImage !== image) {
     return (
       <div className={cn('relative overflow-hidden rounded-xl bg-[#F5F9FF]', className)}>
         { }
         <img
           src={image}
+          onError={() => setFailedImage(image)}
           alt={alt}
           className="absolute inset-0 size-full object-cover"
           loading="lazy"

@@ -5,7 +5,7 @@ import { signCustomerToken, verifyCustomerCredentials } from '@/lib/auth'
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json()
-    if (!email?.trim() || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password || password.length > 128) {
       return NextResponse.json({ error: 'И-мэйл болон нууц үг шаардлагатай' }, { status: 400 })
     }
     const customer = await verifyCustomerCredentials(email, password)
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     })
     res.cookies.set('customer_token', token, {
       httpOnly: true,
+      secure: req.nextUrl.protocol === 'https:',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30,
       path: '/',

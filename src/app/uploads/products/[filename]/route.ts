@@ -1,3 +1,4 @@
+import { db } from '@/lib/db'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { getUploadDir, validImageFilename } from '@/lib/uploads'
@@ -7,7 +8,15 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ filename: string }> }) {
   const { filename } = await params
-  if (!validImageFilename(filename)) return new Response('Not found', { status: 404 })
+  if (!validImageFilename(filename)) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } })
+  try {
+    const saved = await db.uploadedImage.findUnique({ where: { filename } })
+    if (saved) return new Response(new Uint8Array(saved.bytes), { headers: {
+      'Content-Type': saved.mimeType,
+      'Cache-Control': 'public, max-age=31536000, immutable',
+      'X-Content-Type-Options': 'nosniff',
+    } })
+  } catch { /* Preserve legacy file reads while the additive DB migration is applied. */ }
   try {
     const bytes = await readFile(path.join(getUploadDir(), filename))
     const ext = filename.split('.').pop()!
@@ -17,5 +26,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ filenam
       'Cache-Control': 'public, max-age=31536000, immutable',
       'X-Content-Type-Options': 'nosniff',
     } })
-  } catch { return new Response('Not found', { status: 404 }) }
+  } catch { return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } }) }
 }

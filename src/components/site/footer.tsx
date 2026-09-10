@@ -1,4 +1,7 @@
 'use client'
+import { useState } from 'react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { ProductDescription } from './product-description'
 
 import { Logo } from './logo'
 import { Mail, Send, ShieldCheck, Zap } from 'lucide-react'
@@ -18,6 +21,7 @@ function scrollTo(href: string) {
 }
 
 export function Footer({ settings }: { settings?: Record<string, string> }) {
+  const [policy, setPolicy] = useState<string | null>(null)
   const contactEmail = settings?.contactEmail || 'help@socialtool.store'
   const contactTelegram = settings?.contactTelegram || 'socialtool'
   const footerDescription = settings?.footerDescription || 'SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор. Монгол хэрэглэгчдэд зориулсан аюулгүй, шуурхай, баталгаатай дижитал хэрэгсэл.'
@@ -48,7 +52,7 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
               {LINKS.map((l) => (
                 <li key={l.label}>
                   <button
-                    onClick={() => scrollTo(l.href)}
+                    onClick={() => l.href === '#' ? setPolicy(l.label === 'Нууцлал' ? 'privacyPolicy' : 'termsOfService') : scrollTo(l.href)}
                     className="text-sm text-[#5B7290] hover:text-[#1677FF] transition-colors"
                   >
                     {l.label}
@@ -102,6 +106,12 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
           </p>
         </div>
       </div>
+      <Dialog open={!!policy} onOpenChange={open => { if (!open) setPolicy(null) }}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl bg-white">
+          <DialogTitle>{policy === 'privacyPolicy' ? 'Нууцлал' : 'Үйлчилгээний нөхцөл'}</DialogTitle>
+          <ProductDescription text={settings?.[policy || ''] || 'Мэдээлэл хараахан нийтлэгдээгүй байна. Дэлгүүрийн админтай холбогдоно уу.'} />
+        </DialogContent>
+      </Dialog>
     </footer>
   )
 }

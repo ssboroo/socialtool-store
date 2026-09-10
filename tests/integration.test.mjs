@@ -2,6 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
+import { createServer } from 'node:http'
 import { randomBytes } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -15,8 +16,15 @@ test('local production API: registration, admin, image upload and account-isolat
   const suffix = randomBytes(6).toString('hex')
   const password = randomBytes(24).toString('hex')
   const uploads = await mkdtemp(path.join(tmpdir(), 'socialtool-uploads-'))
+  const wireMock = createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    const id = req.url.split('/').pop()
+    res.end(JSON.stringify({ id, status: 'succeeded', currency: 'MNT', amount: id === 'pi_wrong_amount' ? 1 : 30000 }))
+  })
+  await new Promise(resolve => wireMock.listen(0, '127.0.0.1', resolve))
+  const wireUrl = `http://127.0.0.1:${wireMock.address().port}/v1`
   const server = spawn(process.execPath, ['.next/standalone/server.js'], {
-    env: { ...process.env, DATABASE_URL: databaseUrl, JWT_SECRET: randomBytes(32).toString('hex'), ADMIN_USERNAME: `admin-${suffix}`, ADMIN_PASSWORD: password, PORT: '3217', HOSTNAME: '127.0.0.1', UPLOAD_DIR: uploads, TELEGRAM_BOT_TOKEN: '', TELEGRAM_ADMIN_CHAT_ID: '', WIRE_MN_API_KEY: '', WIRE_MN_ALLOWED_OPERATORS: '', WIRE_MN_WEBHOOK_SECRET: '', NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3217' },
+    env: { ...process.env, DATABASE_URL: databaseUrl, JWT_SECRET: randomBytes(32).toString('hex'), ADMIN_USERNAME: `admin-${suffix}`, ADMIN_PASSWORD: password, PORT: '3217', HOSTNAME: '127.0.0.1', UPLOAD_DIR: uploads, TELEGRAM_BOT_TOKEN: '', TELEGRAM_ADMIN_CHAT_ID: '', WIRE_MN_API_KEY: 'sk_test_local_mock_only', WIRE_MN_API_URL: wireUrl, WIRE_MN_ALLOWED_OPERATORS: '', WIRE_MN_WEBHOOK_SECRET: '', NEXT_PUBLIC_SITE_URL: 'http://127.0.0.1:3217' },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   let logs = ''
@@ -65,9 +73,30 @@ test('local production API: registration, admin, image upload and account-isolat
     assert.equal((await request('/api/admin/products/upload', { method: 'POST', body: form })).status, 401)
     const uploaded = await request('/api/admin/products/upload', { method: 'POST', headers: adminHeaders, body: form })
     assert.equal(uploaded.status, 200)
-    const image = await request((await uploaded.json()).url)
+    const uploadedUrl = (await uploaded.json()).url
+    const image = await request(uploadedUrl)
     assert.equal(image.status, 200)
     assert.equal(image.headers.get('content-type'), 'image/webp')
+    const storedImage = await db.uploadedImage.findUnique({ where: { filename: uploadedUrl.split('/').pop() } })
+    assert.ok(storedImage.bytes.length > 0)
+    assert.equal((await request(`/api/admin/products/${product.id}`, { ...json({ image: uploadedUrl }), method: 'PUT', headers: { ...adminHeaders, 'Content-Type': 'application/json' } })).status, 200)
+    assert.equal((await (await request(`/api/products/${product.id}`)).json()).image, uploadedUrl)
+    assert.equal((await request('/api/admin/settings', { ...json({ heroImage: uploadedUrl }), method: 'PUT', headers: { ...adminHeaders, 'Content-Type': 'application/json' } })).status, 200)
+    assert.equal((await (await request('/api/settings')).json()).heroImage, uploadedUrl)
+    assert.equal((await request('/api/admin/settings', { ...json({ heroImage: 'javascript:alert(1)' }), method: 'PUT', headers: { ...adminHeaders, 'Content-Type': 'application/json' } })).status, 400)
+    assert.equal((await request('/api/chat/messages', json({ sessionId:'x', sender:'admin', content:'spoof' }))).status, 400)
+    // A fresh server process with a different empty upload directory reads the same DB image.
+    const freshUploads = await mkdtemp(path.join(tmpdir(), 'socialtool-fresh-'))
+    const secondServer = spawn(process.execPath, ['.next/standalone/server.js'], { env: { ...process.env, DATABASE_URL: databaseUrl, PORT: '3218', HOSTNAME: '127.0.0.1', UPLOAD_DIR: freshUploads }, stdio: 'ignore' })
+    try {
+      let secondImage
+      for (let i=0;i<60;i++) {
+        try { secondImage = await fetch('http://127.0.0.1:3218'+uploadedUrl); break } catch { await new Promise(r=>setTimeout(r,100)) }
+      }
+      assert.equal(secondImage?.status,200)
+      assert.equal(secondImage.headers.get('content-type'),'image/webp')
+    } finally { secondServer.kill('SIGTERM'); await rm(freshUploads, { recursive:true, force:true }) }
+    console.log('Verified DB image survives fresh process/empty upload directory; product and hero persistence; invalid hero and admin chat spoof rejected')
     const invalid = new FormData()
     invalid.append('file', new Blob(['not an image'], { type: 'image/png' }), 'bad.png')
     assert.equal((await request('/api/admin/products/upload', { method: 'POST', headers: adminHeaders, body: invalid })).status, 400)
@@ -99,11 +128,23 @@ test('local production API: registration, admin, image upload and account-isolat
     orderPayload.items[0].duration = 'invalid'
     assert.equal((await request('/api/orders', json(orderPayload, cookieA))).status, 400)
     console.log('Verified: two license variants sync between sessions; order retains authoritative name, term and total; invalid term rejected')
+    const payment = await db.payment.create({ data: { orderId: order.id, amount: 300, wirePaymentIntentId: 'pi_wrong_amount' } })
+    assert.equal((await request('/api/payment/wire/status?orderId='+order.id)).status,502)
+    assert.equal((await db.payment.findUnique({ where:{id:payment.id} })).status,'PENDING')
+    await db.payment.update({ where:{id:payment.id}, data:{wirePaymentIntentId:'pi_correct'} })
+    const confirmed = await request('/api/payment/wire/status?orderId='+order.id)
+    assert.equal(confirmed.status,200)
+    assert.equal((await confirmed.json()).status,'PAID')
+    await db.order.update({ where:{id:order.id}, data:{status:'DELIVERED'} })
+    await request('/api/payment/wire/status?orderId='+order.id)
+    assert.equal((await db.order.findUnique({where:{id:order.id}})).status,'DELIVERED')
+    console.log('Verified: wrong payment amount cannot fulfill; valid amount confirms; delivered order does not regress')
     const logout = await request('/api/admin/session', { method: 'DELETE', headers: adminHeaders })
     assert.match(logout.headers.get('set-cookie'), /Max-Age=0/i)
     console.log('Verified: registration, duplicate rejection, login, admin session, upload/read, invalid image, two-device cart and account isolation')
   } finally {
     server.kill('SIGTERM')
+    wireMock.close()
     await db.$disconnect()
     await rm(uploads, { recursive: true, force: true })
   }
