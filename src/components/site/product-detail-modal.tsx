@@ -1,6 +1,6 @@
 'use client'
 import { LicenseSelector } from './license-selector'
-import { type LicenseTerm } from '@/lib/license'
+import { licenseOptions, type LicenseTerm } from '@/lib/license'
 
 import { useEffect, useState } from 'react'
 import {
@@ -45,7 +45,7 @@ export function ProductDetailModal() {
   const add = useCartStore((s) => s.add)
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
-  const [duration, setDuration] = useState<LicenseTerm>('Хугацаагүй')
+  const [duration, setDuration] = useState<LicenseTerm>('')
   const [qty, setQty] = useState(1)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [activeImage, setActiveImage] = useState<string | null>(null)
@@ -61,7 +61,7 @@ export function ProductDetailModal() {
     setLoading(true)
      
     setQty(1)
-    setDuration('Хугацаагүй')
+    setDuration('')
      
     setVideoPlaying(false)
      
@@ -74,12 +74,15 @@ export function ProductDetailModal() {
     return () => { cancelled = true }
   }, [selectedId])
 
+  const options = licenseOptions(product?.duration)
+  const selectedDuration = options.includes(duration) ? duration : options[0] || ''
+
   const handleAdd = () => {
     if (!product) return
     add(
       {
         id: product.id,
-        duration,
+        duration: selectedDuration,
         name: product.name,
         price: product.price,
         icon: product.icon,
@@ -270,7 +273,7 @@ export function ProductDetailModal() {
               })()}
 
               {/* qty + add */}
-              <LicenseSelector value={duration} onChange={setDuration} />
+              <LicenseSelector value={selectedDuration} onChange={setDuration} options={options} />
               <div className="mt-auto pt-5 flex items-center gap-3">
                 <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
                   <button

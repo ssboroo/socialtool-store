@@ -469,8 +469,15 @@ function ProductFormDialog({
                 <Clock className="size-3.5" /> Хэрэглээний мэдээлэл
               </h4>
               <div>
-                <Label className="text-xs font-semibold text-[#102A43]">Хугацаа (жишээ: 1 сар, 6 сар, 1 жил, Бүх амьдрал)</Label>
-                <Input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="6 сар" />
+                <Label className="text-xs font-semibold text-[#102A43]">Барааны хугацааны сонголт</Label>
+                <select aria-label="Барааны хугацааны сонголт" value={['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) ? form.duration : 'custom'} onChange={e => { if(e.target.value !== 'custom') setForm({ ...form, duration: e.target.value }) }} className="mt-2 w-full rounded-lg border border-[#D6E4FF] bg-white p-2 text-sm">
+                  <option value="">Хугацаа сонгохгүй — ширхгээр борлуулах</option>
+                  <option value="1 жил;Хугацаагүй">1 жил / Хугацаагүй — хоёуланг харуулах</option>
+                  <option value="1 жил">Зөвхөн 1 жил</option>
+                  <option value="Хугацаагүй">Зөвхөн Хугацаагүй эрх</option>
+                  {!['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) && <option value="custom">Одоогийн хугацаа: {form.duration}</option>}
+                </select>
+                <p className="mt-2 text-xs text-[#5B7290]">Ширхгээр борлуулахад хугацаа харагдахгүй. Худалдан авагч тоо ширхэгээ сагсанд оруулна. Хугацааны хувилбарууд одоогийн ижил үнээр борлуулагдана.</p>
               </div>
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Заавар видео (YouTube URL)</Label>

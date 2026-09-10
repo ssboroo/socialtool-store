@@ -66,7 +66,7 @@ test('local production API: registration, admin, image upload and account-isolat
     assert.equal((await health.json()).checks.find(c => c.name === 'Telegram').ok, false)
 
     const category = await db.category.create({ data: { name: 'Local', slug: suffix, icon: 'Package' } })
-    const product = await db.product.create({ data: { name: 'Local Test Product', slug: suffix, shortDesc: 'Test', description: '## Test\n\n- Item one\n- Item two', price: 100, category: category.name, categoryId: category.id } })
+    const product = await db.product.create({ data: { name: 'Local Test Product', duration: '1 жил;Хугацаагүй', slug: suffix, shortDesc: 'Test', description: '## Test\n\n- Item one\n- Item two', price: 100, category: category.name, categoryId: category.id } })
     const png = await sharp({ create: { width: 16, height: 16, channels: 3, background: '#1677ff' } }).png().toBuffer()
     const form = new FormData()
     form.append('file', new Blob([png], { type: 'image/png' }), 'test.png')
@@ -139,6 +139,18 @@ test('local production API: registration, admin, image upload and account-isolat
     await request('/api/payment/wire/status?orderId='+order.id)
     assert.equal((await db.order.findUnique({where:{id:order.id}})).status,'DELIVERED')
     console.log('Verified: wrong payment amount cannot fulfill; valid amount confirms; delivered order does not regress')
+    await db.product.update({ where:{id:product.id}, data:{duration:null} })
+    const pieceCart = await (await request('/api/customer/cart', {headers:{cookie:cookieA}})).json()
+    assert.equal(pieceCart.items.length,1)
+    assert.equal(pieceCart.items[0].duration,'')
+    assert.equal(pieceCart.items[0].quantity,3)
+    const pieceOrder = { customerName:'Local Test', phone:'00000000',email:accountA.email,items:[{productId:product.id,name:'ignored',price:100,quantity:12,duration:''}] }
+    const placed = await request('/api/orders',json(pieceOrder,cookieA))
+    assert.equal(placed.status,200)
+    assert.equal((await placed.json()).amount,1200)
+    pieceOrder.items[0].duration='1 жил'
+    assert.equal((await request('/api/orders',json(pieceOrder,cookieA))).status,400)
+    console.log('Verified admin disabling license terms merges cart lines; piece quantity total; disabled term rejected')
     const logout = await request('/api/admin/session', { method: 'DELETE', headers: adminHeaders })
     assert.match(logout.headers.get('set-cookie'), /Max-Age=0/i)
     console.log('Verified: registration, duplicate rejection, login, admin session, upload/read, invalid image, two-device cart and account isolation')

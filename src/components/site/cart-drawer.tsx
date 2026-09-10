@@ -1,4 +1,5 @@
 'use client'
+import { QuantityInput } from './quantity-input'
 import { cartKey } from '@/lib/license'
 
 import { useEffect } from 'react'
@@ -77,7 +78,7 @@ export function CartDrawer() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h4 className="text-sm font-bold text-[#102A43] line-clamp-1">{it.name}</h4>
-                        <p className="text-xs text-[#5B7290]">{it.category} · {it.duration || 'Хугацаагүй'}</p>
+                        <p className="text-xs text-[#5B7290]">{it.category}{it.duration ? ` · ${it.duration}` : ' · ширхэг'}</p>
                       </div>
                       <button
                         onClick={() => remove(cartKey(it))}
@@ -96,9 +97,7 @@ export function CartDrawer() {
                         >
                           <Minus className="size-3.5" />
                         </button>
-                        <span className="min-w-7 text-center text-sm font-bold text-[#102A43]">
-                          {it.quantity}
-                        </span>
+                        <QuantityInput value={it.quantity} onChange={qty => setQty(cartKey(it), qty)} label={`${it.name} тоо ширхэг`} />
                         <button
                           onClick={() => setQty(cartKey(it), it.quantity + 1)}
                           className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF]"

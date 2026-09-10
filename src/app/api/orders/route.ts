@@ -1,4 +1,4 @@
-import { validTerm } from '@/lib/license'
+import { validTerm, licenseOptions } from '@/lib/license'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { generateOrderNumber } from '@/lib/format'
@@ -48,6 +48,10 @@ export async function POST(req: NextRequest) {
       if (!p || !p.available) {
         return NextResponse.json({ error: `Хэрэгсэл олдсонгүй: ${it.name}` }, { status: 400 })
       }
+      const allowed = licenseOptions(p.duration)
+      if ((allowed.length && !allowed.includes(it.duration || '')) || (!allowed.length && it.duration)) {
+        return NextResponse.json({ error: 'Барааны хугацааны сонголт өөрчлөгдсөн. Сагсаа шинэчилж дахин сонгоно уу.' }, { status: 400 })
+      }
       if (p.price !== it.price) {
         return NextResponse.json({ error: 'Үнийн зөрүү байна' }, { status: 400 })
       }
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
         items: {
           create: items.map((i) => ({
             productId: i.productId,
-            productName: `${productMap.get(i.productId)!.name} — ${i.duration || 'Хугацаагүй'}`,
+            productName: `${productMap.get(i.productId)!.name}${i.duration ? ` — ${i.duration}` : ''}`,
             price: i.price,
             quantity: i.quantity,
           })),
