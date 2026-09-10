@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import { Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+
+const siteFont = Noto_Sans({
+  subsets: ["cyrillic", "latin"],
+  display: "swap",
+  fallback: ["Segoe UI", "Arial", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор",
@@ -16,7 +23,7 @@ export const metadata: Metadata = {
     "Telegram bot",
     "AI tool",
     "эх хэрэгсэл",
-    " маркетинг хэрэгсэл",
+    "маркетинг хэрэгсэл",
   ],
   authors: [{ name: "SOCIALTOOL.STORE" }],
   openGraph: {
@@ -34,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="mn" suppressHydrationWarning>
       <body
-        className="antialiased bg-background text-foreground min-h-screen"
+        className={`${siteFont.className} antialiased bg-background text-foreground min-h-screen`}
       >
         {children}
         <Toaster />
