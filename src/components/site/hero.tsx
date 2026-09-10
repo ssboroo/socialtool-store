@@ -1,133 +1,80 @@
 'use client'
-import { heroImages } from '@/lib/hero-images'
-import { HeroSlideshow } from './hero-slideshow'
 
-import { ArrowRight, Play, Sparkles, ShieldCheck, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-
-function scrollTo(id: string) {
-  document.querySelector(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
+import { Bot, Facebook, Headphones, Instagram, Music2, Send, ShieldCheck, Sparkles, TrendingUp, Youtube, Zap } from 'lucide-react'
 
 export function Hero({ settings }: { settings?: Record<string, string> }) {
-  const headline = settings?.heroHeadline || 'Таны дижитал ажлын хүчирхэг хэрэгслүүд'
-  const subtext = settings?.heroSubtext || 'Social media, AI, automation болон marketing хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай.'
-  const primaryCta = settings?.heroPrimaryCta || 'Бүх хэрэгсэл үзэх'
-  const secondaryCta = settings?.heroSecondaryCta || 'Хэрхэн ажиллах вэ?'
-  // split headline to keep the gradient-text highlight on the last word(s)
-  const headlineParts = headline.split(' ')
-  const highlight = headlineParts.length > 1 ? headlineParts.pop()! : ''
-  const headlineMain = headlineParts.join(' ')
+  const subtext = settings?.heroSubtext || 'SMM, автоматжуулалт, AI болон бүтээмжийн хэрэгслүүдийг найдвартай, хурдан, хялбар.'
+
+  const trustItems = [
+    { Icon: ShieldCheck, title: '100% Найдвартай', text: 'Баталгаат үйлчилгээ' },
+    { Icon: Zap, title: 'Шуурхай хүргэлт', text: 'Автоматаар илгээх' },
+    { Icon: Headphones, title: '24/7 Дэмжлэг', text: 'Асуудал гарвал тусална' },
+  ]
 
   return (
-    <section id="top" className="relative overflow-hidden">
-      {/* background glow + grid */}
-      <div className="pointer-events-none absolute inset-0 hero-grid" aria-hidden />
-      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-[520px] w-[820px] blue-glow" aria-hidden />
-      <div className="pointer-events-none absolute top-1/3 -right-20 h-[320px] w-[320px] blue-glow opacity-60" aria-hidden />
+    <section id="top" className="px-4 pt-5 sm:px-6 lg:px-8 lg:pt-6">
+      <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(115deg,#F5FAFF_0%,#EAF4FF_43%,#CFE4FF_72%,#9EC9FF_100%)] shadow-[0_22px_70px_rgba(31,103,190,.13)]">
+        <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,.95),transparent_28%),radial-gradient(circle_at_76%_18%,rgba(255,255,255,.55),transparent_24%),linear-gradient(rgba(255,255,255,.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.22)_1px,transparent_1px)] [background-size:auto,auto,34px_34px,34px_34px]" />
+        <div className="absolute -right-24 -top-28 size-[420px] rounded-full bg-[#5CA6FF]/25 blur-3xl" />
+        <div className="absolute bottom-0 left-[42%] h-40 w-72 rounded-full bg-white/35 blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-20 lg:pb-24">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-8 items-center">
-          {/* Left: copy */}
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D6E4FF] bg-white px-3 py-1.5 shadow-premium">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16A34A] opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-[#16A34A]" />
-              </span>
-              <span className="text-xs font-semibold text-[#102A43]">
-                12,000+ хэрэглэгчид итгэж байна
-              </span>
-            </div>
+        <div className="relative grid min-h-[330px] items-center gap-8 px-6 py-8 sm:px-9 lg:grid-cols-[1.02fr_.98fr] lg:px-12 lg:py-10 xl:px-14">
+          <div className="max-w-[650px]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/75 px-3 py-1.5 text-[11px] font-extrabold tracking-[0.04em] text-[#1768D7] shadow-sm ring-1 ring-[#BFD8FA]">
+              <Sparkles className="size-3.5" /> ДИЖИТАЛ ӨСӨЛТИЙН ХЭРЭГСЛҮҮД
+            </span>
 
-            <h1 className="mt-5 text-4xl sm:text-5xl lg:text-[56px] font-extrabold leading-[1.05] tracking-tight text-[#102A43]">
-              {headlineMain ? `${headlineMain} ` : ''}{highlight && <span className="gradient-text">{highlight}</span>}
+            <h1 className="mt-4 max-w-[620px] text-[38px] font-black leading-[1.04] tracking-[-0.045em] text-[#102A43] sm:text-[48px] lg:text-[54px]">
+              Дижитал өсөлтийн<br />бүх хэрэгсэл нэг дор
             </h1>
 
-            <p className="mt-5 text-base sm:text-lg text-[#5B7290] max-w-xl mx-auto lg:mx-0">
+            <p className="mt-4 max-w-[620px] text-[15px] font-medium leading-7 text-[#58718F] sm:text-base">
               {subtext}
             </p>
 
-            <div className="mt-7 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-              <Button
-                onClick={() => scrollTo('#products')}
-                size="lg"
-                className="h-12 px-7 rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg hover:shadow-premium-lg text-base gap-2 w-full sm:w-auto"
-              >
-                {primaryCta}
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button
-                onClick={() => scrollTo('#how')}
-                size="lg"
-                variant="outline"
-                className="h-12 px-7 rounded-full bg-white/80 backdrop-blur border-[#D6E4FF] text-[#102A43] hover:bg-[#E8F1FF] text-base gap-2 w-full sm:w-auto"
-              >
-                <Play className="size-4" />
-                {secondaryCta}
-              </Button>
-            </div>
-
-            {/* stats */}
-            <div className="mt-9 grid grid-cols-3 gap-3 max-w-md mx-auto lg:mx-0">
-              {[
-                { k: '15+', v: 'хэрэгсэл' },
-                { k: '24/7', v: 'тусламж' },
-                { k: '4.9★', v: 'үнэлгээ' },
-              ].map((s) => (
-                <div key={s.v} className="text-center lg:text-left">
-                  <div className="text-2xl font-extrabold text-[#102A43]">{s.k}</div>
-                  <div className="text-xs text-[#5B7290]">{s.v}</div>
+            <div className="mt-7 grid max-w-[640px] gap-3 sm:grid-cols-3">
+              {trustItems.map(({ Icon, title, text }) => (
+                <div key={title} className="flex items-center gap-3 rounded-2xl bg-white/56 p-2.5 ring-1 ring-white/80 backdrop-blur-sm">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#1677FF] shadow-[0_6px_18px_rgba(22,119,255,.13)] ring-1 ring-[#D6E7FF]">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[12px] font-extrabold text-[#183A60]">{title}</span>
+                    <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[#7187A2]">{text}</span>
+                  </span>
                 </div>
               ))}
             </div>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs text-[#5B7290]">
-              <span className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="size-4 text-[#16A34A]" /> Аюулгүй төлбөр
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Zap className="size-4 text-[#1677FF]" /> Шууд хүргэлт
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="size-4 text-[#8B5CF6]" /> 7 хоногийн баталгаа
-              </span>
-            </div>
           </div>
 
-          {heroImages(settings).length ? <HeroSlideshow images={heroImages(settings)} /> : (
-          <div className="hero-poster relative mx-auto w-full max-w-xl rounded-[2rem] border border-white bg-white/70 p-3 shadow-[0_30px_90px_-25px_#1677ff60] sm:p-5">
-            <div className="overflow-hidden rounded-[1.5rem] border border-[#D6E4FF] bg-white">
-              <div className="flex items-center justify-between border-b border-[#E8F1FF] px-5 py-4">
-                <span className="text-xs font-semibold tracking-[0.2em] text-[#5B7290]">SOCIALTOOL.STORE</span>
-                <div className="flex gap-1.5" aria-hidden>{[1,2,3].map(i => <span key={i} className="size-2 rounded-full bg-[#D6E4FF]" />)}</div>
-              </div>
-              <div className="relative overflow-hidden bg-[#082A62] px-6 py-8 text-white sm:px-8">
-                <div aria-hidden className="hero-orbit pointer-events-none absolute -right-12 -top-20 size-64 rounded-full border-[35px] border-blue-400/15" />
-                <span className="relative inline-flex items-center gap-2 text-xs font-medium text-blue-200"><Sparkles className="size-4" /> Таны дижитал хэрэгслийн дэлгүүр</span>
-                <h2 className="relative mt-5 text-4xl font-black tracking-tight sm:text-5xl">SOCIAL<span className="text-[#65B6FF]">TOOL</span><span className="text-[#65B6FF]">.</span></h2>
-                <p className="relative mt-3 max-w-xs text-sm leading-relaxed text-blue-100">Нэг сонголт. Илүү олон боломж.<br />Ажлаа хялбарчлах хэрэгслээ эндээс.</p>
-                <div className="relative mt-6 flex flex-wrap gap-2">
-                  {['Программ', 'Автоматжуулалт', 'AI хэрэгсэл'].map(t => <span key={t} className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs">{t}</span>)}
-                </div>
-              </div>
-              <div className="p-5 sm:p-6">
-                <div className="mb-4 flex items-center justify-between"><span className="text-sm font-bold text-[#102A43]">Танд хэрэгтэй платформууд</span><span className="text-xs text-[#5B7290]">Нэг дор</span></div>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {[
-                    { name: 'Facebook', icon: 'f', color: '#1877F2' },
-                    { name: 'Instagram', icon: 'IG', color: '#D63384' },
-                    { name: 'TikTok', icon: '♪', color: '#102A43' },
-                    { name: 'Telegram', icon: 'TG', color: '#229ED9' },
-                    { name: 'И-мэйл', icon: '@', color: '#07866B' },
-                    { name: 'AI хэрэгсэл', icon: 'AI', color: '#7555E8' },
-                  ].map(t => <div key={t.name} className="hero-platform flex items-center gap-2 rounded-xl border border-[#E8F1FF] bg-[#F8FAFF] px-3 py-3"><span className="grid size-8 shrink-0 place-items-center rounded-lg text-xs font-extrabold text-white" style={{ background: t.color }}>{t.icon}</span><span className="text-xs font-semibold text-[#102A43]">{t.name}</span></div>)}
-                </div>
-                <button onClick={() => scrollTo('#products')} className="mt-5 flex w-full items-center justify-between rounded-xl bg-[#E8F1FF] px-4 py-3 text-sm font-bold text-[#0B4DBA] transition-colors hover:bg-[#D6E4FF]">Хэрэгслээ сонгох <ArrowRight className="size-4" /></button>
-              </div>
+          <div className="relative hidden h-[270px] lg:block">
+            <div className="absolute left-[6%] top-[20%] h-[170px] w-[65%] -rotate-3 rounded-[34px] border border-white/60 bg-white/18 shadow-[0_28px_60px_rgba(42,105,188,.18)] backdrop-blur-md" />
+            <div className="absolute right-[5%] top-[8%] h-[205px] w-[68%] rotate-3 rounded-[36px] border border-white/75 bg-white/23 shadow-[0_28px_60px_rgba(42,105,188,.2)] backdrop-blur-md" />
+
+            <div className="absolute left-[9%] top-[28%] grid size-[76px] place-items-center rounded-[22px] bg-gradient-to-br from-[#258BFF] to-[#0866D9] text-white shadow-[0_18px_32px_rgba(24,103,221,.34)] ring-1 ring-white/65">
+              <Facebook className="size-10 fill-white" />
+            </div>
+            <div className="absolute left-[30%] top-[8%] grid size-[76px] place-items-center rounded-[22px] bg-gradient-to-br from-[#FFB34C] via-[#F65391] to-[#7655F5] text-white shadow-[0_18px_32px_rgba(236,82,150,.28)] ring-1 ring-white/65">
+              <Instagram className="size-10" />
+            </div>
+            <div className="absolute left-[51%] top-[34%] grid size-[78px] place-items-center rounded-[22px] bg-white text-[#1B8FD1] shadow-[0_18px_32px_rgba(24,103,221,.2)] ring-1 ring-white/75">
+              <Bot className="size-10" />
+            </div>
+            <div className="absolute left-[42%] bottom-[2%] grid size-[70px] place-items-center rounded-[20px] bg-[#0C1320] text-white shadow-[0_18px_32px_rgba(11,25,48,.3)] ring-1 ring-white/50">
+              <Music2 className="size-9" />
+            </div>
+            <div className="absolute left-[20%] bottom-[1%] grid size-[60px] place-items-center rounded-[18px] bg-white text-[#FF2E2E] shadow-[0_16px_28px_rgba(24,103,221,.16)] ring-1 ring-white/75">
+              <Youtube className="size-8 fill-[#FF2E2E]" />
+            </div>
+            <div className="absolute right-[13%] bottom-[8%] grid size-[62px] place-items-center rounded-[18px] bg-gradient-to-br from-[#34C8FF] to-[#1598DF] text-white shadow-[0_16px_28px_rgba(22,119,255,.24)] ring-1 ring-white/70">
+              <Send className="size-8 fill-white/20" />
+            </div>
+
+            <div className="absolute right-[3%] top-[18%] w-[180px] rounded-[24px] border border-white/75 bg-white/32 p-5 shadow-[0_20px_45px_rgba(33,91,166,.18)] backdrop-blur-lg">
+              <TrendingUp className="size-7 text-white" />
+              <p className="mt-5 text-[17px] font-extrabold leading-6 text-white drop-shadow-sm">Илүү бүтээмж<br />Илүү боломж<br />Илүү амжилт</p>
             </div>
           </div>
-          )}
         </div>
       </div>
     </section>
