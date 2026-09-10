@@ -59,17 +59,31 @@ export function toMinorUnits(mnt: number): number {
 }
 
 /** Parse the comma-separated WIRE_MN_ALLOWED_OPERATORS env var (default ["sandbox"]). */
-function getAllowedOperators(): string[] {
-  const raw = process.env.WIRE_MN_ALLOWED_OPERATORS
-  if (!raw && process.env.WIRE_MN_API_KEY?.startsWith('sk_live_')) {
-    throw new Error('Бодит төлбөрийн оператор тохируулаагүй байна. Админ WIRE_MN_ALLOWED_OPERATORS-ийг шалгана уу.')
+function getAllowedOperators(): string[] | undefined {
+  const live = getApiKey().startsWith('sk_live_')
+  const ops = (process.env.WIRE_MN_ALLOWED_OPERATORS || '').split(',').map(s => s.trim()).filter(Boolean)
+  // Omit the filter to let Wire select the project's connected live operators.
+  if (live && !ops.length) return undefined
+  if (live && ops.includes('sandbox')) {
+    throw new WireApiError('Бодит горимд sandbox ашиглахгүй. Серверийн WIRE_MN_ALLOWED_OPERATORS-оос sandbox-ыг устгаж, идэвхтэй операторын ID оруулах эсвэл хоосон орхиод дахин deploy хийнэ үү.', 503, 'operator_configuration')
   }
-  if (!raw) return ['sandbox']
-  const ops = raw.split(',').map((s) => s.trim()).filter(Boolean)
-  if (process.env.WIRE_MN_API_KEY?.startsWith('sk_live_') && (!ops.length || ops.includes('sandbox'))) {
-    throw new Error('Бодит төлбөрт sandbox оператор ашиглах боломжгүй. Админ операторын тохиргоог шалгана уу.')
+  if (!live && ops.some(op => op !== 'sandbox')) {
+    throw new WireApiError('Туршилтын түлхүүрт WIRE_MN_ALLOWED_OPERATORS=sandbox тохируулна уу.', 503, 'operator_configuration')
   }
-  return ops.length > 0 ? ops : ['sandbox']
+  return ops.length ? ops : ['sandbox']
+}
+
+export class WireApiError extends Error {
+  status: number
+  code?: string
+  requestId?: string
+  constructor(message: string, status: number, code?: string, requestId?: string) {
+    super(message)
+    this.name = 'WireApiError'
+    this.status = status
+    this.code = code
+    this.requestId = requestId
+  }
 }
 
 /** Generate a stable idempotency key for a given scope+id. */
@@ -107,7 +121,7 @@ export async function createPaymentIntent(opts: {
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(wireError('PaymentIntent үүсгэх', res.status, text))
+    throw wireError('PaymentIntent үүсгэх', res.status, text)
   }
   return (await res.json()) as WirePaymentIntent
 }
@@ -133,14 +147,14 @@ export async function createCheckoutSession(opts: {
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Idempotency-Key': idempotencyKey('cs', opts.orderId),
+      'Idempotency-Key': idempotencyKey('cs', opts.paymentIntentId),
     },
     body: body.toString(),
   })
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(wireError('Checkout session үүсгэх', res.status, text))
+    throw wireError('Checkout session үүсгэх', res.status, text)
   }
   return (await res.json()) as WireCheckoutSession
 }
@@ -160,7 +174,7 @@ export async function retrievePaymentIntent(paymentIntentId: string): Promise<Wi
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(wireError('PaymentIntent татах', res.status, text))
+    throw wireError('PaymentIntent татах', res.status, text)
   }
   return (await res.json()) as WirePaymentIntentRetrieve
 }
@@ -196,20 +210,18 @@ export function mapIntentStatus(status: string): 'PENDING' | 'PAID' | 'FAILED' |
 }
 
 /** Build a human-readable error message from a Wire.mn error response. */
-function wireError(action: string, status: number, body: string): string {
-  let detail = body
-  try {
-    const parsed = JSON.parse(body)
-    detail = parsed?.error?.message || parsed?.message || body
-  } catch {
-    /* keep raw body */
+function wireError(action: string, status: number, body: string): WireApiError {
+  let error: { code?: string; request_id?: string } = {}
+  try { error = JSON.parse(body)?.error || {} } catch { /* Never expose raw provider HTML or secrets. */ }
+  const messages: Record<string, string> = {
+    connector_required: 'Wire → Суваг хэсэгт төлбөрийн оператороо холбоно уу.',
+    settlement_account_required: 'Wire → Данс хэсэгт орлого хүлээн авах дансаа сонгоно уу.',
+    dan_verification_required: 'Wire бүртгэлийн ДАН баталгаажуулалтыг гүйцээнэ үү.',
+    operator_not_allowed: 'API түлхүүрийн горим болон идэвхтэй операторын тохиргоо зөрж байна.',
+    idempotency_in_flight: 'Нэхэмжлэл боловсруулагдаж байна. 1–2 секундын дараа дахин оролдоно уу.',
+    payment_intent_unexpected_state: 'Нэхэмжлэлийн хугацаа эсвэл төлөв өөрчлөгдсөн. Дахин оролдоно уу.',
+    checkout_url_invalid: 'Серверийн NEXT_PUBLIC_SITE_URL-д сайтын бүтэн HTTPS хаягийг тохируулна уу.',
   }
-  // surface well-known merchant-setup errors clearly
-  if (body.includes('connector_required')) {
-    return `${action}ад алдаа: оператор холбоогүй байна (connector_required). Төлбөрийн оператор идэвхгүй байна. Админтай холбогдоно уу.`
-  }
-  if (body.includes('settlement_account_required')) {
-    return `${action}ад алдаа: орлогын данс холбоогүй байна (settlement_account_required). Төлбөр хүлээн авах данс холбоогүй байна. Админтай холбогдоно уу.`
-  }
-  return `${action}ад алдаа (HTTP ${status}): ${detail}`
+  const message = (error.code && messages[error.code]) || (status === 401 ? 'Wire API түлхүүр хүчингүй байна. Зөв project-ийн түлхүүрийг серверт тохируулна уу.' : `${action}ад алдаа гарлаа (HTTP ${status}).`)
+  return new WireApiError(message, status, error.code, error.request_id)
 }

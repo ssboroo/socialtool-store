@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { createPaymentIntent, createCheckoutSession } from '@/lib/wire'
+import { createPaymentIntent, createCheckoutSession, retrievePaymentIntent, WireApiError } from '@/lib/wire'
 
 /**
  * Create a Wire.mn PaymentIntent + hosted checkout session for an order.
@@ -21,15 +21,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Энэ захиалгын төлбөр төлөгдсөн байна' }, { status: 409 })
     }
 
-    // If a payment + checkout URL already exists for this order, return it
-    // (avoid creating duplicate PaymentIntents on retry).
-    if (order.payment?.wireCheckoutUrl) {
-      return NextResponse.json({
-        payUrl: order.payment.wireCheckoutUrl,
-        invoiceNumber: order.payment.invoiceNumber || order.orderNumber,
-        paymentIntentId: order.payment.wirePaymentIntentId,
-        demo: false,
-      })
+    const previousIntentId = order.payment?.wirePaymentIntentId
+    let expired = false
+    if (previousIntentId) {
+      const current = await retrievePaymentIntent(previousIntentId)
+      if (current.status === 'succeeded' || current.status === 'paid') {
+        return NextResponse.json({ error: 'Төлбөр хийгдсэн байна. Төлбөрийн төлөв шалгах товчийг дарна уу.' }, { status: 409 })
+      }
+      expired = ['canceled', 'cancelled', 'expired', 'failed'].includes(current.status)
+      if (!expired && order.payment?.wireCheckoutUrl) {
+        return NextResponse.json({ payUrl: order.payment.wireCheckoutUrl, invoiceNumber: order.orderNumber, paymentIntentId: previousIntentId, demo: false })
+      }
+      if (!expired && current.status !== 'requires_payment_method') {
+        return NextResponse.json({ error: 'Төлбөр боловсруулагдаж байна. Түр хүлээгээд төлөв шалгана уу.' }, { status: 409 })
+      }
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
@@ -39,19 +44,27 @@ export async function POST(req: NextRequest) {
     const successUrl = `${siteUrl}/?payment=success&order=${order.id}`
 
     // Persist the intent before checkout creation so failed attempts can resume.
-    let intentId = order.payment?.wirePaymentIntentId
+    let intentId = expired ? null : previousIntentId
     if (!intentId) {
       const intent = await createPaymentIntent({
-        orderId: order.id,
+        orderId: expired ? `${order.id}-after-${previousIntentId}` : order.id,
         amount: order.totalAmount,
         description: `SOCIALTOOL.STORE захиалга #${order.orderNumber}`,
       })
       intentId = intent.id
-      await db.payment.upsert({
-        where: { orderId: order.id },
-        create: { orderId: order.id, amount: order.totalAmount, invoiceNumber: order.orderNumber, method: 'WIRE', wirePaymentIntentId: intentId },
-        update: { wirePaymentIntentId: intentId },
-      })
+      if (expired) {
+        const updated = await db.payment.updateMany({
+          where: { orderId: order.id, wirePaymentIntentId: previousIntentId, status: { not: 'PAID' } },
+          data: { wirePaymentIntentId: intentId, wireCheckoutSessionId: null, wireCheckoutUrl: null, status: 'PENDING' },
+        })
+        if (!updated.count) return NextResponse.json({ error: 'Төлбөрийн төлөв өөрчлөгдсөн. Дахин шалгана уу.' }, { status: 409 })
+      } else {
+        await db.payment.upsert({
+          where: { orderId: order.id },
+          create: { orderId: order.id, amount: order.totalAmount, invoiceNumber: order.orderNumber, method: 'WIRE', wirePaymentIntentId: intentId },
+          update: {},
+        })
+      }
     }
 
     // 2) Create the hosted checkout session
@@ -73,7 +86,12 @@ export async function POST(req: NextRequest) {
       demo: false,
     })
   } catch (e) {
-    console.error('Wire checkout creation error:', e)
+    if (e instanceof WireApiError) {
+      return NextResponse.json({ error: e.message, code: e.code, requestId: e.requestId }, { status: e.status === 409 ? 409 : e.status === 429 ? 429 : 503 })
+    }
+    if (e instanceof Error && ['TimeoutError', 'AbortError'].includes(e.name)) {
+      return NextResponse.json({ error: 'Wire хариу өгөх хугацаа хэтэрлээ. Дахин оролдоход ижил хүсэлтийн түлхүүр ашиглана.', code: 'upstream_timeout' }, { status: 504 })
+    }
     const message = e instanceof Error ? e.message : 'Төлбөрийн сесс үүсгэхэд алдаа гарлаа'
     return NextResponse.json({ error: message }, { status: 500 })
   }
