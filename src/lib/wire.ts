@@ -129,8 +129,9 @@ export async function createPaymentIntent(opts: {
 
 /**
  * Step 2 — Create a checkout session for a PaymentIntent.
- * POST /v1/checkout/sessions → returns hosted pay URL on pay.wire.mn.
- * The intent must still be in requires_payment_method state.
+ * Wire's hosted-checkout guide documents form encoding. Some live deployments
+ * currently reject that body as non-JSON, so retry once with an equivalent JSON
+ * body only when the provider explicitly reports a JSON-body parse error.
  */
 export async function createCheckoutSession(opts: {
   paymentIntentId: string
@@ -138,25 +139,56 @@ export async function createCheckoutSession(opts: {
   successUrl?: string
 }): Promise<WireCheckoutSession> {
   const key = getApiKey()
-  const body = new URLSearchParams()
-  body.set('payment_intent', opts.paymentIntentId)
-  if (opts.successUrl) body.set('success_url', opts.successUrl)
+  const checkoutUrl = `${API_BASE}/checkout/sessions`
+  const idemKey = idempotencyKey('cs', opts.paymentIntentId)
+  const payload: { payment_intent: string; success_url?: string } = {
+    payment_intent: opts.paymentIntentId,
+  }
+  if (opts.successUrl) payload.success_url = opts.successUrl
 
-  const res = await fetch(`${API_BASE}/checkout/sessions`, {
+  const form = new URLSearchParams()
+  form.set('payment_intent', payload.payment_intent)
+  if (payload.success_url) form.set('success_url', payload.success_url)
+
+  let res = await fetch(checkoutUrl, {
     method: 'POST',
     signal: AbortSignal.timeout(15000),
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Idempotency-Key': idempotencyKey('cs', opts.paymentIntentId),
+      'Idempotency-Key': idemKey,
     },
-    body: body.toString(),
+    body: form.toString(),
   })
 
   if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw wireError('Checkout session үүсгэх', res.status, text)
+    const firstText = await res.text().catch(() => '')
+    let providerMessage = ''
+    try {
+      const parsed = JSON.parse(firstText)
+      providerMessage = String(parsed?.error?.message || parsed?.message || '')
+    } catch { /* non-JSON error response */ }
+
+    const wantsJson = res.status === 400 && /(?:request body|body).*(?:not valid|invalid).*json|json.*(?:not valid|invalid)/i.test(providerMessage || firstText)
+    if (!wantsJson) throw wireError('Checkout session үүсгэх', res.status, firstText)
+
+    res = await fetch(checkoutUrl, {
+      method: 'POST',
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idemKey,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      const secondText = await res.text().catch(() => '')
+      throw wireError('Checkout session үүсгэх', res.status, secondText)
+    }
   }
+
   return (await res.json()) as WireCheckoutSession
 }
 
