@@ -5,12 +5,12 @@ export function Logo({ className, withText = true }: { className?: string; withT
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
       <Image
-        src="/socialtool-logo.jpg"
+        src="/socialtool-logo-s.png"
         alt={withText ? '' : 'SOCIALTOOL.STORE лого'}
-        width={44}
-        height={44}
+        width={40}
+        height={43}
         sizes="44px"
-        className="size-11 shrink-0 rounded-xl object-cover"
+        className="size-11 shrink-0 object-contain"
       />
       {withText && (
         <div className="flex flex-col leading-none">
