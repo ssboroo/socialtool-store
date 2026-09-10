@@ -1,4 +1,5 @@
 'use client'
+import { cartKey } from '@/lib/license'
 
 import { useEffect, useState, useCallback } from 'react'
 import {
@@ -113,7 +114,7 @@ export function CheckoutModal() {
           phone: form.phone,
           email: form.email,
           telegram: form.telegram || null,
-          items: items.map((i) => ({ productId: i.id, name: i.name, price: i.price, quantity: i.quantity, icon: i.icon, category: i.category })),
+          items: items.map((i) => ({ productId: i.id, duration: i.duration || 'Хугацаагүй', name: i.name, price: i.price, quantity: i.quantity, icon: i.icon, category: i.category })),
         }),
       })
       if (!res.ok) throw new Error('Захиалга үүсгэхэд алдаа гарлаа')
@@ -197,10 +198,10 @@ export function CheckoutModal() {
                     {/* items summary */}
                     <div className="rounded-2xl border border-[#D6E4FF] bg-[#F5F9FF]/50 divide-y divide-[#EEF4FF]">
                       {items.map((it) => (
-                        <div key={it.id} className="flex items-center justify-between p-3">
+                        <div key={cartKey(it)} className="flex items-center justify-between p-3">
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-[#102A43] truncate">{it.name}</p>
-                            <p className="text-xs text-[#5B7290]">{it.category} ×{it.quantity}</p>
+                            <p className="text-xs text-[#5B7290]">{it.category} · {it.duration || 'Хугацаагүй'} ×{it.quantity}</p>
                           </div>
                           <span className="text-sm font-bold text-[#102A43]">
                             {formatTugrik(it.price * it.quantity)}
