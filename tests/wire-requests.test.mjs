@@ -17,6 +17,8 @@ test('Wire request contracts: auth, minor units, stable keys, operators and type
  await createCheckoutSession({orderId:'order-a',paymentIntentId:'pi_two',successUrl:'https://socialtool.store/'})
  assert.notEqual(calls[2].headers['Idempotency-Key'],calls[3].headers['Idempotency-Key'])
  assert.equal(new URLSearchParams(calls[2].body).get('payment_intent'),'pi_one')
+ await createCheckoutSession({orderId:'order-no-return',paymentIntentId:'pi_no_return'})
+ assert.equal(new URLSearchParams(calls.at(-1).body).has('success_url'),false)
  process.env.WIRE_MN_ALLOWED_OPERATORS='sandbox'
  await assert.rejects(createPaymentIntent({orderId:'order-b',amount:1}),e=>e.code==='operator_configuration')
  process.env.WIRE_MN_API_KEY='sk_test_local_mock_only'

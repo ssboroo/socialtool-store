@@ -1,4 +1,5 @@
 'use client'
+import { DescriptionEditor } from './description-editor'
 
 import { useEffect, useState } from 'react'
 import { Loader2, Plus, Pencil, Trash2, Star, Search, Package, X, Clock, Upload, ImageIcon } from 'lucide-react'
@@ -344,7 +345,7 @@ function ProductFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-lg p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="sm:max-w-3xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">{product ? 'Засах' : 'Шинэ бүтээгдэхүүн'}</DialogTitle>
         <form onSubmit={submit} className="max-h-[94vh] overflow-y-auto custom-scroll">
           <div className="px-6 py-4 border-b border-[#EEF4FF] bg-gradient-to-r from-[#E8F1FF] to-white flex items-center justify-between">
@@ -362,12 +363,7 @@ function ProductFormDialog({
             </div>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Бүрэн тайлбар</Label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={4}
-                className="mt-1 w-full rounded-md border border-[#D6E4FF] bg-white px-3 py-2 text-sm text-[#102A43] focus:border-[#1677FF] focus:outline-none focus:ring-2 focus:ring-[#1677FF]/10 custom-scroll"
-              />
+              <DescriptionEditor value={form.description} onChange={description => setForm({ ...form, description })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
