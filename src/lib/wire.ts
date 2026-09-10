@@ -212,7 +212,7 @@ export function mapIntentStatus(status: string): 'PENDING' | 'PAID' | 'FAILED' |
 
 /** Build a human-readable error message from a Wire.mn error response. */
 function wireError(action: string, status: number, body: string): WireApiError {
-  let error: { code?: string; request_id?: string } = {}
+  let error: { code?: string; request_id?: string; message?: string; param?: string } = {}
   try { error = JSON.parse(body)?.error || {} } catch { /* Never expose raw provider HTML or secrets. */ }
   const messages: Record<string, string> = {
     operator_unknown: 'Wire операторын ID-г танихгүй байна. Railway → WIRE_MN_ALLOWED_OPERATORS дахь мерчант UUID/буруу утгыг арилгаж хоосон хадгалаад deploy хийнэ үү. Эсвэл Wire API-аас авсан идэвхтэй операторын ID оруулна уу.',
@@ -224,6 +224,21 @@ function wireError(action: string, status: number, body: string): WireApiError {
     payment_intent_unexpected_state: 'Нэхэмжлэлийн хугацаа эсвэл төлөв өөрчлөгдсөн. Дахин оролдоно уу.',
     checkout_url_invalid: 'Серверийн NEXT_PUBLIC_SITE_URL-д сайтын бүтэн HTTPS хаягийг тохируулна уу.',
   }
-  const message = (error.code && messages[error.code]) || (status === 401 ? 'Wire API түлхүүр хүчингүй байна. Зөв project-ийн түлхүүрийг серверт тохируулна уу.' : `${action}ад алдаа гарлаа (HTTP ${status}).`)
+  const providerMessage = typeof error.message === 'string' && error.message.trim() && error.message.length <= 500
+    ? error.message.trim()
+    : undefined
+  const message = (error.code && messages[error.code])
+    || (status === 401 ? 'Wire API түлхүүр хүчингүй байна. Зөв project-ийн түлхүүрийг серверт тохируулна уу.' : undefined)
+    || providerMessage
+    || `${action}ад алдаа гарлаа (HTTP ${status}).`
+
+  console.error('Wire API request failed', {
+    action,
+    status,
+    code: error.code || 'unknown',
+    param: error.param || undefined,
+    requestId: error.request_id || undefined,
+  })
+
   return new WireApiError(message, status, error.code, error.request_id)
 }
