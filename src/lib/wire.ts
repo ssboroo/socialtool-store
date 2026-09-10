@@ -214,6 +214,7 @@ function wireError(action: string, status: number, body: string): WireApiError {
   let error: { code?: string; request_id?: string } = {}
   try { error = JSON.parse(body)?.error || {} } catch { /* Never expose raw provider HTML or secrets. */ }
   const messages: Record<string, string> = {
+    operator_unknown: 'Wire операторын ID-г танихгүй байна. Railway → WIRE_MN_ALLOWED_OPERATORS дахь мерчант UUID/буруу утгыг арилгаж хоосон хадгалаад deploy хийнэ үү. Эсвэл Wire API-аас авсан идэвхтэй операторын ID оруулна уу.',
     connector_required: 'Wire → Суваг хэсэгт төлбөрийн оператороо холбоно уу.',
     settlement_account_required: 'Wire → Данс хэсэгт орлого хүлээн авах дансаа сонгоно уу.',
     dan_verification_required: 'Wire бүртгэлийн ДАН баталгаажуулалтыг гүйцээнэ үү.',

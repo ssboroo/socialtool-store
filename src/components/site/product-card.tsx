@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { LicenseSelector } from './license-selector'
-import { type LicenseTerm } from '@/lib/license'
+import { licenseOptions, type LicenseTerm } from '@/lib/license'
 import { Star, ShoppingCart, ArrowRight, Clock, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from './product-illustration'
@@ -34,15 +34,18 @@ export interface Product {
 }
 
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
-  const [duration, setDuration] = useState<LicenseTerm>('Хугацаагүй')
+  const [duration, setDuration] = useState<LicenseTerm>('')
   const add = useCartStore((s) => s.add)
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
+
+  const options = licenseOptions(product?.duration)
+  const selectedDuration = options.includes(duration) ? duration : options[0] || ''
 
   const handleAdd = (e?: React.MouseEvent) => {
     e?.stopPropagation()
     add({
       id: product.id,
-      duration,
+      duration: selectedDuration,
       name: product.name,
       price: product.price,
       icon: product.icon,
@@ -104,7 +107,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           ) : null}
         </div>
 
-        <LicenseSelector value={duration} onChange={setDuration} />
+        <LicenseSelector value={selectedDuration} onChange={setDuration} options={options} />
         {product.tutorialVideoUrl && getYouTubeId(product.tutorialVideoUrl) && <span className="mt-3 inline-flex items-center gap-1 text-xs text-[#1677FF]"><PlayCircle className="size-3.5" /> Видео заавартай</span>}
         <div className="mt-auto pt-4 flex flex-wrap items-center gap-2">
           <Button

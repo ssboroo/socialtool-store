@@ -114,7 +114,7 @@ export function CheckoutModal() {
           phone: form.phone,
           email: form.email,
           telegram: form.telegram || null,
-          items: items.map((i) => ({ productId: i.id, duration: i.duration || 'Хугацаагүй', name: i.name, price: i.price, quantity: i.quantity, icon: i.icon, category: i.category })),
+          items: items.map((i) => ({ productId: i.id, duration: i.duration || '', name: i.name, price: i.price, quantity: i.quantity, icon: i.icon, category: i.category })),
         }),
       })
       if (!res.ok) throw new Error('Захиалга үүсгэхэд алдаа гарлаа')
@@ -201,7 +201,7 @@ export function CheckoutModal() {
                         <div key={cartKey(it)} className="flex items-center justify-between p-3">
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-[#102A43] truncate">{it.name}</p>
-                            <p className="text-xs text-[#5B7290]">{it.category} · {it.duration || 'Хугацаагүй'} ×{it.quantity}</p>
+                            <p className="text-xs text-[#5B7290]">{it.category}{it.duration ? ` · ${it.duration}` : ' · ширхэг'} ×{it.quantity}</p>
                           </div>
                           <span className="text-sm font-bold text-[#102A43]">
                             {formatTugrik(it.price * it.quantity)}

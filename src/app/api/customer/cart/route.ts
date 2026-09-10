@@ -1,4 +1,4 @@
-import { cartKey, validTerm } from '@/lib/license'
+import { cartKey, validTerm, licenseOptions } from '@/lib/license'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCustomerFromRequest } from '@/lib/auth'
@@ -10,13 +10,20 @@ async function readCart(customerId: string) {
   if (!customer) return null
   const saved = JSON.parse(customer.cartItems) as { id: string; duration?: string; quantity: number }[]
   const products = await db.product.findMany({ where: { id: { in: saved.map(i => i.id) }, available: true } })
-  return {
-    version: customer.cartVersion,
-    items: saved.flatMap(item => {
-      const p = products.find(p => p.id === item.id)
-      return p ? [{ id: p.id, name: p.name, price: p.price, icon: p.icon, category: p.category, duration: validTerm(item.duration) ? item.duration : 'Хугацаагүй', quantity: item.quantity }] : []
-    }),
+  const lines = new Map<string, { id: string; name: string; price: number; icon: string; category: string; duration: string; quantity: number }>()
+  for (const item of saved) {
+    const p = products.find(p => p.id === item.id)
+    if (!p) continue
+    const options = licenseOptions(p.duration)
+    const duration = options.includes(item.duration || '') ? item.duration! : options[0] || ''
+    const line = { id: p.id, name: p.name, price: p.price, icon: p.icon, category: p.category, duration, quantity: item.quantity }
+    const key = cartKey(line)
+    const existing = lines.get(key)
+    if (existing) existing.quantity = Math.min(99, existing.quantity + item.quantity)
+    else lines.set(key, line)
   }
+  return { version: customer.cartVersion, items: [...lines.values()] }
+
 }
 
 export async function GET(req: NextRequest) {
@@ -43,7 +50,7 @@ export async function PUT(req: NextRequest) {
     if (new Set(items.map(i => cartKey(i))).size !== items.length) return NextResponse.json({ error: 'Давхардсан бүтээгдэхүүн байна' }, { status: 400 })
     const result = await db.customer.updateMany({
       where: { id: customer.sub, cartVersion: version },
-      data: { cartItems: JSON.stringify(items.map(i => ({ id: i.id, duration: i.duration || 'Хугацаагүй', quantity: i.quantity }))), cartVersion: { increment: 1 } },
+      data: { cartItems: JSON.stringify(items.map(i => ({ id: i.id, duration: i.duration || '', quantity: i.quantity }))), cartVersion: { increment: 1 } },
     })
     if (!result.count) return NextResponse.json({ error: 'Сагс өөр төхөөрөмжөөс өөрчлөгдсөн. Шинэчилж байна.' }, { status: 409 })
     return NextResponse.json({ version: version + 1 })
