@@ -1,4 +1,5 @@
 'use client'
+import { cartKey } from '@/lib/license'
 
 import { useEffect } from 'react'
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
@@ -68,7 +69,7 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto custom-scroll px-3 py-3 space-y-2.5">
               {items.map((it) => (
                 <div
-                  key={it.id}
+                  key={cartKey(it)}
                   className="flex gap-3 rounded-2xl border border-[#D6E4FF] bg-white p-3 shadow-premium"
                 >
                   <ProductIllustration icon={it.icon} className="size-16 shrink-0" />
@@ -76,10 +77,10 @@ export function CartDrawer() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h4 className="text-sm font-bold text-[#102A43] line-clamp-1">{it.name}</h4>
-                        <p className="text-xs text-[#5B7290]">{it.category}</p>
+                        <p className="text-xs text-[#5B7290]">{it.category} · {it.duration || 'Хугацаагүй'}</p>
                       </div>
                       <button
-                        onClick={() => remove(it.id)}
+                        onClick={() => remove(cartKey(it))}
                         className="grid size-7 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500 transition-colors"
                         aria-label="Устгах"
                       >
@@ -89,7 +90,7 @@ export function CartDrawer() {
                     <div className="mt-2 flex items-center justify-between">
                       <div className="inline-flex items-center rounded-lg border border-[#D6E4FF] bg-white">
                         <button
-                          onClick={() => setQty(it.id, it.quantity - 1)}
+                          onClick={() => setQty(cartKey(it), it.quantity - 1)}
                           className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
                           disabled={it.quantity <= 1}
                         >
@@ -99,7 +100,7 @@ export function CartDrawer() {
                           {it.quantity}
                         </span>
                         <button
-                          onClick={() => setQty(it.id, it.quantity + 1)}
+                          onClick={() => setQty(cartKey(it), it.quantity + 1)}
                           className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF]"
                         >
                           <Plus className="size-3.5" />

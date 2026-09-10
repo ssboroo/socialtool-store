@@ -1,3 +1,4 @@
+import { validTerm } from '@/lib/license'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { generateOrderNumber } from '@/lib/format'
@@ -5,6 +6,7 @@ import { sendTelegramMessage, formatOrderNotification } from '@/lib/telegram'
 import { getCustomerFromRequest } from '@/lib/auth'
 
 interface OrderItemInput {
+  duration?: string
   productId: string
   name: string
   price: number
@@ -27,6 +29,10 @@ export async function POST(req: NextRequest) {
         { error: 'Шаардлагатай талбар дутуу байна' },
         { status: 400 }
       )
+    }
+
+    if (!Array.isArray(items) || items.length > 100 || items.some(i => !i || (i.duration != null && !validTerm(i.duration)) || !Number.isSafeInteger(i.quantity) || i.quantity < 1 || i.quantity > 99)) {
+      return NextResponse.json({ error: 'Эрхийн хугацаа эсвэл тоо ширхэг буруу байна' }, { status: 400 })
     }
 
     // If the customer is logged in, link the order to their account.
@@ -63,7 +69,7 @@ export async function POST(req: NextRequest) {
         items: {
           create: items.map((i) => ({
             productId: i.productId,
-            productName: i.name,
+            productName: `${productMap.get(i.productId)!.name} — ${i.duration || 'Хугацаагүй'}`,
             price: i.price,
             quantity: i.quantity,
           })),

@@ -1,4 +1,6 @@
 'use client'
+import { LicenseSelector } from './license-selector'
+import { type LicenseTerm } from '@/lib/license'
 
 import { useEffect, useState } from 'react'
 import {
@@ -43,6 +45,7 @@ export function ProductDetailModal() {
   const add = useCartStore((s) => s.add)
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
+  const [duration, setDuration] = useState<LicenseTerm>('Хугацаагүй')
   const [qty, setQty] = useState(1)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [activeImage, setActiveImage] = useState<string | null>(null)
@@ -58,6 +61,7 @@ export function ProductDetailModal() {
     setLoading(true)
      
     setQty(1)
+    setDuration('Хугацаагүй')
      
     setVideoPlaying(false)
      
@@ -75,6 +79,7 @@ export function ProductDetailModal() {
     add(
       {
         id: product.id,
+        duration,
         name: product.name,
         price: product.price,
         icon: product.icon,
@@ -161,11 +166,7 @@ export function ProductDetailModal() {
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#F0EAFF] px-2.5 py-1 text-xs font-semibold text-[#8B5CF6]">
                   <ShieldCheck className="size-3.5" /> 7 хоног баталгаа
                 </span>
-                {product.duration ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#FFF5E6] px-2.5 py-1 text-xs font-semibold text-[#F59E0B]">
-                    <Clock className="size-3.5" /> Хугацаа: {product.duration}
-                  </span>
-                ) : null}
+
               </div>
 
               {features.length > 0 && (
@@ -271,6 +272,7 @@ export function ProductDetailModal() {
               })()}
 
               {/* qty + add */}
+              <LicenseSelector value={duration} onChange={setDuration} />
               <div className="mt-auto pt-5 flex items-center gap-3">
                 <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
                   <button

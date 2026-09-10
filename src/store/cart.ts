@@ -1,3 +1,4 @@
+import { cartKey, type LicenseTerm } from '@/lib/license'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -7,6 +8,7 @@ export interface CartItem {
   price: number
   icon: string
   category: string
+  duration?: LicenseTerm
   quantity: number
 }
 
@@ -36,24 +38,24 @@ export const useCartStore = create<CartState>()(
       add: (item, qty = 1) =>
         set((s) => {
           if (s.syncBusy) return s
-          const existing = s.items.find((i) => i.id === item.id)
+          const existing = s.items.find((i) => cartKey(i) === cartKey(item))
           if (existing) {
             return {
               items: s.items.map((i) =>
-                i.id === item.id ? { ...i, quantity: Math.min(99, i.quantity + qty) } : i
+                cartKey(i) === cartKey(item) ? { ...i, quantity: Math.min(99, i.quantity + qty) } : i
               ),
               isOpen: true,
             }
           }
           return { items: [...s.items, { ...item, quantity: qty }], isOpen: true }
         }),
-      remove: (id) => { if (!get().syncBusy) set((s) => ({ items: s.items.filter((i) => i.id !== id) })) },
+      remove: (id) => { if (!get().syncBusy) set((s) => ({ items: s.items.filter((i) => cartKey(i) !== id) })) },
       setQty: (id, qty) =>
         set((s) => s.syncBusy ? s : ({
           items:
             qty <= 0
-              ? s.items.filter((i) => i.id !== id)
-              : s.items.map((i) => (i.id === id ? { ...i, quantity: Math.min(99, qty) } : i)),
+              ? s.items.filter((i) => cartKey(i) !== id)
+              : s.items.map((i) => (cartKey(i) === id ? { ...i, quantity: Math.min(99, qty) } : i)),
         })),
       clear: () => set({ items: [] }),
       open: () => set({ isOpen: true }),

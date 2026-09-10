@@ -86,6 +86,19 @@ test('local production API: registration, admin, image upload and account-isolat
     const secondDeviceCart = await (await request('/api/customer/cart', { headers: { cookie: cookieOf(loginAgain) } })).json()
     assert.equal(secondDeviceCart.items[0].quantity, 2)
     assert.equal(secondDeviceCart.items[0].price, 100)
+    const variants = [{ id: product.id, duration: '1 жил', quantity: 1 }, { id: product.id, duration: 'Хугацаагүй', quantity: 2 }]
+    assert.equal((await request('/api/customer/cart', { ...json({ ownerId: accountA.id, version: 1, items: variants }, cookieA), method: 'PUT' })).status, 200)
+    const synced = await (await request('/api/customer/cart', { headers: { cookie: cookieOf(loginAgain) } })).json()
+    assert.deepEqual(synced.items.map(i => i.duration), ['1 жил', 'Хугацаагүй'])
+    const orderPayload = { customerName: 'Local Test', phone: '00000000', email: accountA.email, items: variants.map(i => ({ productId: i.id, duration: i.duration, quantity: i.quantity, price: 100, name: 'untrusted name' })) }
+    const ordered = await request('/api/orders', json(orderPayload, cookieA))
+    assert.equal(ordered.status, 200)
+    const order = await db.order.findUnique({ where: { id: (await ordered.json()).orderId }, include: { items: true } })
+    assert.equal(order.totalAmount, 300)
+    assert.deepEqual(order.items.map(i => i.productName).sort(), ['Local Test Product — 1 жил', 'Local Test Product — Хугацаагүй'].sort())
+    orderPayload.items[0].duration = 'invalid'
+    assert.equal((await request('/api/orders', json(orderPayload, cookieA))).status, 400)
+    console.log('Verified: two license variants sync between sessions; order retains authoritative name, term and total; invalid term rejected')
     const logout = await request('/api/admin/session', { method: 'DELETE', headers: adminHeaders })
     assert.match(logout.headers.get('set-cookie'), /Max-Age=0/i)
     console.log('Verified: registration, duplicate rejection, login, admin session, upload/read, invalid image, two-device cart and account isolation')

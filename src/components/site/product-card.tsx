@@ -1,5 +1,8 @@
 'use client'
 
+import { useState } from 'react'
+import { LicenseSelector } from './license-selector'
+import { type LicenseTerm } from '@/lib/license'
 import { Star, ShoppingCart, ArrowRight, Clock, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from './product-illustration'
@@ -31,6 +34,7 @@ export interface Product {
 }
 
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
+  const [duration, setDuration] = useState<LicenseTerm>('Хугацаагүй')
   const add = useCartStore((s) => s.add)
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
 
@@ -38,6 +42,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
     e?.stopPropagation()
     add({
       id: product.id,
+      duration,
       name: product.name,
       price: product.price,
       icon: product.icon,
@@ -61,17 +66,6 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       <span className="absolute right-3 top-3 z-10 rounded-full bg-white/90 backdrop-blur border border-[#D6E4FF] px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA]">
         {product.category}
       </span>
-      {product.duration ? (
-        <span className="absolute left-3 bottom-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#FFF5E6] border border-[#F59E0B]/20 px-2 py-0.5 text-[10px] font-bold text-[#92400E] shadow-premium">
-          <Clock className="size-2.5" /> {product.duration}
-        </span>
-      ) : null}
-      {product.tutorialVideoUrl && getYouTubeId(product.tutorialVideoUrl) ? (
-        <span className="absolute right-3 bottom-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#1677FF] px-2 py-0.5 text-[10px] font-bold text-white shadow-premium">
-          <PlayCircle className="size-2.5" /> Видео
-        </span>
-      ) : null}
-
       <ProductImage image={product.image} icon={product.icon} alt={product.name} className={cn('aspect-[16/10] w-full')} />
 
       <div className="flex flex-1 flex-col p-4 lg:p-5">
@@ -110,8 +104,11 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           ) : null}
         </div>
 
-        <div className="mt-4 flex items-center gap-2">
+        <LicenseSelector value={duration} onChange={setDuration} />
+        {product.tutorialVideoUrl && getYouTubeId(product.tutorialVideoUrl) && <span className="mt-3 inline-flex items-center gap-1 text-xs text-[#1677FF]"><PlayCircle className="size-3.5" /> Видео заавартай</span>}
+        <div className="mt-auto pt-4 flex flex-wrap items-center gap-2">
           <Button
+            disabled={!product.available}
             onClick={handleAdd}
             size="sm"
             className="h-9 flex-1 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium hover:shadow-premium-lg gap-1.5"

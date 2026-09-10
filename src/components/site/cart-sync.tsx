@@ -1,4 +1,5 @@
 'use client'
+import { cartKey } from '@/lib/license'
 
 import { useEffect, useRef, useState } from 'react'
 import { useCustomer } from '@/hooks/use-customer'
@@ -41,7 +42,7 @@ export function CartSync() {
       version = data.version
       const items = [...data.items] as CartItem[]
       if (mergeGuest) for (const item of guest) {
-        const match = items.find(i => i.id === item.id)
+        const match = items.find(i => cartKey(i) === cartKey(item))
         if (match) match.quantity = Math.min(99, match.quantity + item.quantity)
         else if (items.length < 100) items.push({ ...item, quantity: Math.min(99, item.quantity) })
       }
@@ -61,7 +62,7 @@ export function CartSync() {
         const res = await fetch('/api/customer/cart', {
           method: 'PUT', signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ownerId: customerId, version, items: useCartStore.getState().items.map(i => ({ id: i.id, quantity: i.quantity })) }),
+          body: JSON.stringify({ ownerId: customerId, version, items: useCartStore.getState().items.map(i => ({ id: i.id, duration: i.duration, quantity: i.quantity })) }),
         })
         const data = await res.json()
         if (cancelled) return
