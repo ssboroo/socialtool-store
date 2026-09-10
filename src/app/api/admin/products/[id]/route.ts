@@ -1,3 +1,4 @@
+import { validLicenseConfig } from '@/lib/license'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
@@ -9,6 +10,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
     const body = await req.json()
+    if (!validLicenseConfig(body.duration) || ('price' in body && (!Number.isSafeInteger(Number(body.price)) || Number(body.price) <= 0))) return NextResponse.json({ error: 'Хугацаа болон үнийг зөв оруулна уу.' }, { status: 400 })
     const data: Record<string, unknown> = {}
     for (const k of ['name', 'shortDesc', 'description', 'icon', 'image', 'category', 'categoryId', 'features', 'duration', 'tutorialVideoUrl', 'instructionImages']) {
       if (k in body) data[k] = body[k] || null

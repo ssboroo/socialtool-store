@@ -1,5 +1,6 @@
 'use client'
 
+import { heroImages } from '@/lib/hero-images'
 import { useEffect, useState } from 'react'
 import { Loader2, Save, Settings, FileText, Gift, Phone, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -53,17 +54,16 @@ export function AdminSettings({ token }: { token: string }) {
 
   const uploadPoster = async (file?: File) => {
     if (!file) return
-    setUploading(true)
     try {
       const form = new FormData()
       form.append('file', file)
       const res = await fetch('/api/admin/products/upload', { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: form })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Зураг хадгалагдсангүй')
-      setValues(v => ({ ...v, heroImage: data.url }))
+      setValues(v => ({ ...v, heroImages: JSON.stringify([...heroImages(v), data.url].slice(0, 10)) }))
       toast.success('Зураг орууллаа. Хадгалах товчийг дарж нүүрэнд байрлуулна.')
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Зураг оруулахад алдаа гарлаа') }
-    finally { setUploading(false) }
+
   }
 
   const save = async () => {
@@ -106,12 +106,13 @@ export function AdminSettings({ token }: { token: string }) {
       </section>
 
       <section className="space-y-3 rounded-2xl border border-[#D6E4FF] bg-white p-5">
-        <h3 className="font-bold text-[#102A43]">Нүүрний постерын зураг</h3>
+        <h3 className="font-bold text-[#102A43]">Нүүрний зургийн слайд</h3>
         <p className="text-sm text-[#5B7290]">Зураг сонговол SOCIALTOOL постерын оронд хөдөлгөөнтэй харагдана. JPEG, PNG, WebP, GIF · 5MB хүртэл.</p>
-        {values.heroImage && <img src={values.heroImage} alt="Нүүрний постерын урьдчилсан харагдац" className="max-h-80 w-full rounded-xl object-contain bg-blue-50" />}
-        <label className="block text-sm font-semibold">Зураг сонгох<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={uploading || loadFailed} onChange={e => { void uploadPoster(e.target.files?.[0]); e.target.value = '' }} className="mt-2 block w-full text-sm" /></label>
+        <p className="text-xs text-slate-500">10 хүртэл зураг · 5 секунд тутам солигдоно. Сумнуудаар дарааллыг тохируулна.</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{heroImages(values).map((src, i) => <div key={`${src}-${i}`} className="rounded-xl border border-blue-100 p-2"><img src={src} alt={`${i + 1}-р слайд`} className="aspect-square w-full rounded-lg bg-blue-50 object-contain" /><div className="mt-2 flex items-center justify-between gap-1"><button type="button" disabled={uploading || i === 0} aria-label={`${i + 1}-р зургийг урагшлуулах`} onClick={() => setValues(v => { const list = heroImages(v); [list[i - 1], list[i]] = [list[i], list[i - 1]]; return { ...v, heroImages: JSON.stringify(list) } })} className="rounded p-2 disabled:opacity-30">←</button><span className="text-xs">{i + 1}</span><button type="button" disabled={uploading || i === heroImages(values).length - 1} aria-label={`${i + 1}-р зургийг хойшлуулах`} onClick={() => setValues(v => { const list = heroImages(v); [list[i + 1], list[i]] = [list[i], list[i + 1]]; return { ...v, heroImages: JSON.stringify(list) } })} className="rounded p-2 disabled:opacity-30">→</button><button type="button" disabled={uploading} aria-label={`${i + 1}-р зургийг устгах`} onClick={() => setValues(v => ({ ...v, heroImages: JSON.stringify(heroImages(v).filter((_, n) => n !== i)) }))} className="p-2 text-xs text-red-600">Устгах</button></div></div>)}</div>
+        <label className="block text-sm font-semibold">Зураг нэмэх<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" disabled={uploading || loadFailed || heroImages(values).length >= 10} onChange={async e => { const files = Array.from(e.target.files || []).slice(0, 10 - heroImages(values).length); e.target.value = ''; setUploading(true); try { for (const file of files) await uploadPoster(file) } finally { setUploading(false) } }} className="mt-2 block w-full rounded-xl border border-dashed border-blue-200 p-4 text-sm" /></label>
         {uploading && <p role="status">Зураг хадгалж байна…</p>}
-        {values.heroImage && <Button type="button" variant="outline" disabled={uploading} onClick={() => setValues(v => ({ ...v, heroImage: '' }))}>Үндсэн постер харуулах</Button>}
+        <p className="text-xs text-slate-500">Бүх зургийг устгаж хадгалбал үндсэн animated постер харагдана.</p>
       </section>
 
       {groups.map((g) => (
