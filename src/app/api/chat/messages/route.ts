@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       sender: string
       content: string
     }
-    if (!sessionId || !sender || !content?.trim()) {
+    if (typeof sessionId !== 'string' || sender !== 'customer' || typeof content !== 'string' || !content.trim() || content.length > 5000) {
       return NextResponse.json({ error: 'Invalid' }, { status: 400 })
     }
 
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // notify admin via Telegram on customer messages
     if (sender === 'customer') {
       const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?chat=${sessionId}`
-      sendTelegramMessage(
+      await sendTelegramMessage(
         formatChatNotification({
           customerName: session.customerName,
           phone: session.phone || undefined,

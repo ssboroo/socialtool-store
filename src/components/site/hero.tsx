@@ -93,6 +93,9 @@ export function Hero({ settings }: { settings?: Record<string, string> }) {
             </div>
           </div>
 
+          {settings?.heroImage ? <div className="hero-poster mx-auto w-full max-w-xl overflow-hidden rounded-[2rem] border border-white bg-white p-3 shadow-[0_30px_90px_-25px_#1677ff60]">
+            <img src={settings.heroImage} alt="Socialtool дэлгүүрийн постер" className="h-auto w-full rounded-[1.5rem] object-contain" fetchPriority="high" />
+          </div> : (
           <div className="hero-poster relative mx-auto w-full max-w-xl rounded-[2rem] border border-white bg-white/70 p-3 shadow-[0_30px_90px_-25px_#1677ff60] sm:p-5">
             <div className="overflow-hidden rounded-[1.5rem] border border-[#D6E4FF] bg-white">
               <div className="flex items-center justify-between border-b border-[#E8F1FF] px-5 py-4">
@@ -124,6 +127,7 @@ export function Hero({ settings }: { settings?: Record<string, string> }) {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </section>

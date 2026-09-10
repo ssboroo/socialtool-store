@@ -17,11 +17,14 @@ export async function PUT(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, string>
     const allowed = [
-      'heroHeadline', 'heroSubtext', 'heroPrimaryCta', 'heroSecondaryCta',
+      'privacyPolicy', 'termsOfService', 'heroImage', 'heroHeadline', 'heroSubtext', 'heroPrimaryCta', 'heroSecondaryCta',
       'promoTitle', 'promoDescription', 'promoCta', 'promoDiscountPercent',
       'contactEmail', 'contactTelegram',
       'footerDescription', 'footerCopyright',
     ]
+    if ('heroImage' in body && (typeof body.heroImage !== 'string' || (body.heroImage !== '' && !/^\/uploads\/products\/[A-Za-z0-9_-]+\.webp$/.test(body.heroImage)))) {
+      return NextResponse.json({ error: 'Постерын зургийг файл сонгох хэсгээс оруулна уу.' }, { status: 400 })
+    }
     for (const key of allowed) {
       if (key in body) {
         await db.siteSetting.upsert({

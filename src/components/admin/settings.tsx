@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 const FIELDS: { key: string; label: string; group: string; icon: React.ComponentType<{ className?: string }>; multiline?: boolean }[] = [
+  { key: 'privacyPolicy', label: 'Нууцлалын бодлого', group: 'Бодлого', icon: FileText, multiline: true },
+  { key: 'termsOfService', label: 'Үйлчилгээний нөхцөл', group: 'Бодлого', icon: FileText, multiline: true },
   { key: 'heroHeadline', label: 'Hero гол гарчиг', group: 'Нүүр хуудас', icon: FileText },
   { key: 'heroSubtext', label: 'Hero дэд гарчиг', group: 'Нүүр хуудас', icon: FileText, multiline: true },
   { key: 'heroPrimaryCta', label: 'Үндсэн товчийн текст', group: 'Нүүр хуудас', icon: FileText },
@@ -25,6 +27,8 @@ const FIELDS: { key: string; label: string; group: string; icon: React.Component
 export function AdminSettings({ token }: { token: string }) {
   const [values, setValues] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [saving, setSaving] = useState(false)
   const [checking, setChecking] = useState(false)
   const [checks, setChecks] = useState<{name: string; ok: boolean; detail: string}[]>([])
@@ -41,10 +45,26 @@ export function AdminSettings({ token }: { token: string }) {
 
   useEffect(() => {
     fetch('/api/admin/settings', { headers: { authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
+      .then(async r => { if (!r.ok) throw new Error('Тохиргоо ачаалсангүй'); return r.json() })
       .then((d) => { if (d && typeof d === 'object') setValues(d as Record<string, string>) })
+      .catch(() => { setLoadFailed(true); toast.error('Тохиргоо ачаалсангүй. Хуудсаа шинэчилнэ үү.') })
       .finally(() => setLoading(false))
   }, [token])
+
+  const uploadPoster = async (file?: File) => {
+    if (!file) return
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/admin/products/upload', { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: form })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Зураг хадгалагдсангүй')
+      setValues(v => ({ ...v, heroImage: data.url }))
+      toast.success('Зураг орууллаа. Хадгалах товчийг дарж нүүрэнд байрлуулна.')
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Зураг оруулахад алдаа гарлаа') }
+    finally { setUploading(false) }
+  }
 
   const save = async () => {
     setSaving(true)
@@ -85,6 +105,15 @@ export function AdminSettings({ token }: { token: string }) {
         <div aria-live="polite" className="space-y-3">{checks.map(c => <div key={c.name} className="rounded-lg bg-[#F5F9FF] p-3"><p className={c.ok ? 'font-semibold text-green-700' : 'font-semibold text-amber-700'}>{c.ok ? '✓' : '!'} {c.name}</p><p className="text-sm text-[#5B7290] mt-1 break-words">{c.detail}</p></div>)}</div>
       </section>
 
+      <section className="space-y-3 rounded-2xl border border-[#D6E4FF] bg-white p-5">
+        <h3 className="font-bold text-[#102A43]">Нүүрний постерын зураг</h3>
+        <p className="text-sm text-[#5B7290]">Зураг сонговол SOCIALTOOL постерын оронд хөдөлгөөнтэй харагдана. JPEG, PNG, WebP, GIF · 5MB хүртэл.</p>
+        {values.heroImage && <img src={values.heroImage} alt="Нүүрний постерын урьдчилсан харагдац" className="max-h-80 w-full rounded-xl object-contain bg-blue-50" />}
+        <label className="block text-sm font-semibold">Зураг сонгох<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={uploading || loadFailed} onChange={e => { void uploadPoster(e.target.files?.[0]); e.target.value = '' }} className="mt-2 block w-full text-sm" /></label>
+        {uploading && <p role="status">Зураг хадгалж байна…</p>}
+        {values.heroImage && <Button type="button" variant="outline" disabled={uploading} onClick={() => setValues(v => ({ ...v, heroImage: '' }))}>Үндсэн постер харуулах</Button>}
+      </section>
+
       {groups.map((g) => (
         <div key={g} className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium p-5">
           <h3 className="text-sm font-bold text-[#102A43] uppercase tracking-wide mb-4 flex items-center gap-2">
@@ -121,7 +150,7 @@ export function AdminSettings({ token }: { token: string }) {
       ))}
 
       <div className="sticky bottom-4 flex justify-end">
-        <Button onClick={save} disabled={saving} className="h-12 px-6 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg gap-2">
+        <Button onClick={save} disabled={saving || uploading || loadFailed} className="h-12 px-6 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg gap-2">
           {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           Хадгалах
         </Button>

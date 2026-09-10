@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
+import { db } from '@/lib/db'
 import { randomUUID } from 'node:crypto'
 import sharp from 'sharp'
-import { getUploadDir } from '@/lib/uploads'
-import path from 'path'
 import { getAdminFromRequest } from '@/lib/auth'
 
-/**
- * Product image upload endpoint (admin only).
- *
- * Accepts multipart/form-data with a `file` field (image/jpeg, image/png, image/webp).
- * Saves to /public/uploads/products/ with a unique filename. Returns the
- * public URL path that should be stored in Product.image.
- *
- * Max size 5MB. Filename is slugified + timestamp to avoid collisions.
- */
+/** Admin image uploads are decoded and stored durably in the application DB. */
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
@@ -43,8 +33,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const uploadDir = getUploadDir()
-    await mkdir(uploadDir, { recursive: true })
 
     // Decode and re-encode the upload; never trust the extension or MIME alone.
     let bytes: Buffer
@@ -56,13 +44,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Зургийг уншиж чадсангүй. Хүчинтэй JPEG, PNG, WebP эсвэл GIF файл сонгоно уу.' }, { status: 400 })
     }
     const filename = `${randomUUID()}.webp`
-    await writeFile(path.join(uploadDir, filename), bytes, { flag: 'wx' })
+    await db.uploadedImage.create({ data: { filename, mimeType: 'image/webp', bytes: new Uint8Array(bytes) } })
 
     // Return the public URL path (relative so it works on any domain)
     const url = `/uploads/products/${filename}`
     return NextResponse.json({ url, filename })
   } catch (e) {
     console.error('Image upload error:', e)
-    return NextResponse.json({ error: 'Зураг хадгалахад алдаа гарлаа' }, { status: 500 })
+    return NextResponse.json({ error: 'Зураг хадгалагдсангүй. Өгөгдлийн сангийн UploadedImage шинэчлэл болон холболтыг шалгана уу.' }, { status: 503 })
   }
 }
