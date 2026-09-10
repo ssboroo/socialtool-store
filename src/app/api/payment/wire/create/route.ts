@@ -9,7 +9,7 @@ import { createPaymentIntent, createCheckoutSession, retrievePaymentIntent, Wire
 export async function POST(req: NextRequest) {
   try {
     const { orderId } = await req.json()
-    if (!orderId) return NextResponse.json({ error: 'orderId шаардлагатай' }, { status: 400 })
+    if (typeof orderId !== 'string' || !orderId) return NextResponse.json({ error: 'orderId шаардлагатай' }, { status: 400 })
 
     const order = await db.order.findUnique({
       where: { id: orderId },
@@ -18,15 +18,17 @@ export async function POST(req: NextRequest) {
     if (!order) return NextResponse.json({ error: 'Захиалга олдсонгүй' }, { status: 404 })
 
     if (order.payment?.status === 'PAID' || order.status === 'PAID') {
-      return NextResponse.json({ error: 'Энэ захиалгын төлбөр төлөгдсөн байна' }, { status: 409 })
+      return NextResponse.json({ error: 'Энэ захиалгын төлбөр төлөгдсөн байна', code: 'already_paid' }, { status: 409 })
     }
+
+    if (!Number.isSafeInteger(order.totalAmount) || order.totalAmount <= 0 || !Number.isSafeInteger(order.totalAmount * 100)) return NextResponse.json({ error: 'Төлбөрийн дүн буруу байна' }, { status: 400 })
 
     const previousIntentId = order.payment?.wirePaymentIntentId
     let expired = false
     if (previousIntentId) {
       const current = await retrievePaymentIntent(previousIntentId)
       if (current.status === 'succeeded' || current.status === 'paid') {
-        return NextResponse.json({ error: 'Төлбөр хийгдсэн байна. Төлбөрийн төлөв шалгах товчийг дарна уу.' }, { status: 409 })
+        return NextResponse.json({ error: 'Төлбөр хийгдсэн байна. Төлбөрийн төлөв шалгах товчийг дарна уу.', code: 'already_paid' }, { status: 409 })
       }
       expired = ['canceled', 'cancelled', 'expired', 'failed'].includes(current.status)
       if (!expired && order.payment?.wireCheckoutUrl) {
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
         redirect.searchParams.set('order', order.id)
         successUrl = redirect.toString()
       } catch {
-        return NextResponse.json({ error: 'NEXT_PUBLIC_SITE_URL буруу байна. https://socialtool.store гэж тохируулах эсвэл хоосон орхино уу.' }, { status: 503 })
+        return NextResponse.json({ error: 'Төлбөрийн үйлчилгээний тохиргоог шинэчлэх шаардлагатай. Админтай холбогдоно уу.' }, { status: 503 })
       }
     }
 
@@ -75,6 +77,14 @@ export async function POST(req: NextRequest) {
           create: { orderId: order.id, amount: order.totalAmount, invoiceNumber: order.orderNumber, method: 'WIRE', wirePaymentIntentId: intentId },
           update: {},
         })
+        // Repair payment rows left without an intent by a previous failed attempt.
+        await db.payment.updateMany({
+          where: { orderId: order.id, wirePaymentIntentId: null, status: { not: 'PAID' } },
+          data: { wirePaymentIntentId: intentId, status: 'PENDING' },
+        })
+        const saved = await db.payment.findUniqueOrThrow({ where: { orderId: order.id } })
+        if (saved.status === 'PAID') return NextResponse.json({ error: 'Төлбөр төлөгдсөн байна', code: 'already_paid' }, { status: 409 })
+        intentId = saved.wirePaymentIntentId!
       }
     }
 
@@ -85,8 +95,8 @@ export async function POST(req: NextRequest) {
       successUrl,
     })
 
-    await db.payment.update({
-      where: { orderId: order.id },
+    await db.payment.updateMany({
+      where: { orderId: order.id, wirePaymentIntentId: intentId, status: { not: 'PAID' } },
       data: { wireCheckoutSessionId: session.id, wireCheckoutUrl: session.url },
     })
 
@@ -98,12 +108,17 @@ export async function POST(req: NextRequest) {
     })
   } catch (e) {
     if (e instanceof WireApiError) {
-      return NextResponse.json({ error: e.message, code: e.code, requestId: e.requestId }, { status: e.status === 409 ? 409 : e.status === 429 ? 429 : 503 })
+      const configurationCodes = ['operator_configuration', 'operator_unknown', 'connector_required', 'settlement_account_required', 'dan_verification_required', 'operator_not_allowed', 'checkout_url_invalid']
+      const error = e.status === 401 || configurationCodes.includes(e.code || '')
+        ? 'Төлбөрийн үйлчилгээний тохиргоог шинэчлэх шаардлагатай. Админтай холбогдоно уу.'
+        : e.message
+      return NextResponse.json({ error, code: e.code, requestId: e.requestId }, { status: e.status === 409 ? 409 : e.status === 429 ? 429 : 503 })
     }
     if (e instanceof Error && ['TimeoutError', 'AbortError'].includes(e.name)) {
-      return NextResponse.json({ error: 'Wire хариу өгөх хугацаа хэтэрлээ. Дахин оролдоход ижил хүсэлтийн түлхүүр ашиглана.', code: 'upstream_timeout' }, { status: 504 })
+      return NextResponse.json({ error: 'Төлбөрийн системийн хариу удаж байна. Түр хүлээгээд дахин оролдоно уу.', code: 'upstream_timeout' }, { status: 504 })
     }
-    const message = e instanceof Error ? e.message : 'Төлбөрийн сесс үүсгэхэд алдаа гарлаа'
-    return NextResponse.json({ error: message }, { status: 500 })
+    if (e instanceof SyntaxError) return NextResponse.json({ error: 'Хүсэлтийн бүтэц буруу байна' }, { status: 400 })
+    console.error('Payment creation failed', { type: e instanceof Error ? e.name : 'unknown' })
+    return NextResponse.json({ error: 'Төлбөрийн нэхэмжлэл үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.' }, { status: 500 })
   }
 }

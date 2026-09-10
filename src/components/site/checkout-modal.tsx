@@ -1,7 +1,7 @@
 'use client'
 import { cartKey } from '@/lib/license'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -41,55 +41,72 @@ export function CheckoutModal() {
   const [order, setOrder] = useState<{ orderNumber: string; orderId: string; amount: number } | null>(null)
   const [invoice, setInvoice] = useState<{ payUrl: string; qrUrl?: string; invoiceNumber: string; demo: boolean } | null>(null)
   const [polling, setPolling] = useState(false)
+  const [paymentError, setPaymentError] = useState('')
+  const [pollAttempt, setPollAttempt] = useState(0)
+  const [pendingOrder, setPendingOrder] = useState<{ fingerprint: string; order: { orderNumber: string; orderId: string; amount: number } } | null>(null)
+  const submittingRef = useRef(false)
 
-  useEffect(() => {
-    if (open) {
+  const [previousOpen, setPreviousOpen] = useState(false)
+  const [previousCustomer, setPreviousCustomer] = useState(customer?.id)
+  if (open !== previousOpen || customer?.id !== previousCustomer) {
+    setPreviousOpen(open)
+    setPreviousCustomer(customer?.id)
+    if (customer?.id !== previousCustomer || (open && step === 'success')) {
       setStep('form')
       setOrder(null)
       setInvoice(null)
+      setPendingOrder(null)
+    } else if (open) setStep(invoice && order ? 'pay' : 'form')
+    if (open || customer?.id !== previousCustomer) {
       setErrors({})
-      // prefill from logged-in customer
-      if (customer) {
-        setForm({
-          name: customer.name,
-          phone: customer.phone,
-          email: customer.email,
-          telegram: customer.telegram || '',
-        })
-      }
+      setPaymentError('')
+      if (customer) setForm({ name: customer.name, phone: customer.phone, email: customer.email, telegram: customer.telegram || '' })
+      else if (previousCustomer) setForm({ name: '', phone: '', email: '', telegram: '' })
     }
-  }, [open, customer])
+  }
 
-  // poll payment status
+  // Bounded, cancellable polling; a timeout always leaves a working retry button.
   useEffect(() => {
-    if (step !== 'status' || !order) return
-    setPolling(true)
+    if (!open || step !== 'status' || !order) return
     let stopped = false
+    let timer: ReturnType<typeof setTimeout>
+    let attempts = 0
+    const controller = new AbortController()
     const poll = async () => {
-      for (let i = 0; i < 60; i++) {
+      try {
+        const res = await fetch(`/api/payment/wire/status?orderId=${encodeURIComponent(order.orderId)}`, {
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]), cache: 'no-store',
+        })
+        const data = await res.json()
         if (stopped) return
-        try {
-          const res = await fetch(`/api/payment/wire/status?orderId=${order.orderId}`)
-          const data = await res.json()
-          if (data.status === 'PAID') {
-            setStep('success')
-            clear()
-            return
-          }
-          if (data.status === 'FAILED' || data.status === 'EXPIRED') {
-            setStep('failed')
-            return
-          }
-        } catch {}
-        await new Promise((r) => setTimeout(r, 3000))
+        if (!res.ok) throw new Error(data.error || 'Төлбөрийн төлөв шалгах боломжгүй байна')
+        setPaymentError('')
+        if (data.status === 'PAID') {
+          setPolling(false)
+          setStep('success')
+          clear()
+          setPendingOrder(null)
+          return
+        }
+        if (data.status === 'FAILED' || data.status === 'EXPIRED') {
+          setPolling(false)
+          setStep('failed')
+          return
+        }
+      } catch (error) {
+        if (stopped) return
+        setPaymentError(error instanceof Error ? error.message : 'Холболт тасарлаа. Дахин шалгана уу.')
       }
+      if (++attempts >= 200) {
+        setPolling(false)
+        setPaymentError('Автомат шалгалт түр зогслоо. Дахин шалгах товчийг дарна уу.')
+        return
+      }
+      timer = setTimeout(poll, 3000)
     }
-    poll()
-    return () => {
-      stopped = true
-      setPolling(false)
-    }
-  }, [step, order, clear])
+    void poll()
+    return () => { stopped = true; clearTimeout(timer); controller.abort() }
+  }, [open, step, order, clear, pollAttempt])
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -103,42 +120,44 @@ export function CheckoutModal() {
   }
 
   const submitOrder = async () => {
-    if (!validate()) return
+    if (submittingRef.current || !validate()) return
+    submittingRef.current = true
     setSubmitting(true)
+    setPaymentError('')
+    const payload = {
+      customerName: form.name, phone: form.phone, email: form.email, telegram: form.telegram || null,
+      items: items.map(i => ({ productId: i.id, duration: i.duration || '', name: i.name, price: i.price, quantity: i.quantity })),
+    }
+    const fingerprint = JSON.stringify([customer?.id || '', payload])
     try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: form.name,
-          phone: form.phone,
-          email: form.email,
-          telegram: form.telegram || null,
-          items: items.map((i) => ({ productId: i.id, duration: i.duration || '', name: i.name, price: i.price, quantity: i.quantity, icon: i.icon, category: i.category })),
-        }),
-      })
-      if (!res.ok) throw new Error('Захиалга үүсгэхэд алдаа гарлаа')
-      const data = await res.json()
-      setOrder({ orderNumber: data.orderNumber, orderId: data.orderId, amount: data.amount })
-
-      // create wire invoice
+      let currentOrder = pendingOrder?.fingerprint === fingerprint ? pendingOrder.order : null
+      if (!currentOrder) {
+        const res = await fetch('/api/orders', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Захиалга үүсгэхэд алдаа гарлаа')
+        currentOrder = { orderNumber: data.orderNumber, orderId: data.orderId, amount: data.amount }
+        setPendingOrder({ fingerprint, order: currentOrder })
+      }
+      setOrder(currentOrder)
       const inv = await fetch('/api/payment/wire/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: data.orderId }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: currentOrder.orderId }),
       })
-      if (!inv.ok) throw new Error('Төлбөрийн нэхэмжлэл үүсгэхэд алдаа')
       const invData = await inv.json()
-      setInvoice({
-        payUrl: invData.payUrl,
-        qrUrl: invData.qrUrl,
-        invoiceNumber: invData.invoiceNumber,
-        demo: invData.demo,
-      })
+      if (!inv.ok) {
+        if (invData.code === 'already_paid') { setPolling(true); setStep('status'); return }
+        throw new Error(invData.error || 'Төлбөрийн нэхэмжлэл үүсгэхэд алдаа гарлаа')
+      }
+      setInvoice({ payUrl: invData.payUrl, invoiceNumber: invData.invoiceNumber, demo: invData.demo })
       setStep('pay')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Алдаа гарлаа')
+      const message = e instanceof Error ? e.message : 'Алдаа гарлаа'
+      setPaymentError(message)
+      toast.error(message)
     } finally {
+      submittingRef.current = false
       setSubmitting(false)
     }
   }
@@ -147,6 +166,8 @@ export function CheckoutModal() {
     // The status endpoint reads the DB (updated by the Qpay webhook) and
     // also queries the Qpay API directly as a server-side fallback — so
     // polling alone confirms the payment, never the frontend redirect.
+    setPolling(true)
+    setPaymentError('')
     setStep('status')
   }
 
@@ -183,6 +204,7 @@ export function CheckoutModal() {
           </div>
 
           <div className="p-6">
+            {paymentError && <p role="alert" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{paymentError}</p>}
             {/* STEP: form */}
             {step === 'form' && (
               <div className="space-y-4">
@@ -314,7 +336,7 @@ export function CheckoutModal() {
                     href={invoice.payUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => setStep('status')}
+                    onClick={startPolling}
                     className="flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg text-base font-bold transition-all hover:shadow-premium-lg"
                   >
                     <ExternalLink className="size-5" /> Qpay-аар төлөх
@@ -353,7 +375,12 @@ export function CheckoutModal() {
                   Төлбөр баталгаажсан эсэхийг шалгаж байна. Та банкны апликейшнд төлбөрөө гүйцэтгээд хүлээнэ үү.
                 </p>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[#E8F1FF] px-3 py-1.5 text-xs font-semibold text-[#0B4DBA]">
-                  <Clock className="size-3.5" /> Автомат шалгалт хийгдэж байна
+                  <Clock className="size-3.5" /> {polling ? 'Автомат шалгалт хийгдэж байна' : 'Шалгалт түр зогссон'}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {!polling && <Button onClick={() => { setPolling(true); setPaymentError(''); setPollAttempt(n => n + 1) }} className="rounded-xl">Дахин шалгах</Button>}
+                  {invoice?.payUrl && <a href={invoice.payUrl} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-blue-200 px-4 py-3 text-sm font-semibold text-blue-700">Төлбөрийн хуудас нээх</a>}
+                  <button onClick={() => setStep('pay')} className="py-2 text-sm text-blue-700">Буцах</button>
                 </div>
               </div>
             )}
@@ -413,7 +440,8 @@ export function CheckoutModal() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => setStep('pay')}
+                    onClick={submitOrder}
+                    disabled={submitting}
                     className="flex-1 h-11 rounded-xl border-[#D6E4FF]"
                   >
                     Дахин оролдох

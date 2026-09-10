@@ -20,7 +20,12 @@ test('Wire request contracts: auth, minor units, stable keys, operators and type
  await createCheckoutSession({orderId:'order-no-return',paymentIntentId:'pi_no_return'})
  assert.equal(new URLSearchParams(calls.at(-1).body).has('success_url'),false)
  process.env.WIRE_MN_ALLOWED_OPERATORS='sandbox'
- await assert.rejects(createPaymentIntent({orderId:'order-b',amount:1}),e=>e.code==='operator_configuration')
+ await createPaymentIntent({orderId:'order-b',amount:1})
+ assert.equal(JSON.parse(calls.at(-1).body).allowed_operators,undefined)
+ process.env.WIRE_MN_ALLOWED_OPERATORS='sandbox,qpay'
+ await createPaymentIntent({orderId:'order-live',amount:1})
+ assert.deepEqual(JSON.parse(calls.at(-1).body).allowed_operators,['qpay'])
+ process.env.WIRE_MN_ALLOWED_OPERATORS='sandbox'
  process.env.WIRE_MN_API_KEY='sk_test_local_mock_only'
  await createPaymentIntent({orderId:'test',amount:1})
  assert.deepEqual(JSON.parse(calls.at(-1).body).allowed_operators,['sandbox'])

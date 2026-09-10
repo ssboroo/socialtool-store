@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { LicenseSelector } from './license-selector'
 import { licensePrice, licenseOptions, type LicenseTerm } from '@/lib/license'
-import { Star, ShoppingCart, ArrowRight, Clock, PlayCircle } from 'lucide-react'
+import { Star, ShoppingCart, ArrowRight, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from './product-illustration'
 import { useCartStore, useUIStore } from '@/store/cart'
@@ -59,7 +59,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   return (
     <div
       onClick={openDetail}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg hover:border-[#1677FF]/40"
+      className="group relative flex self-start cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg hover:border-[#1677FF]/40"
     >
       {product.discount ? (
         <span className="absolute left-3 top-3 z-10 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#DC2626] px-2.5 py-1 text-[11px] font-bold text-white shadow-premium">
@@ -71,7 +71,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       </span>
       <ProductImage image={product.image} icon={product.icon} alt={product.name} className={cn('aspect-[16/10] w-full')} />
 
-      <div className="flex flex-1 flex-col p-4 lg:p-5">
+      <div className="flex flex-col p-4 lg:p-5">
         <div className="flex items-center gap-1.5">
           <div className="flex items-center gap-0.5">
             {[0, 1, 2, 3, 4].map((i) => (
@@ -109,7 +109,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
         <LicenseSelector value={selectedDuration} onChange={setDuration} options={options} />
         {product.tutorialVideoUrl && getYouTubeId(product.tutorialVideoUrl) && <span className="mt-3 inline-flex items-center gap-1 text-xs text-[#1677FF]"><PlayCircle className="size-3.5" /> Видео заавартай</span>}
-        <div className="mt-auto pt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
             disabled={!product.available}
             onClick={handleAdd}

@@ -41,12 +41,12 @@ export interface WirePaymentIntentRetrieve {
 
 /** True when a real API key is configured (sk_test_ or sk_live_). */
 function isConfigured(): boolean {
-  const key = process.env.WIRE_MN_API_KEY
+  const key = process.env.WIRE_MN_API_KEY?.trim()
   return !!key && key !== 'your_wire_mn_api_key'
 }
 
 function getApiKey(): string {
-  const key = process.env.WIRE_MN_API_KEY
+  const key = process.env.WIRE_MN_API_KEY?.trim()
   if (!key || key === 'your_wire_mn_api_key') {
     throw new Error('WIRE_MN_API_KEY тохируулаагүй байна. .env файлыг шалгана уу.')
   }
@@ -62,10 +62,11 @@ export function toMinorUnits(mnt: number): number {
 function getAllowedOperators(): string[] | undefined {
   const live = getApiKey().startsWith('sk_live_')
   const ops = (process.env.WIRE_MN_ALLOWED_OPERATORS || '').split(',').map(s => s.trim()).filter(Boolean)
-  // Omit the filter to let Wire select the project's connected live operators.
-  if (live && !ops.length) return undefined
-  if (live && ops.includes('sandbox')) {
-    throw new WireApiError('Бодит горимд sandbox ашиглахгүй. Серверийн WIRE_MN_ALLOWED_OPERATORS-оос sandbox-ыг устгаж, идэвхтэй операторын ID оруулах эсвэл хоосон орхиод дахин deploy хийнэ үү.', 503, 'operator_configuration')
+  // Never send a legacy sandbox filter with a live key.
+  // An omitted filter delegates to the project's connected live operators.
+  if (live) {
+    const liveOperators = ops.filter(op => op !== 'sandbox')
+    return liveOperators.length ? liveOperators : undefined
   }
   if (!live && ops.some(op => op !== 'sandbox')) {
     throw new WireApiError('Туршилтын түлхүүрт WIRE_MN_ALLOWED_OPERATORS=sandbox тохируулна уу.', 503, 'operator_configuration')

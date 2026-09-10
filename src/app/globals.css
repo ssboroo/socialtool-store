@@ -44,6 +44,8 @@
 }
 
 :root {
+  --font-geist-sans: Arial, "Helvetica Neue", sans-serif;
+  --font-geist-mono: Consolas, "Courier New", monospace;
   --radius: 0.875rem;
   /* SOCIALTOOL.STORE brand: Premium white + electric blue */
   --background: #F5F9FF;
@@ -205,4 +207,15 @@
   .hero-platform { animation: platform-drift 4s ease-in-out infinite; }
   .hero-platform:nth-child(2n) { animation-delay: -1.5s; }
   .hero-platform:nth-child(3n) { animation-delay: -2.5s; }
+}
+
+/* One opaque poster enters at a time, without overlapping text. */
+@keyframes hero-slide-in {
+  from { transform: translateX(20px) scale(1.025); }
+  to { transform: translateX(0) scale(1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-banner { animation: poster-drift 8s ease-in-out infinite; }
+  .hero-banner:hover, .hero-banner:focus-within { animation-play-state: paused; }
+  .hero-slide { animation: hero-slide-in 600ms cubic-bezier(.22,1,.36,1) both; }
 }

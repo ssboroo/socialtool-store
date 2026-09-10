@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   // PaymentIntent id. This confirms the payment server-side even if the webhook
   // isn't configured or hasn't fired yet.
   if (
-    status === 'PENDING' &&
+    status !== 'PAID' &&
     order.payment?.wirePaymentIntentId &&
     order.payment.wirePaymentIntentId !== 'demo_'
   ) {
@@ -59,7 +59,8 @@ export async function GET(req: NextRequest) {
       }
     } catch (e) {
       // Wire API unreachable / not configured — keep PENDING, log the error.
-      console.error('Wire status poll failed:', e)
+      console.error('Wire status poll failed:', e instanceof Error ? e.name : 'unknown')
+      return NextResponse.json({ error: 'Төлбөрийн системтэй холбогдож чадсангүй. Түр хүлээгээд дахин шалгана уу.', code: 'provider_unavailable' }, { status: 503 })
     }
   }
 

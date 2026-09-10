@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const live = key.startsWith('sk_live_')
   const operators = (process.env.WIRE_MN_ALLOWED_OPERATORS || '').split(',').map(x => x.trim()).filter(Boolean)
   checks.push({ name: 'Төлбөрийн API түлхүүр', ok: /^sk_(live|test)_/.test(key), detail: live ? 'Бодит горим; гүйлгээ хараахан шалгаагүй' : key.startsWith('sk_test_') ? 'Туршилтын горим' : 'WIRE_MN_API_KEY тохируулах шаардлагатай' })
-  checks.push({ name: 'Төлбөрийн оператор', ok: live ? !operators.includes('sandbox') : operators.every(op => op === 'sandbox'), detail: 'WIRE_MN_ALLOWED_OPERATORS нь Wire dashboard дахь идэвхтэй операторын ID байх ёстой' })
+  checks.push({ name: 'Төлбөрийн оператор', ok: live || operators.every(op => op === 'sandbox'), detail: live && operators.includes('sandbox') ? 'Хуучин sandbox утгыг бодит горимд алгасаж, холбогдсон операторыг ашиглана' : 'WIRE_MN_ALLOWED_OPERATORS нь Wire dashboard дахь идэвхтэй операторын ID байх ёстой' })
   checks.push({ name: 'Webhook', ok: !!process.env.WIRE_MN_WEBHOOK_SECRET && !process.env.WIRE_MN_WEBHOOK_SECRET.includes('replace_with'), detail: 'WIRE_MN_WEBHOOK_SECRET тохируулж, Wire dashboard дээр endpoint-оо Verified / Enabled болгоно' })
   checks.push({ name: 'Сайтын хаяг', ok: /^https:\/\//.test(process.env.NEXT_PUBLIC_SITE_URL || ''), detail: 'NEXT_PUBLIC_SITE_URL=https://socialtool.store' })
   try {
