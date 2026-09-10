@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Noto_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import "./production-polish.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
-const siteFont = Noto_Sans({
+const siteFont = Inter({
   subsets: ["cyrillic", "latin"],
   display: "swap",
   fallback: ["Segoe UI", "Arial", "sans-serif"],
@@ -41,9 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="mn" suppressHydrationWarning>
-      <body
-        className={`${siteFont.className} antialiased bg-background text-foreground min-h-screen`}
-      >
+      <body className={`${siteFont.className} min-h-screen bg-background text-foreground antialiased`}>
         {children}
         <Toaster />
         <SonnerToaster richColors position="top-center" />
