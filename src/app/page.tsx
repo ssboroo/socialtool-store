@@ -1,7 +1,6 @@
 import { db } from '@/lib/db'
 import { Header } from '@/components/site/header'
 import { Hero } from '@/components/site/hero'
-import { Categories } from '@/components/site/categories'
 import { FeaturedProducts } from '@/components/site/featured-products'
 import { WhyChooseUs } from '@/components/site/why-choose-us'
 import { HowItWorks } from '@/components/site/how-it-works'
@@ -25,10 +24,7 @@ export default async function Home() {
     db.review.findMany({ orderBy: { createdAt: 'desc' } }),
     db.faq.findMany({ orderBy: { order: 'asc' } }),
     db.siteSetting.findMany(),
-    db.promotion.findFirst({
-      where: { active: true, startAt: { lte: now }, endAt: { gte: now } },
-      orderBy: { createdAt: 'desc' },
-    }),
+    db.promotion.findFirst({ where: { active: true, startAt: { lte: now }, endAt: { gte: now } }, orderBy: { createdAt: 'desc' } }),
   ])
 
   const settings: Record<string, string> = {}
@@ -55,26 +51,15 @@ export default async function Home() {
     instructionImages: p.instructionImages,
   }))
 
-  const serializedCategories = categories.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    icon: c.icon,
-    description: c.description,
-    order: c.order,
-  }))
-
+  const serializedCategories = categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, icon: c.icon, description: c.description, order: c.order }))
   const serializedFaqs = faqRows.map((f) => ({ id: f.id, q: f.question, a: f.answer }))
-  const serializedPromo = promotion
-    ? { title: promotion.title, description: promotion.description, badgeText: promotion.badgeText, discountPercent: promotion.discountPercent, endAt: promotion.endAt.toISOString() }
-    : null
+  const serializedPromo = promotion ? { title: promotion.title, description: promotion.description, badgeText: promotion.badgeText, discountPercent: promotion.discountPercent, endAt: promotion.endAt.toISOString() } : null
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-background">
+    <div className="relative flex min-h-screen flex-col bg-[#F5F9FF]">
       <Header />
       <main className="flex-1">
         <Hero settings={settings} />
-        <Categories categories={serializedCategories} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
         <WhyChooseUs />
@@ -83,8 +68,6 @@ export default async function Home() {
         <Faq faqs={serializedFaqs} />
       </main>
       <Footer settings={settings} />
-
-      {/* overlays */}
       <CartDrawer />
       <ProductDetailModal />
       <CheckoutModal />
