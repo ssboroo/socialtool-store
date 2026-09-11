@@ -46,47 +46,47 @@ const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: 
   { id: 'settings', label: 'Тохиргоо', Icon: Settings },
 ]
 
+const COOKIE_SESSION = 'cookie-session'
+
 export default function AdminPage() {
   const [token, setToken] = useState<string | null>(null)
+  const [sessionChecked, setSessionChecked] = useState(false)
   const [tab, setTab] = useState<TabId>('overview')
   const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {
-    const stored = localStorage.getItem('admin_token')
-    if (stored) {
-      fetch('/api/admin/session', { headers: { authorization: `Bearer ${stored}` } })
-        .then(res => {
-          if (res.ok) setToken(stored)
-          else if (res.status === 401) {
-            localStorage.removeItem('admin_token')
-            toast.error('Админ нэвтрэх хугацаа дууссан. Дахин нэвтэрнэ үү.')
-          } else toast.error('Админ сервертэй холбогдож чадсангүй')
-        })
-        .catch(() => toast.error('Админ сервертэй холбогдож чадсангүй'))
-    }
+    fetch('/api/admin/session', { cache: 'no-store' })
+      .then((res) => {
+        if (res.ok) setToken(COOKIE_SESSION)
+      })
+      .catch(() => {})
+      .finally(() => setSessionChecked(true))
   }, [])
 
   useEffect(() => {
     if (!token) return
-    fetch('/api/categories')
+    fetch('/api/categories', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => setCategories(Array.isArray(d) ? d : []))
       .catch(() => {})
   }, [token, tab])
 
-  const handleLogin = (t: string) => {
-    localStorage.setItem('admin_token', t)
-    setToken(t)
+  const handleLogin = (_token: string) => {
+    // The server already placed the JWT in an httpOnly cookie. Do not persist it in localStorage.
+    setToken(COOKIE_SESSION)
+    setSessionChecked(true)
   }
 
   const logout = async () => {
     const res = await fetch('/api/admin/session', { method: 'DELETE' })
     if (!res.ok) { toast.error('Гарахад алдаа гарлаа'); return }
-    localStorage.removeItem('admin_token')
     setToken(null)
     toast.success('Гарлаа')
   }
 
+  if (!sessionChecked) {
+    return <div className="min-h-screen grid place-items-center bg-[#F5F9FF] text-sm font-semibold text-[#5B7290]">Админ эрх шалгаж байна…</div>
+  }
   if (!token) return <AdminLogin onLogin={handleLogin} />
 
   return (
@@ -100,7 +100,7 @@ export default function AdminPage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/" target="_blank" className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3.5 py-2 text-xs font-semibold text-[#102A43] hover:bg-[#E8F1FF]">
+            <a href="/" target="_blank" rel="noopener noreferrer" className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3.5 py-2 text-xs font-semibold text-[#102A43] hover:bg-[#E8F1FF]">
               <ExternalLink className="size-3.5" /> Сайтыг үзэх
             </a>
             <Button onClick={logout} variant="outline" className="rounded-full border-[#D6E4FF] text-[#5B7290] hover:text-red-500 hover:border-red-200 gap-1.5">
@@ -111,13 +111,15 @@ export default function AdminPage() {
       </header>
 
       <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
-        {/* tabs */}
-        <div className="mb-6 flex gap-2 overflow-x-auto custom-scroll pb-1">
+        <div className="mb-6 flex gap-2 overflow-x-auto custom-scroll pb-1" role="tablist" aria-label="Админ цэс">
           {TABS.map((t) => {
             const { Icon } = t
             return (
               <button
                 key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
                 onClick={() => setTab(t.id)}
                 className={cn(
                   'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all',
