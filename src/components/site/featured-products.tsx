@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo, useRef, useSyncExternalStore } from 'react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowRight, Check, Grid2X2, Heart, List, PackageOpen, ShoppingCart, SlidersHorizontal, Star } from 'lucide-react'
+import { ArrowRight, Check, Grid2X2, Heart, Headphones, List, PackageOpen, ShoppingCart, SlidersHorizontal, Star } from 'lucide-react'
 import { ProductCard, type Product } from './product-card'
 import { ProductImage } from './product-illustration'
 import { ProductDescription } from './product-description'
@@ -31,9 +31,11 @@ export function FeaturedProducts({categories,initialProducts}:{categories:Catego
   useEffect(()=>{
     const search=(e:Event)=>setQuery(String((e as CustomEvent).detail||''))
     const cat=(e:Event)=>setCategory(String((e as CustomEvent).detail||'all'))
+    const open=(e:Event)=>{const p=initialProducts.find(p=>p.id===(e as CustomEvent).detail);if(p){detailTrigger.current=document.activeElement as HTMLElement;setSelected(p)}}
+    window.addEventListener('st-product',open)
     window.addEventListener('st-search',search);window.addEventListener('st-category',cat)
-    return()=>{window.removeEventListener('st-search',search);window.removeEventListener('st-category',cat)}
-  },[])
+    return()=>{window.removeEventListener('st-search',search);window.removeEventListener('st-category',cat);window.removeEventListener('st-product',open)}
+  },[initialProducts])
   useEffect(()=>{
     const abort=new AbortController()
     const timer=setTimeout(async()=>{
@@ -52,8 +54,15 @@ export function FeaturedProducts({categories,initialProducts}:{categories:Catego
   function choose(p:Product){detailTrigger.current=document.activeElement as HTMLElement;setSelected(p)}
   function clearQuery(){window.dispatchEvent(new CustomEvent('st-search',{detail:''}))}
   return <section id="products" className="store-catalog store-container">
+    <div className="store-catalog-heading"><div><span className="store-eyebrow">THE TOOL COLLECTION</span><h2>Хэрэгслээ сонго.</h2></div><p>Таны дараагийн боломж эндээс эхэлнэ.</p></div>
+    <div className="store-catalog-layout">
+    <aside className="store-catalog-sidebar"><h3>Ангилал</h3>
+      <div className="store-category-tabs" role="group" aria-label="Ангиллаар шүүх"><button className={category==='all'?'active':''} aria-pressed={category==='all'} onClick={()=>setCategory('all')}>Бүх хэрэгсэл <span>{initialProducts.length}</span></button>{categories.filter(c=>c.slug!=='all').map(c=><button key={c.id} className={category===c.slug?'active':''} aria-pressed={category===c.slug} onClick={()=>setCategory(c.slug)}>{c.name}</button>)}</div>
+      <div className="store-sidebar-help"><Headphones/><strong>Сонгоход тусламж хэрэгтэй юу?</strong><button onClick={()=>window.dispatchEvent(new Event('st-open-chat'))}>Бидэнтэй ярилцах <ArrowRight size={15}/></button></div>
+    </aside>
+    <div className="store-catalog-results">
     <div className="store-filter-bar">
-      <div className="store-category-tabs" role="group" aria-label="Ангиллаар шүүх"><button className={category==='all'?'active':''} aria-pressed={category==='all'} onClick={()=>setCategory('all')}>Бүгд</button>{categories.map(c=><button key={c.id} className={category===c.slug?'active':''} aria-pressed={category===c.slug} onClick={()=>setCategory(c.slug)}>{c.name}</button>)}</div>
+      <span className="store-results-label">{category==='all'?'Бүх бүтээгдэхүүн':categories.find(c=>c.slug===category)?.name}</span>
       <div className="store-filter-controls"><label className="store-sort"><SlidersHorizontal size={17}/><select aria-label="Эрэмбэлэх" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Эрэмбэлэх: Онцлох</option><option value="rating">Үнэлгээ өндөр</option><option value="price-asc">Үнэ: Багаас их</option><option value="price-desc">Үнэ: Ихээс бага</option></select></label><div className="store-view-switch"><button aria-label="Карт харагдац" aria-pressed={view==='grid'} className={view==='grid'?'active':''} onClick={()=>setView('grid')}><Grid2X2 size={18}/></button><button aria-label="Жагсаалт харагдац" aria-pressed={view==='list'} className={view==='list'?'active':''} onClick={()=>setView('list')}><List size={18}/></button></div></div>
     </div>
     <div className="store-catalog-meta"><p aria-live="polite">{loading?'Ачаалж байна…':`${visible.length} бүтээгдэхүүн`}{query&&<> · “{query}” <button onClick={clearQuery}>Цэвэрлэх</button></>}</p><button aria-pressed={onlySaved} className={onlySaved?'active':''} onClick={()=>setOnlySaved(v=>!v)}><Heart size={14}/> Хадгалсан ({saved.length})</button></div>
@@ -61,6 +70,7 @@ export function FeaturedProducts({categories,initialProducts}:{categories:Catego
     {!visible.length?<div className="store-empty"><PackageOpen/><h2>Бүтээгдэхүүн олдсонгүй</h2><p>Өөр ангилал эсвэл хайлтын үг сонгоорой.</p><button onClick={()=>{clearQuery();setCategory('all');setOnlySaved(false)}}>Бүгдийг үзэх <ArrowRight size={16}/></button></div>:<div className={`store-market-grid ${view==='list'?'is-list':''}`} aria-busy={loading}>
       {visible.map(p=><ProductCard key={p.id} product={p} onSelect={choose}/>)}
     </div>}
+    </div></div>
     <Dialog open={!!selected} onOpenChange={open=>{if(!open)setSelected(null)}}>
       <DialogContent className="store-detail-dialog" aria-describedby={undefined} onCloseAutoFocus={e=>{e.preventDefault();detailTrigger.current?.focus({preventScroll:true})}}>
         {selected&&<><DialogTitle className="sr-only">{selected.name}</DialogTitle><ProductDetail key={selected.id} product={selected} saved={saved.includes(selected.id)} toggleSave={()=>toggleSave(selected.id)} onSupport={()=>{setSelected(null);window.dispatchEvent(new Event('st-open-chat'))}}/></>}
