@@ -24,8 +24,8 @@ test('requires configured secret', () => {
   assert.equal(verifyWebhookSignature(body, sign(now)), false)
   process.env.WIRE_MN_WEBHOOK_SECRET = secret
 })
-test('preserves money conversion and pending payment behavior', () => {
-  assert.equal(toMinorUnits(500), 50000)
+test('preserves whole-tugrik MNT amounts and pending payment behavior', () => {
+  assert.equal(toMinorUnits(500), 500)
   assert.equal(mapIntentStatus('requires_payment_method'), 'PENDING')
   assert.equal(mapIntentStatus('succeeded'), 'PAID')
   assert.equal(mapIntentStatus('failed'), 'FAILED')
