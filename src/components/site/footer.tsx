@@ -6,15 +6,13 @@ import { Mail, Send, ShieldCheck, Zap } from 'lucide-react'
 const LINKS = [
   { label: 'Нүүр', href: '#top' },
   { label: 'Бүх хэрэгсэл', href: '#products' },
+  { label: 'Ангилал', href: '#categories' },
+  { label: 'Хэрхэн ажиллах вэ?', href: '#how' },
   { label: 'Тусламж', href: '#faq' },
-  { label: 'Нууцлал', href: '#' },
-  { label: 'Үйлчилгээний нөхцөл', href: '#' },
 ]
 
 function scrollTo(href: string) {
-  if (href.startsWith('#') && href.length > 1) {
-    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 export function Footer({ settings }: { settings?: Record<string, string> }) {
@@ -25,11 +23,13 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
 
   return (
     <footer className="relative mt-auto border-t border-[#D6E4FF] bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-9 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-5">
-            <Logo />
-            <p className="mt-4 text-sm text-[#5B7290] max-w-sm leading-relaxed">
+            <button type="button" onClick={() => scrollTo('#top')} aria-label="Нүүр хуудас руу очих" className="rounded-xl text-left">
+              <Logo />
+            </button>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#5B7290]">
               {footerDescription}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
@@ -44,12 +44,13 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
 
           <div className="md:col-span-3">
             <h4 className="text-sm font-bold text-[#102A43]">Холбоосууд</h4>
-            <ul className="mt-4 space-y-2.5">
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2.5 md:grid-cols-1">
               {LINKS.map((l) => (
                 <li key={l.label}>
                   <button
+                    type="button"
                     onClick={() => scrollTo(l.href)}
-                    className="text-sm text-[#5B7290] hover:text-[#1677FF] transition-colors"
+                    className="rounded-md text-left text-sm text-[#5B7290] transition-colors hover:text-[#1677FF]"
                   >
                     {l.label}
                   </button>
@@ -64,12 +65,12 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
               <li>
                 <a
                   href={`mailto:${contactEmail}`}
-                  className="group flex items-center gap-3 text-sm text-[#5B7290] hover:text-[#1677FF] transition-colors"
+                  className="group flex items-center gap-3 rounded-xl text-sm text-[#5B7290] transition-colors hover:text-[#1677FF]"
                 >
-                  <span className="grid size-9 place-items-center rounded-xl bg-[#E8F1FF] group-hover:bg-[#1677FF] group-hover:text-white transition-colors">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#E8F1FF] transition-colors group-hover:bg-[#1677FF] group-hover:text-white">
                     <Mail className="size-4" />
                   </span>
-                  {contactEmail}
+                  <span className="break-all">{contactEmail}</span>
                 </a>
               </li>
               <li>
@@ -77,9 +78,9 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
                   href={`https://t.me/${contactTelegram.replace(/^@/, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-3 text-sm text-[#5B7290] hover:text-[#1677FF] transition-colors"
+                  className="group flex items-center gap-3 rounded-xl text-sm text-[#5B7290] transition-colors hover:text-[#1677FF]"
                 >
-                  <span className="grid size-9 place-items-center rounded-xl bg-[#E8F1FF] group-hover:bg-[#1677FF] group-hover:text-white transition-colors">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#E8F1FF] transition-colors group-hover:bg-[#1677FF] group-hover:text-white">
                     <Send className="size-4" />
                   </span>
                   @{contactTelegram.replace(/^@/, '')}
@@ -93,7 +94,7 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#EEF4FF] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[#EEF4FF] pt-6 text-center sm:flex-row sm:text-left">
           <p className="text-xs text-[#5B7290]">
             {footerCopyright}
           </p>
