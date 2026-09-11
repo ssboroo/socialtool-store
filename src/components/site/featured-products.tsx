@@ -77,9 +77,11 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
     }
   }, [activeCat, query, sort])
 
+  const gridClass = 'mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 lg:gap-5'
+
   return (
-    <section id="products" className="relative bg-gradient-to-b from-transparent to-[#EEF4FF]/40 py-16 lg:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="products" className="relative bg-gradient-to-b from-transparent to-[#EEF4FF]/40 py-12 lg:py-16">
+      <div className="mx-auto w-full max-w-[1680px] px-4 sm:px-6 lg:px-8 xl:px-10">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF] shadow-sm">
@@ -151,8 +153,8 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
         </div>
 
         {loading ? (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4" aria-label="Бүтээгдэхүүн ачаалж байна">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className={gridClass} aria-label="Бүтээгдэхүүн ачаалж байна">
+            {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="h-[350px] animate-pulse rounded-2xl border border-[#D6E4FF] bg-white/70" />
             ))}
           </div>
@@ -175,7 +177,7 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
             </Button>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
+          <div className={gridClass}>
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
