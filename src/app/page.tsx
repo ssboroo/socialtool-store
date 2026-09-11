@@ -62,13 +62,13 @@ export default async function Home() {
       <main className="flex-1">
         <Hero settings={settings} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
+        <SupportSection settings={settings} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
         <Categories categories={serializedCategories} />
         <WhyChooseUs />
         <HowItWorks />
         <Reviews reviews={reviews.map((r) => ({ id: r.id, name: r.name, role: r.role, rating: r.rating, content: r.content }))} />
         <Faq faqs={serializedFaqs} />
-        <SupportSection settings={settings} />
       </main>
       <Footer settings={settings} />
       <CartDrawer />

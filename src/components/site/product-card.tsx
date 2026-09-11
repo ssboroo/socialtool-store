@@ -67,7 +67,6 @@ export function ProductCard({
 
   return (
     <article
-      onClick={openDetail}
       className="store-product-card"
     >
       {product.discount ? (
@@ -79,12 +78,14 @@ export function ProductCard({
         {product.category}
       </span>
 
+      <button type="button" className="store-card-image-button" onClick={openDetail} aria-label={`${product.name} — дэлгэрэнгүй`}>
       <ProductImage
         image={product.image}
         icon={product.icon}
         alt={product.name}
         className={cn('store-product-image aspect-[16/9] w-full shrink-0', compact && 'aspect-[16/10]')}
       />
+      </button>
 
       <div className="store-card-body">
         <h3 className="line-clamp-2 text-[13px] font-extrabold leading-[19px] tracking-[-0.015em] text-[#102A43] [overflow-wrap:anywhere]">
@@ -108,7 +109,7 @@ export function ProductCard({
           {product.oldPrice ? <span className="pb-0.5 text-[9px] text-[#8AA0B8] line-through">{formatTugrik(product.oldPrice)}</span> : null}
         </div>
 
-        {options.length > 1 && <div className="store-card-options"><LicenseSelector value={selectedDuration} onChange={setDuration} options={options} compact /></div>}
+        <div className="store-card-options">{options.length > 1 ? <LicenseSelector value={selectedDuration} onChange={setDuration} options={options} compact /> : <span className="store-license-note">{selectedDuration || 'Дижитал бүтээгдэхүүн'}</span>}</div>
 
         <div className="store-card-actions grid gap-1.5 pt-1.5">
           <Button disabled={!product.available} onClick={handleAdd} size="sm" className="h-8.5 w-full rounded-[9px] bg-[#0F73F6] text-[10.5px] font-bold text-white shadow-none hover:bg-[#0866D9]">

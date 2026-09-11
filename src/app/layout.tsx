@@ -3,6 +3,8 @@ import "./globals.css";
 import "./production-polish.css";
 import "./store-font.css";
 import "./storefront.css";
+import "./catalog-polish.css";
+import "./noto-font.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 

@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useState, useMemo, useSyncExternalStore } from 'react'
+import { useEffect, useState, useMemo, useRef, useSyncExternalStore } from 'react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ArrowRight, Check, Grid2X2, Heart, List, PackageOpen, ShoppingCart, SlidersHorizontal, Star } from 'lucide-react'
 import { ProductCard, type Product } from './product-card'
 import { ProductImage } from './product-illustration'
@@ -22,7 +23,8 @@ export function FeaturedProducts({categories,initialProducts}:{categories:Catego
   const [view,setView]=useState<'grid'|'list'>('grid')
   const [loading,setLoading]=useState(false)
   const [error,setError]=useState('')
-  const [selectedId,setSelectedId]=useState(initialProducts[0]?.id||'')
+  const [selected,setSelected]=useState<Product|null>(null)
+  const detailTrigger=useRef<HTMLElement|null>(null)
   const [onlySaved,setOnlySaved]=useState(false)
   const rawSaved=useSyncExternalStore(subscribeSaved,savedSnapshot,()=> '[]')
   const saved=useMemo<string[]>(()=>{try{const value=JSON.parse(rawSaved);return Array.isArray(value)?value.filter(v=>typeof v==='string'):[]}catch{return []}},[rawSaved])
@@ -47,25 +49,26 @@ export function FeaturedProducts({categories,initialProducts}:{categories:Catego
   },[category,query,sort])
   function toggleSave(id:string){const next=saved.includes(id)?saved.filter(x=>x!==id):[...saved,id];try{localStorage.setItem('st-saved-products',JSON.stringify(next));window.dispatchEvent(new Event('st-saved-products'))}catch{toast.error('Энэ браузерт хадгалах боломжгүй байна.')}}
   const visible=onlySaved?products.filter(p=>saved.includes(p.id)):products
-  const selected=visible.find(p=>p.id===selectedId)||visible[0]
-  function choose(p:Product){setSelectedId(p.id);requestAnimationFrame(()=>document.querySelector('#product-detail')?.scrollIntoView({behavior:'smooth',block:'nearest'}))}
-  const first=visible.slice(0,8)
-  const detailSpan=first.length===8?4:first.length===7?5:6
+  function choose(p:Product){detailTrigger.current=document.activeElement as HTMLElement;setSelected(p)}
+  function clearQuery(){window.dispatchEvent(new CustomEvent('st-search',{detail:''}))}
   return <section id="products" className="store-catalog store-container">
     <div className="store-filter-bar">
       <div className="store-category-tabs" role="group" aria-label="Ангиллаар шүүх"><button className={category==='all'?'active':''} aria-pressed={category==='all'} onClick={()=>setCategory('all')}>Бүгд</button>{categories.map(c=><button key={c.id} className={category===c.slug?'active':''} aria-pressed={category===c.slug} onClick={()=>setCategory(c.slug)}>{c.name}</button>)}</div>
       <div className="store-filter-controls"><label className="store-sort"><SlidersHorizontal size={17}/><select aria-label="Эрэмбэлэх" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Эрэмбэлэх: Онцлох</option><option value="rating">Үнэлгээ өндөр</option><option value="price-asc">Үнэ: Багаас их</option><option value="price-desc">Үнэ: Ихээс бага</option></select></label><div className="store-view-switch"><button aria-label="Карт харагдац" aria-pressed={view==='grid'} className={view==='grid'?'active':''} onClick={()=>setView('grid')}><Grid2X2 size={18}/></button><button aria-label="Жагсаалт харагдац" aria-pressed={view==='list'} className={view==='list'?'active':''} onClick={()=>setView('list')}><List size={18}/></button></div></div>
     </div>
-    <div className="store-catalog-meta"><p aria-live="polite">{loading?'Ачаалж байна…':`${visible.length} бүтээгдэхүүн`}{query&&<> · “{query}” <button onClick={()=>setQuery('')}>Цэвэрлэх</button></>}</p><button aria-pressed={onlySaved} className={onlySaved?'active':''} onClick={()=>setOnlySaved(v=>!v)}><Heart size={14}/> Хадгалсан ({saved.length})</button></div>
+    <div className="store-catalog-meta"><p aria-live="polite">{loading?'Ачаалж байна…':`${visible.length} бүтээгдэхүүн`}{query&&<> · “{query}” <button onClick={clearQuery}>Цэвэрлэх</button></>}</p><button aria-pressed={onlySaved} className={onlySaved?'active':''} onClick={()=>setOnlySaved(v=>!v)}><Heart size={14}/> Хадгалсан ({saved.length})</button></div>
     {error&&<p role="alert" className="store-error">{error}</p>}
-    {!visible.length?<div className="store-empty"><PackageOpen/><h2>Бүтээгдэхүүн олдсонгүй</h2><p>Өөр ангилал эсвэл хайлтын үг сонгоорой.</p><button onClick={()=>{setQuery('');setCategory('all');setOnlySaved(false)}}>Бүгдийг үзэх <ArrowRight size={16}/></button></div>:<div className={`store-market-grid ${view==='list'?'is-list':''}`} aria-busy={loading}>
-      {first.map(p=><ProductCard key={p.id} product={p} onSelect={choose}/>)}
-      {selected&&<div id="product-detail" className="store-detail-slot" style={{'--detail-span':detailSpan} as React.CSSProperties}><ProductDetail key={selected.id} product={selected} saved={saved.includes(selected.id)} toggleSave={()=>toggleSave(selected.id)}/></div>}
-      {visible.slice(8).map(p=><ProductCard key={p.id} product={p} onSelect={choose}/>)}
+    {!visible.length?<div className="store-empty"><PackageOpen/><h2>Бүтээгдэхүүн олдсонгүй</h2><p>Өөр ангилал эсвэл хайлтын үг сонгоорой.</p><button onClick={()=>{clearQuery();setCategory('all');setOnlySaved(false)}}>Бүгдийг үзэх <ArrowRight size={16}/></button></div>:<div className={`store-market-grid ${view==='list'?'is-list':''}`} aria-busy={loading}>
+      {visible.map(p=><ProductCard key={p.id} product={p} onSelect={choose}/>)}
     </div>}
+    <Dialog open={!!selected} onOpenChange={open=>{if(!open)setSelected(null)}}>
+      <DialogContent className="store-detail-dialog" aria-describedby={undefined} onCloseAutoFocus={e=>{e.preventDefault();detailTrigger.current?.focus({preventScroll:true})}}>
+        {selected&&<><DialogTitle className="sr-only">{selected.name}</DialogTitle><ProductDetail key={selected.id} product={selected} saved={saved.includes(selected.id)} toggleSave={()=>toggleSave(selected.id)} onSupport={()=>{setSelected(null);window.dispatchEvent(new Event('st-open-chat'))}}/></>}
+      </DialogContent>
+    </Dialog>
   </section>
 }
-function ProductDetail({product,saved,toggleSave}:{product:Product;saved:boolean;toggleSave:()=>void}){
+function ProductDetail({product,saved,toggleSave,onSupport}:{product:Product;saved:boolean;toggleSave:()=>void;onSupport:()=>void}){
   const options=licenseOptions(product.duration)
   const [duration,setDuration]=useState(options[0]||'')
   const [quantity,setQuantity]=useState(1)
@@ -85,7 +88,7 @@ function ProductDetail({product,saved,toggleSave}:{product:Product;saved:boolean
     <div className="store-detail-content"><div className="store-detail-tabs" role="tablist" aria-label="Бүтээгдэхүүний мэдээлэл">{tabs.map((t,i)=><button role="tab" id={`tab-${product.id}-${t.id}`} aria-selected={tab===t.id} aria-controls={`panel-${product.id}`} tabIndex={tab===t.id?0:-1} key={t.id} onClick={()=>setTab(t.id)} onKeyDown={e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const next=tabs[(i+(e.key==='ArrowRight'?1:2))%3];setTab(next.id);document.getElementById(`tab-${product.id}-${next.id}`)?.focus()}}}>{t.label}</button>)}</div><div role="tabpanel" id={`panel-${product.id}`} aria-labelledby={`tab-${product.id}-${tab}`} className="store-detail-panel" tabIndex={0}>
       {tab==='description'&&<><h3>Бүтээгдэхүүний тайлбар</h3><ProductDescription text={product.description}/></>}
       {tab==='features'&&<><h3>Үндсэн боломжууд</h3>{features.length?<ul>{features.map(f=><li key={f}><Check size={15}/>{f}</li>)}</ul>:<p>Нэмэлт мэдээллийг админаас лавлаарай.</p>}</>}
-      {tab==='delivery'&&<><h3>Хүргэлт, тусламж</h3><p>Төлбөр баталгаажсаны дараа захиалгын мэдээллээ «Миний аккаунт» хэсгээс шалгаарай.</p><button className="store-support-link" onClick={()=>window.dispatchEvent(new Event('st-open-chat'))}>Админтай холбогдох <ArrowRight size={15}/></button></>}
+      {tab==='delivery'&&<><h3>Хүргэлт, тусламж</h3><p>Төлбөр баталгаажсаны дараа захиалгын мэдээллээ «Миний аккаунт» хэсгээс шалгаарай.</p><button className="store-support-link" onClick={onSupport}>Админтай холбогдох <ArrowRight size={15}/></button></>}
     </div></div>
   </article>
 }

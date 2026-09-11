@@ -1,11 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Menu, Search, ShoppingCart, User, X } from 'lucide-react'
 import { Logo } from './logo'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 
-const links=[{name:'Нүүр',href:'#top'},{name:'Бүтээгдэхүүн',href:'#products'},{name:'Заавар',href:'#how'},{name:'Тусламж',href:'#faq'}]
+const links=[{name:'Нүүр',href:'#top'},{name:'Бүтээгдэхүүн',href:'#products'},{name:'Заавар',href:'#how'},{name:'Тусламж',href:'#contact'}]
 export function Header(){
   const [query,setQuery]=useState('')
   const [mobile,setMobile]=useState(false)
@@ -14,8 +14,9 @@ export function Header(){
   const openAuth=useUIStore(s=>s.openAuth)
   const openAccount=useUIStore(s=>s.openAccount)
   const {customer}=useCustomer()
+  useEffect(()=>{const sync=(e:Event)=>setQuery(String((e as CustomEvent).detail||''));window.addEventListener('st-search',sync);return()=>window.removeEventListener('st-search',sync)},[])
   function navigate(href:string){setMobile(false);const el=document.querySelector(href);el?.closest('details')?.setAttribute('open','');el?.scrollIntoView({behavior:'smooth',block:'start'})}
-  function search(e:React.FormEvent){e.preventDefault();window.dispatchEvent(new CustomEvent('st-search',{detail:query}));navigate('#products')}
+  function search(e:React.FormEvent){e.preventDefault();window.dispatchEvent(new CustomEvent('st-search',{detail:query}));setMobile(false)}
   return <header className="store-header store-container"><div className="store-nav-surface">
     <button className="store-logo-button" onClick={()=>navigate('#top')} aria-label="Нүүр хуудас"><Logo /></button>
     <form className="store-search" role="search" onSubmit={search}><input aria-label="Бүтээгдэхүүн хайх" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Бүтээгдэхүүн хайх…" /><button aria-label="Хайх" type="submit"><Search size={18} /></button></form>
