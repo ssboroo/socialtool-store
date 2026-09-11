@@ -42,16 +42,22 @@ export function verifyAdminToken(token: string): { sub: string; username: string
 }
 
 export function getAdminFromRequest(req: Request) {
+  // Keep Bearer support for API clients, but prefer the httpOnly cookie for the web admin.
   const auth = req.headers.get('authorization') || ''
   const token = auth.replace(/^Bearer\s+/i, '')
-  if (!token) {
-    // Also accept cookie token
-    const cookie = req.headers.get('cookie') || ''
-    const match = cookie.match(/admin_token=([^;]+)/)
-    if (match) return verifyAdminToken(decodeURIComponent(match[1]))
+  if (token) {
+    const admin = verifyAdminToken(token)
+    if (admin) return admin
+  }
+
+  const cookie = req.headers.get('cookie') || ''
+  const match = cookie.match(/(?:^|;\s*)admin_token=([^;]+)/)
+  if (!match) return null
+  try {
+    return verifyAdminToken(decodeURIComponent(match[1]))
+  } catch {
     return null
   }
-  return verifyAdminToken(token)
 }
 
 // ---------- Customer auth ----------
@@ -81,7 +87,11 @@ export function verifyCustomerToken(token: string): { sub: string; email: string
 
 export function getCustomerFromRequest(req: Request) {
   const cookie = req.headers.get('cookie') || ''
-  const match = cookie.match(/customer_token=([^;]+)/)
+  const match = cookie.match(/(?:^|;\s*)customer_token=([^;]+)/)
   if (!match) return null
-  return verifyCustomerToken(decodeURIComponent(match[1]))
+  try {
+    return verifyCustomerToken(decodeURIComponent(match[1]))
+  } catch {
+    return null
+  }
 }
