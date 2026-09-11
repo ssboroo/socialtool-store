@@ -19,7 +19,7 @@ test('local production API: registration, admin, image upload and account-isolat
   const wireMock = createServer((req, res) => {
     res.setHeader('Content-Type', 'application/json')
     const id = req.url.split('/').pop()
-    res.end(JSON.stringify({ id, status: 'succeeded', currency: 'MNT', amount: id === 'pi_wrong_amount' ? 1 : 30000 }))
+    res.end(JSON.stringify({ id, status: 'succeeded', currency: 'MNT', amount: id === 'pi_wrong_amount' ? 1 : 300 }))
   })
   await new Promise(resolve => wireMock.listen(0, '127.0.0.1', resolve))
   const wireUrl = `http://127.0.0.1:${wireMock.address().port}/v1`
