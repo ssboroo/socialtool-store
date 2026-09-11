@@ -60,7 +60,7 @@ export default async function Home() {
     <div className="storefront relative flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <Hero settings={settings} />
+        <Hero settings={settings} product={serializedProducts.find(p=>p.available)} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
         <SupportSection settings={settings} />
         <PromoBanner promotion={serializedPromo} settings={settings} />

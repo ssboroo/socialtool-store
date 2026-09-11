@@ -89,7 +89,7 @@ export function ProductCard({
 
       <div className="store-card-body">
         <h3 className="line-clamp-2 text-[13px] font-extrabold leading-[19px] tracking-[-0.015em] text-[#102A43] [overflow-wrap:anywhere]">
-          {product.name}
+          <button type="button" onClick={openDetail} className="text-left hover:text-[#2459f5]">{product.name}</button>
         </h3>
         <p className="mt-1 line-clamp-3 text-[10.5px] font-medium leading-[17px] text-[#6B819A] [overflow-wrap:anywhere]">
           {product.shortDesc}
@@ -115,7 +115,7 @@ export function ProductCard({
           <Button disabled={!product.available} onClick={handleAdd} size="sm" className="h-8.5 w-full rounded-[9px] bg-[#0F73F6] text-[10.5px] font-bold text-white shadow-none hover:bg-[#0866D9]">
             <ShoppingCart className="size-3.5" /> {product.available ? 'Сагсанд нэмэх' : 'Түр дууссан'}
           </Button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); openDetail() }} className="inline-flex h-8.5 w-full items-center justify-center gap-1 rounded-[9px] border border-[#D7E4F3] bg-white text-[9.5px] font-bold text-[#244564] transition hover:bg-[#F4F8FE]">
+          <button type="button" title={`${product.name} — дэлгэрэнгүй`} aria-label={`${product.name} — дэлгэрэнгүй`} onClick={(e) => { e.stopPropagation(); openDetail() }} className="inline-flex h-8.5 w-full items-center justify-center gap-1 rounded-[9px] border border-[#D7E4F3] bg-white text-[9.5px] font-bold text-[#244564] transition hover:bg-[#F4F8FE]">
             Дэлгэрэнгүй <ArrowRight className="size-3" />
           </button>
         </div>

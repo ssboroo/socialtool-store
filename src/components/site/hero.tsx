@@ -1,27 +1,21 @@
 'use client'
+import { ArrowUpRight, Headphones, ShieldCheck } from 'lucide-react'
+import { ProductImage } from './product-illustration'
+import type { Product } from './product-card'
+import { formatTugrik } from '@/lib/format'
 
-import { ArrowRight, Bot, Facebook, Headphones, Instagram, Music2, ShieldCheck, TrendingUp, Zap } from 'lucide-react'
-
-export function Hero({ settings }: { settings?: Record<string, string> }) {
+export function Hero({ settings, product }: { settings?: Record<string, string>; product?: Product }) {
   return <section id="top" className="store-hero store-container">
-    <div className="store-hero-surface">
-      <div className="store-hero-copy">
-        <span className="store-eyebrow">ТАНЫ ДИЖИТАЛ ДЭЛГҮҮР</span>
-        <h1>Дижитал өсөлтийн<br />бүх хэрэгсэл нэг дор</h1>
-        <p>{settings?.heroSubtext || 'SMM, автоматжуулалт, AI болон бүтээмжийн хэрэгслүүдийг найдвартай, хурдан, хялбар.'}</p>
-        <div className="store-trust">
-          {[{Icon:ShieldCheck,title:'Найдвартай',text:'Баталгаат үйлчилгээ'},{Icon:Zap,title:'Шуурхай хүргэлт',text:'Хялбар худалдан авалт'},{Icon:Headphones,title:'24/7 Дэмжлэг',text:'Асуудал гарвал тусална'}].map(({Icon,title,text})=><div key={title}><span><Icon /></span><div><strong>{title}</strong><small>{text}</small></div></div>)}
-        </div>
-      </div>
-      <div className="store-hero-art">
-        <div className="glass-orbit" aria-hidden="true" />
-        <div className="glass-platform instagram-tile" aria-hidden="true"><span><Instagram /></span></div>
-        <div className="glass-platform ai-tile" aria-hidden="true"><span><Bot /></span></div>
-        <div className="glass-platform facebook-tile" aria-hidden="true"><span><Facebook /></span></div>
-        <div className="glass-platform tiktok-tile" aria-hidden="true"><span><Music2 /></span></div>
-        <div className="glass-growth" aria-hidden="true"><TrendingUp /><div>{[24,40,59,84].map(h=><i key={h} style={{height:h}} />)}</div></div>
-        <button className="glass-message" onClick={()=>document.querySelector('#products')?.scrollIntoView({behavior:'smooth'})}><span>Илүү бүтээмж<br />Илүү боломж<br /><strong>Илүү амжилт</strong></span><ArrowRight /></button>
-      </div>
+    <div className="store-hero-copy">
+      <span className="store-eyebrow">SOCIAL / AI / AUTOMATION</span>
+      <h1>Илүү ухаалаг<br /><span>дижитал ажил.</span></h1>
+      <p>{settings?.heroSubtext || 'Таны ажлыг хөнгөвчлөх сошиал, AI болон автоматжуулалтын хэрэгслүүд.'}</p>
+      <div className="store-trust"><span><ShieldCheck size={16}/> Аюулгүй төлбөр</span><button onClick={()=>window.dispatchEvent(new Event('st-open-chat'))}><Headphones size={16}/> Сонголтод тусалъя</button></div>
     </div>
+    {product && <button className="store-spotlight" onClick={()=>window.dispatchEvent(new CustomEvent('st-product',{detail:product.id}))} aria-label={`${product.name} — дэлгэрэнгүй`}>
+      <div className="store-spotlight-top"><span>ОНЦЛОХ СОНГОЛТ</span><ArrowUpRight size={22}/></div>
+      <div className="store-spotlight-main"><ProductImage image={product.image} icon={product.icon} alt="" className="store-spotlight-image"/><div><span className="store-spotlight-category">{product.category}</span><h2>{product.name}</h2><strong>{formatTugrik(product.price)}</strong></div></div>
+      <div className="store-spotlight-bottom"><span>Бүтээгдэхүүнтэй танилцах</span><ArrowUpRight size={18}/></div>
+    </button>}
   </section>
 }
