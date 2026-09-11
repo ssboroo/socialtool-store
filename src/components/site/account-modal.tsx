@@ -93,7 +93,7 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="store-dialog sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">Миний бүртгэл</DialogTitle>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
           {/* header */}

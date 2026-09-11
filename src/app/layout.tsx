@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./production-polish.css";
-import "./store-font.css";
-import "./storefront.css";
-import "./catalog-polish.css";
-import "./noto-font.css";
-import "./store-design.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор",
@@ -22,7 +27,7 @@ export const metadata: Metadata = {
     "Telegram bot",
     "AI tool",
     "эх хэрэгсэл",
-    "маркетинг хэрэгсэл",
+    " маркетинг хэрэгсэл",
   ],
   authors: [{ name: "SOCIALTOOL.STORE" }],
   openGraph: {
@@ -39,7 +44,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="mn" suppressHydrationWarning>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
+      >
         {children}
         <Toaster />
         <SonnerToaster richColors position="top-center" />

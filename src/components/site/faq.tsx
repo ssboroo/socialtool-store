@@ -17,9 +17,9 @@ export interface Faq {
 
 export function Faq({ faqs }: { faqs: Faq[] }) {
   return (
-    <section id="faq" className="store-section store-faq">
-      <div className="store-container store-section-inner">
-        <div className="store-section-heading">
+    <section id="faq" className="relative py-16 lg:py-20">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
             <HelpCircle className="size-3.5" /> Түгээмэл асуулт
           </span>
@@ -37,7 +37,7 @@ export function Faq({ faqs }: { faqs: Faq[] }) {
                   {f.q}
                 </AccordionTrigger>
                 <AccordionContent className="px-5 pb-5 text-sm text-[#5B7290] leading-relaxed">
-                  {f.a.replace(/wire\.mn/gi, 'Qpay')}
+                  {f.a}
                 </AccordionContent>
               </AccordionItem>
             ))}

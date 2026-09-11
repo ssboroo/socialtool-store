@@ -1,6 +1,4 @@
 'use client'
-import { QuantityInput } from './quantity-input'
-import { cartKey } from '@/lib/license'
 
 import { useEffect } from 'react'
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
@@ -37,7 +35,7 @@ export function CartDrawer() {
     <Sheet open={isOpen} onOpenChange={(o) => !o && close()}>
       <SheetContent
         side="right"
-        className="store-dialog store-cart-sheet w-full sm:max-w-md p-0 bg-white border-[#D6E4FF]"
+        className="w-full sm:max-w-md p-0 bg-white border-[#D6E4FF]"
       >
         <SheetHeader className="px-5 pt-5 pb-3 border-b border-[#EEF4FF]">
           <SheetTitle className="flex items-center gap-2 text-[#102A43]">
@@ -70,7 +68,7 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto custom-scroll px-3 py-3 space-y-2.5">
               {items.map((it) => (
                 <div
-                  key={cartKey(it)}
+                  key={it.id}
                   className="flex gap-3 rounded-2xl border border-[#D6E4FF] bg-white p-3 shadow-premium"
                 >
                   <ProductIllustration icon={it.icon} className="size-16 shrink-0" />
@@ -78,10 +76,10 @@ export function CartDrawer() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h4 className="text-sm font-bold text-[#102A43] line-clamp-1">{it.name}</h4>
-                        <p className="text-xs text-[#5B7290]">{it.category}{it.duration ? ` · ${it.duration}` : ' · ширхэг'}</p>
+                        <p className="text-xs text-[#5B7290]">{it.category}</p>
                       </div>
                       <button
-                        onClick={() => remove(cartKey(it))}
+                        onClick={() => remove(it.id)}
                         className="grid size-7 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500 transition-colors"
                         aria-label="Устгах"
                       >
@@ -91,15 +89,17 @@ export function CartDrawer() {
                     <div className="mt-2 flex items-center justify-between">
                       <div className="inline-flex items-center rounded-lg border border-[#D6E4FF] bg-white">
                         <button
-                          onClick={() => setQty(cartKey(it), it.quantity - 1)}
+                          onClick={() => setQty(it.id, it.quantity - 1)}
                           className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
                           disabled={it.quantity <= 1}
                         >
                           <Minus className="size-3.5" />
                         </button>
-                        <QuantityInput value={it.quantity} onChange={qty => setQty(cartKey(it), qty)} label={`${it.name} тоо ширхэг`} />
+                        <span className="min-w-7 text-center text-sm font-bold text-[#102A43]">
+                          {it.quantity}
+                        </span>
                         <button
-                          onClick={() => setQty(cartKey(it), it.quantity + 1)}
+                          onClick={() => setQty(it.id, it.quantity + 1)}
                           className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF]"
                         >
                           <Plus className="size-3.5" />
@@ -129,7 +129,7 @@ export function CartDrawer() {
                 <ArrowRight className="size-4" />
               </Button>
               <p className="text-center text-xs text-[#5B7290]">
-                Аюулгүй төлбөр — Qpay системээр
+                Аюулгүй төлбөр — Wire.mn системээр
               </p>
             </div>
           </>

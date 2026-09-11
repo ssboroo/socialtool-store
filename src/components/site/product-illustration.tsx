@@ -1,11 +1,9 @@
-'use client'
-import { useState } from 'react'
 import {
   Facebook, Music2, Instagram, Twitter, Send, Mail, Sparkles, LayoutGrid, Package,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const MAP: Record<string, { Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; gradient: string; accent: string }> = {
+const MAP: Record<string, { Icon: React.ComponentType<{ className?: string }>; gradient: string; accent: string }> = {
   Facebook: { Icon: Facebook, gradient: 'from-[#E8F1FF] to-[#D6E4FF]', accent: '#1677FF' },
   Music2: { Icon: Music2, gradient: 'from-[#EEF4FF] to-[#D6E4FF]', accent: '#0B4DBA' },
   Instagram: { Icon: Instagram, gradient: 'from-[#FFE8F0] to-[#FFD6E8]', accent: '#E1306C' },
@@ -27,7 +25,7 @@ export function ProductIllustration({
   const meta = MAP[icon] || { Icon: Package, gradient: 'from-[#E8F1FF] to-[#D6E4FF]', accent: '#1677FF' }
   const { Icon } = meta
   return (
-    <div className={cn('illustration-glass relative overflow-hidden rounded-xl bg-gradient-to-br', meta.gradient, className)}>
+    <div className={cn('relative overflow-hidden rounded-xl bg-gradient-to-br', meta.gradient, className)}>
       <div className="absolute inset-0 opacity-[0.07]" style={{
         backgroundImage:
           'radial-gradient(circle at 20% 20%, ' + meta.accent + ' 0, transparent 35%), radial-gradient(circle at 80% 70%, ' + meta.accent + ' 0, transparent 30%)',
@@ -36,7 +34,7 @@ export function ProductIllustration({
       <div className="absolute inset-0 grid place-items-center">
         <div className="relative">
           <div className="absolute inset-0 blur-xl opacity-30 rounded-full" style={{ background: meta.accent }} />
-          <div className="illustration-icon relative grid size-16 place-items-center rounded-2xl bg-white/70 backdrop-blur border border-white shadow-premium">
+          <div className="relative grid size-14 place-items-center rounded-2xl bg-white/70 backdrop-blur border border-white shadow-premium">
             <Icon className="size-7" style={{ color: meta.accent }} />
           </div>
         </div>
@@ -67,14 +65,12 @@ export function ProductImage({
   alt: string
   className?: string
 }) {
-  const [failedImage, setFailedImage] = useState<string | null>(null)
-  if (image && failedImage !== image) {
+  if (image) {
     return (
       <div className={cn('relative overflow-hidden rounded-xl bg-[#F5F9FF]', className)}>
         { }
         <img
           src={image}
-          onError={() => setFailedImage(image)}
           alt={alt}
           className="absolute inset-0 size-full object-cover"
           loading="lazy"

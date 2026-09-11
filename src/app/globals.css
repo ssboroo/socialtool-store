@@ -44,8 +44,6 @@
 }
 
 :root {
-  --font-geist-sans: Arial, "Helvetica Neue", sans-serif;
-  --font-geist-mono: Consolas, "Courier New", monospace;
   --radius: 0.875rem;
   /* SOCIALTOOL.STORE brand: Premium white + electric blue */
   --background: #F5F9FF;
@@ -195,27 +193,4 @@
 }
 .animate-marquee {
   animation: marquee 25s linear infinite;
-}
-
-/* Gentle poster motion; honor reduced-motion preferences. */
-@keyframes poster-drift { 0%, 100% { transform: translateY(0) rotate(-0.4deg); } 50% { transform: translateY(-10px) rotate(0.4deg); } }
-@keyframes poster-orbit { 0%, 100% { transform: scale(1); opacity: .6; } 50% { transform: scale(1.2) translate(-15px, 12px); opacity: 1; } }
-@keyframes platform-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-poster { animation: poster-drift 7s ease-in-out infinite; }
-  .hero-orbit { animation: poster-orbit 9s ease-in-out infinite; }
-  .hero-platform { animation: platform-drift 4s ease-in-out infinite; }
-  .hero-platform:nth-child(2n) { animation-delay: -1.5s; }
-  .hero-platform:nth-child(3n) { animation-delay: -2.5s; }
-}
-
-/* One opaque poster enters at a time, without overlapping text. */
-@keyframes hero-slide-in {
-  from { transform: translateX(20px) scale(1.025); }
-  to { transform: translateX(0) scale(1); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .hero-banner { animation: poster-drift 8s ease-in-out infinite; }
-  .hero-banner:hover, .hero-banner:focus-within { animation-play-state: paused; }
-  .hero-slide { animation: hero-slide-in 600ms cubic-bezier(.22,1,.36,1) both; }
 }

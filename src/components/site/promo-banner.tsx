@@ -5,13 +5,12 @@ import { Gift, Timer, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 function useCountdown(deadline: Date) {
-  const [now, setNow] = useState<number | null>(null)
+  const [now, setNow] = useState(Date.now())
   useEffect(() => {
-    setNow(Date.now())
     const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
   }, [])
-  const diff = Math.max(0, now === null ? 0 : deadline.getTime() - now)
+  const diff = Math.max(0, deadline.getTime() - now)
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
   const minutes = Math.floor((diff / (1000 * 60)) % 60)
@@ -23,7 +22,14 @@ export function PromoBanner({ promotion, settings }: {
   promotion?: { title: string; description: string; badgeText: string; discountPercent: number; endAt: string } | null
   settings?: Record<string, string>
 }) {
-  const deadline = new Date(promotion?.endAt || 0)
+  // Use the active promotion's end date if provided, otherwise default to 3 days
+  const [deadline] = useState(() => {
+    if (promotion?.endAt) return new Date(promotion.endAt)
+    const d = new Date()
+    d.setDate(d.getDate() + 3)
+    d.setHours(23, 59, 59, 0)
+    return d
+  })
   const { days, hours, minutes, seconds } = useCountdown(deadline)
 
   const title = promotion?.title || settings?.promoTitle || 'Шинэ хэрэглэгчдэд зориулсан онцгой хямдрал — 30% хүртэл'
@@ -34,8 +40,6 @@ export function PromoBanner({ promotion, settings }: {
 
   const scroll = () =>
     document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-
-  if (!promotion || !Number.isFinite(deadline.getTime()) || (days === 0 && hours === 0 && minutes === 0 && seconds === 0 && deadline.getTime() === 0)) return null
 
   return (
     <section className="relative py-10 lg:py-14">

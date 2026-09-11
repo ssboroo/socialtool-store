@@ -12,7 +12,7 @@ const STEPS = [
   {
     Icon: CreditCard,
     title: 'Төлбөрөө хийнэ',
-    desc: 'Qpay-аар төлбөрөө төлнө.',
+    desc: 'Wire.mn системээр банкны картаар, Qpay-аар аюулгүй төлбөрөө төлнө.',
     color: 'from-[#0B4DBA] to-[#8B5CF6]',
   },
   {
@@ -25,9 +25,9 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="store-section store-how">
-      <div className="store-container store-section-inner">
-        <div className="store-section-heading">
+    <section id="how" className="relative py-16 lg:py-20 bg-gradient-to-b from-[#EEF4FF]/40 to-transparent">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
             Хэрхэн ажилладаг вэ?
           </span>

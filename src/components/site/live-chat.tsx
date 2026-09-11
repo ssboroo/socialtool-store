@@ -167,7 +167,7 @@ export function LiveChat() {
       >
         <span className="absolute -inset-0.5 rounded-full bg-[#1677FF]/30 blur-md group-hover:opacity-100 opacity-0 transition-opacity" />
         <MessageCircle className="relative size-5" />
-        <span className="relative text-sm font-bold">Тусламж</span>
+        <span className="relative text-sm font-bold hidden sm:inline">Админтай холбогдох</span>
         {!open && (
           <span className="absolute -top-1 -right-1 flex size-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16A34A] opacity-75" />
@@ -178,7 +178,7 @@ export function LiveChat() {
 
       {/* Chat panel */}
       {open && (
-        <div className="store-chat-panel fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-[380px] max-h-[600px] h-[80vh] max-h-[560px] rounded-2xl bg-white border border-[#D6E4FF] shadow-premium-lg overflow-hidden flex flex-col animate-in slide-in-from-bottom-2">
+        <div className="fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-[380px] max-h-[600px] h-[80vh] max-h-[560px] rounded-2xl bg-white border border-[#D6E4FF] shadow-premium-lg overflow-hidden flex flex-col animate-in slide-in-from-bottom-2">
           {/* header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
             <div className="flex items-center gap-2.5">
