@@ -173,7 +173,7 @@ export function CheckoutModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && close()}>
-      <DialogContent className="sm:max-w-lg p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="store-dialog sm:max-w-lg p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">Төлбөр төлөх</DialogTitle>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
           {/* header */}

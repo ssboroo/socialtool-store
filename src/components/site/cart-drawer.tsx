@@ -37,7 +37,7 @@ export function CartDrawer() {
     <Sheet open={isOpen} onOpenChange={(o) => !o && close()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md p-0 bg-white border-[#D6E4FF]"
+        className="store-dialog store-cart-sheet w-full sm:max-w-md p-0 bg-white border-[#D6E4FF]"
       >
         <SheetHeader className="px-5 pt-5 pb-3 border-b border-[#EEF4FF]">
           <SheetTitle className="flex items-center gap-2 text-[#102A43]">

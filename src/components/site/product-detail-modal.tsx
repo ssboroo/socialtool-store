@@ -80,7 +80,7 @@ export function ProductDetailModal() {
 
   return (
     <Dialog open={!!selectedId} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-      <DialogContent className="max-h-[92vh] overflow-hidden border-[#DCE8F7] bg-[#F7FAFE] p-0 sm:max-w-[1180px]">
+      <DialogContent className="store-dialog max-h-[92vh] overflow-hidden border-[#DCE8F7] bg-[#F7FAFE] p-0 sm:max-w-[1180px]">
         <DialogTitle className="sr-only">{product?.name || 'Бүтээгдэхүүн'}</DialogTitle>
         {loading ? (
           <div className="flex min-h-[420px] items-center justify-center"><Loader2 className="size-8 animate-spin text-[#1677FF]" /></div>

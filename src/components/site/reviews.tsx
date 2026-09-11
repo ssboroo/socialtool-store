@@ -30,23 +30,24 @@ function Avatar({ name }: { name: string }) {
 
 export function Reviews({ reviews }: { reviews: Review[] }) {
   return (
-    <section className="relative py-16 lg:py-20 bg-gradient-to-b from-transparent to-[#EEF4FF]/40">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto">
+    <section id="reviews" className="store-section store-reviews">
+      <div className="store-container store-section-inner">
+        <div className="store-section-heading">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
             <Star className="size-3.5 fill-[#1677FF] text-[#1677FF]" /> Үйлчлүүлэгчийн сэтгэгдэл
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-[#102A43]">
             Хэрэглэгчдийн <span className="gradient-text">үнэлгээ</span>
           </h2>
-          <p className="mt-3 text-[#5B7290]">Жинхэнэ хэрэглэгчдийн бодит сэтгэгдэл</p>
+          <p className="mt-3 text-[#5B7290]">Хэрэглэгчдийн хуваалцсан туршлага</p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+          {reviews.length === 0 && <p className="store-empty-review">Одоогоор сэтгэгдэл нийтлэгдээгүй байна.</p>}
           {reviews.map((r) => (
             <div
               key={r.id}
-              className="group relative rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
+              className="store-glass-card group relative rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
             >
               <Quote className="absolute right-5 top-5 size-8 text-[#1677FF]/10 group-hover:text-[#1677FF]/20 transition-colors" />
               <div className="flex items-center gap-0.5">

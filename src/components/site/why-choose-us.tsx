@@ -27,7 +27,7 @@ const CARDS = [
   {
     Icon: Headphones,
     title: '24/7 тусламж',
-    desc: 'Хөдөлгөөнтэй чат болон Telegram хаяг дуусахгүй бэлэн. Асуудал гарвал шууд хандана уу.',
+    desc: 'Асуух зүйл гарвал сайтын чат эсвэл Telegram-аар бидэнтэй холбогдоорой.',
     color: 'from-[#F59E0B] to-[#DC2626]',
     bg: 'bg-[#FFF5E6]',
   },
@@ -35,17 +35,17 @@ const CARDS = [
 
 export function WhyChooseUs() {
   return (
-    <section className="relative py-16 lg:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto">
+    <section id="benefits" className="store-section store-benefits">
+      <div className="store-container store-section-inner">
+        <div className="store-section-heading">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
             <BadgeCheck className="size-3.5" /> Яагаад бид?
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-[#102A43]">
-            Үйлчлүүлэгчид биднийг <span className="gradient-text">итгэдэг</span>
+            Таны ажилд <span className="gradient-text">илүү их боломж</span>
           </h2>
           <p className="mt-3 text-[#5B7290]">
-            Чанар, хурд, аюулгүй байдал — төгс үйлчилгээний төлөө бид бэлэн
+            Хэрэгслээ сонгохоос эхлээд ашиглах хүртэл — бид танд тусална.
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export function WhyChooseUs() {
             return (
               <div
                 key={c.title}
-                className="group relative overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
+                className="store-glass-card group relative overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
               >
                 <div className={`absolute -right-8 -top-8 size-24 rounded-full ${c.bg} opacity-50 group-hover:opacity-80 transition-opacity`} />
                 <div className="relative">

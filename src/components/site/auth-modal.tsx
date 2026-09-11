@@ -59,7 +59,7 @@ export function AuthModal({ open, onClose, onAuthed, initialMode = 'login' }: Pr
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="store-dialog sm:max-w-md p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">{mode === 'register' ? 'Бүртгүүлэх' : 'Нэвтрэх'}</DialogTitle>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
           {/* header */}

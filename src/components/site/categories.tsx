@@ -3,7 +3,7 @@
 import {
   Facebook, Music2, Instagram, Twitter, Send, Mail, Sparkles, LayoutGrid, ArrowRight,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const ICONS: Record<string, { Icon: React.ComponentType<{ className?: string }>; gradient: string; bg: string; fg: string }> = {
   Facebook: { Icon: Facebook, gradient: 'from-[#1877F2] to-[#0B4DBA]', bg: 'bg-[#E8F1FF]', fg: 'text-[#1677FF]' },
@@ -35,9 +35,9 @@ export function Categories({ categories }: { categories: Category[] }) {
   }
 
   return (
-    <section id="categories" className="relative py-16 lg:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto">
+    <section id="categories" className="store-section store-categories">
+      <div className="store-container store-section-inner">
+        <div className="store-section-heading">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
             <Sparkles className="size-3.5" /> Ангилал
           </span>
@@ -58,7 +58,7 @@ export function Categories({ categories }: { categories: Category[] }) {
               <button
                 key={c.id}
                 onClick={() => handleSelect(c.slug)}
-                className={`group relative overflow-hidden rounded-2xl border bg-white p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg ${
+                className={`store-glass-card group relative overflow-hidden rounded-2xl border bg-white p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg ${
                   isActive ? 'border-[#1677FF] ring-2 ring-[#1677FF]/15' : 'border-[#D6E4FF] shadow-premium hover:border-[#1677FF]/40'
                 }`}
               >

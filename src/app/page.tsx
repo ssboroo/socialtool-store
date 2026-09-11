@@ -1,5 +1,7 @@
 import { db } from '@/lib/db'
 import { Header } from '@/components/site/header'
+import { Categories } from '@/components/site/categories'
+import { SupportSection } from '@/components/site/support-section'
 import { Hero } from '@/components/site/hero'
 import { FeaturedProducts } from '@/components/site/featured-products'
 import { WhyChooseUs } from '@/components/site/why-choose-us'
@@ -61,12 +63,12 @@ export default async function Home() {
         <Hero settings={settings} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
-        <details className="store-help store-container"><summary>Үйлчилгээ, заавар болон түгээмэл асуулт</summary>
+        <Categories categories={serializedCategories} />
         <WhyChooseUs />
         <HowItWorks />
         <Reviews reviews={reviews.map((r) => ({ id: r.id, name: r.name, role: r.role, rating: r.rating, content: r.content }))} />
         <Faq faqs={serializedFaqs} />
-        </details>
+        <SupportSection settings={settings} />
       </main>
       <Footer settings={settings} />
       <CartDrawer />

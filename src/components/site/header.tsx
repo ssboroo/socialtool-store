@@ -5,7 +5,7 @@ import { Logo } from './logo'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 
-const links=[{name:'Нүүр',href:'#top'},{name:'Бүтээгдэхүүн',href:'#products'},{name:'Тусламж',href:'#faq'}]
+const links=[{name:'Нүүр',href:'#top'},{name:'Бүтээгдэхүүн',href:'#products'},{name:'Заавар',href:'#how'},{name:'Тусламж',href:'#faq'}]
 export function Header(){
   const [query,setQuery]=useState('')
   const [mobile,setMobile]=useState(false)
