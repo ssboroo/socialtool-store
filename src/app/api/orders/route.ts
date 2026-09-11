@@ -13,51 +13,66 @@ interface OrderItemInput {
   quantity: number
 }
 
+function validText(value: unknown, max: number, min = 1): value is string {
+  return typeof value === 'string' && value.trim().length >= min && value.trim().length <= max
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { customerName, phone, email, telegram, items } = body as {
-      customerName: string
-      phone: string
-      email: string
-      telegram?: string | null
-      items: OrderItemInput[]
+    const body = await req.json() as Record<string, unknown>
+    const customerName = body.customerName
+    const phone = body.phone
+    const email = body.email
+    const telegram = body.telegram
+    const items = body.items
+
+    if (!validText(customerName, 120) || !validText(phone, 32, 3) || !validText(email, 254)) {
+      return NextResponse.json({ error: 'Нэр, утас эсвэл и-мэйл буруу байна' }, { status: 400 })
+    }
+    const normalizedEmail = email.toLowerCase().trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return NextResponse.json({ error: 'И-мэйл хаяг буруу байна' }, { status: 400 })
+    }
+    if (telegram != null && telegram !== '' && !validText(telegram, 80)) {
+      return NextResponse.json({ error: 'Telegram хаяг буруу байна' }, { status: 400 })
+    }
+    if (!Array.isArray(items) || items.length < 1 || items.length > 100 || items.some((item) => {
+      if (!item || typeof item !== 'object') return true
+      const i = item as Partial<OrderItemInput>
+      return !validText(i.productId, 120)
+        || typeof i.name !== 'string' || i.name.length > 200
+        || !Number.isSafeInteger(i.price) || Number(i.price) <= 0
+        || !Number.isSafeInteger(i.quantity) || Number(i.quantity) < 1 || Number(i.quantity) > 99
+        || (i.duration != null && !validTerm(i.duration))
+    })) {
+      return NextResponse.json({ error: 'Захиалгын барааны мэдээлэл буруу байна' }, { status: 400 })
     }
 
-    if (!customerName || !phone || !email || !items?.length) {
-      return NextResponse.json(
-        { error: 'Шаардлагатай талбар дутуу байна' },
-        { status: 400 }
-      )
-    }
-
-    if (!Array.isArray(items) || items.length > 100 || items.some(i => !i || (i.duration != null && !validTerm(i.duration)) || !Number.isSafeInteger(i.quantity) || i.quantity < 1 || i.quantity > 99)) {
-      return NextResponse.json({ error: 'Эрхийн хугацаа эсвэл тоо ширхэг буруу байна' }, { status: 400 })
-    }
-
-    // If the customer is logged in, link the order to their account.
+    const typedItems = items as OrderItemInput[]
     const decoded = getCustomerFromRequest(req)
     const customerId = decoded?.sub || null
 
-    // verify products exist
-    const productIds = items.map((i) => i.productId)
+    const productIds = typedItems.map((i) => i.productId)
     const products = await db.product.findMany({ where: { id: { in: productIds } } })
     const productMap = new Map(products.map((p) => [p.id, p]))
-    for (const it of items) {
-      const p = productMap.get(it.productId)
-      if (!p || !p.available) {
-        return NextResponse.json({ error: `Хэрэгсэл олдсонгүй: ${it.name}` }, { status: 400 })
+    for (const item of typedItems) {
+      const product = productMap.get(item.productId)
+      if (!product || !product.available) {
+        return NextResponse.json({ error: 'Сонгосон бүтээгдэхүүн олдсонгүй эсвэл түр дууссан байна' }, { status: 400 })
       }
-      const allowed = licenseOptions(p.duration)
-      if ((allowed.length && !allowed.includes(it.duration || '')) || (!allowed.length && it.duration)) {
+      const allowed = licenseOptions(product.duration)
+      if ((allowed.length && !allowed.includes(item.duration || '')) || (!allowed.length && item.duration)) {
         return NextResponse.json({ error: 'Барааны хугацааны сонголт өөрчлөгдсөн. Сагсаа шинэчилж дахин сонгоно уу.' }, { status: 400 })
       }
-      if (licensePrice(p, it.duration || '') !== it.price) {
-        return NextResponse.json({ error: 'Үнийн зөрүү байна' }, { status: 400 })
+      if (licensePrice(product, item.duration || '') !== item.price) {
+        return NextResponse.json({ error: 'Үнийн зөрүү байна. Сагсаа шинэчилж дахин оролдоно уу.' }, { status: 400 })
       }
     }
 
-    const total = items.reduce((s, i) => s + i.price * i.quantity, 0)
+    const total = typedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    if (!Number.isSafeInteger(total) || total <= 0) {
+      return NextResponse.json({ error: 'Захиалгын нийт дүн буруу байна' }, { status: 400 })
+    }
     const orderNumber = generateOrderNumber()
 
     const order = await db.order.create({
@@ -65,24 +80,23 @@ export async function POST(req: NextRequest) {
         orderNumber,
         customerName: customerName.trim(),
         phone: phone.trim(),
-        email: email.trim(),
-        telegram: telegram?.trim() || null,
+        email: normalizedEmail,
+        telegram: typeof telegram === 'string' ? telegram.trim() || null : null,
         totalAmount: total,
         status: 'PENDING_PAYMENT',
         customerId,
         items: {
-          create: items.map((i) => ({
-            productId: i.productId,
-            productName: `${productMap.get(i.productId)!.name}${i.duration ? ` — ${i.duration}` : ''}`,
-            price: i.price,
-            quantity: i.quantity,
+          create: typedItems.map((item) => ({
+            productId: item.productId,
+            productName: `${productMap.get(item.productId)!.name}${item.duration ? ` — ${item.duration}` : ''}`,
+            price: item.price,
+            quantity: item.quantity,
           })),
         },
       },
       include: { items: true },
     })
 
-    // send Telegram notification (fire-and-forget)
     const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?order=${order.id}`
     await sendTelegramMessage(
       formatOrderNotification({
@@ -91,7 +105,7 @@ export async function POST(req: NextRequest) {
         phone: order.phone,
         email: order.email,
         telegram: order.telegram || undefined,
-        items: order.items.map((i) => ({ name: i.productName, quantity: i.quantity, price: i.price })),
+        items: order.items.map((item) => ({ name: item.productName, quantity: item.quantity, price: item.price })),
         total: order.totalAmount,
         status: 'Төлбөр хүлээгдэж байна',
         adminUrl,
@@ -104,6 +118,7 @@ export async function POST(req: NextRequest) {
       amount: order.totalAmount,
     })
   } catch (e) {
+    if (e instanceof SyntaxError) return NextResponse.json({ error: 'Хүсэлтийн бүтэц буруу байна' }, { status: 400 })
     console.error('Order creation error:', e)
     return NextResponse.json({ error: 'Захиалга үүсгэхэд алдаа гарлаа' }, { status: 500 })
   }
