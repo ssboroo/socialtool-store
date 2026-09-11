@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import "./production-polish.css";
+import "./store-font.css";
+import "./storefront.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
-
-const siteFont = Inter({
-  subsets: ["cyrillic", "latin"],
-  display: "swap",
-  fallback: ["Segoe UI", "Arial", "sans-serif"],
-});
 
 export const metadata: Metadata = {
   title: "SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор",
@@ -41,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="mn" suppressHydrationWarning>
-      <body className={`${siteFont.className} min-h-screen bg-background text-foreground antialiased`}>
+      <body className="min-h-screen bg-background text-foreground antialiased">
         {children}
         <Toaster />
         <SonnerToaster richColors position="top-center" />

@@ -55,16 +55,18 @@ export default async function Home() {
   const serializedPromo = promotion ? { title: promotion.title, description: promotion.description, badgeText: promotion.badgeText, discountPercent: promotion.discountPercent, endAt: promotion.endAt.toISOString() } : null
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-[#F5F9FF]">
+    <div className="storefront relative flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
         <Hero settings={settings} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
+        <details className="store-help store-container"><summary>Үйлчилгээ, заавар болон түгээмэл асуулт</summary>
         <WhyChooseUs />
         <HowItWorks />
         <Reviews reviews={reviews.map((r) => ({ id: r.id, name: r.name, role: r.role, rating: r.rating, content: r.content }))} />
         <Faq faqs={serializedFaqs} />
+        </details>
       </main>
       <Footer settings={settings} />
       <CartDrawer />

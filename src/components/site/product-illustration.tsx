@@ -27,7 +27,7 @@ export function ProductIllustration({
   const meta = MAP[icon] || { Icon: Package, gradient: 'from-[#E8F1FF] to-[#D6E4FF]', accent: '#1677FF' }
   const { Icon } = meta
   return (
-    <div className={cn('relative overflow-hidden rounded-xl bg-gradient-to-br', meta.gradient, className)}>
+    <div className={cn('illustration-glass relative overflow-hidden rounded-xl bg-gradient-to-br', meta.gradient, className)}>
       <div className="absolute inset-0 opacity-[0.07]" style={{
         backgroundImage:
           'radial-gradient(circle at 20% 20%, ' + meta.accent + ' 0, transparent 35%), radial-gradient(circle at 80% 70%, ' + meta.accent + ' 0, transparent 30%)',
@@ -36,7 +36,7 @@ export function ProductIllustration({
       <div className="absolute inset-0 grid place-items-center">
         <div className="relative">
           <div className="absolute inset-0 blur-xl opacity-30 rounded-full" style={{ background: meta.accent }} />
-          <div className="relative grid size-14 place-items-center rounded-2xl bg-white/70 backdrop-blur border border-white shadow-premium">
+          <div className="illustration-icon relative grid size-16 place-items-center rounded-2xl bg-white/70 backdrop-blur border border-white shadow-premium">
             <Icon className="size-7" style={{ color: meta.accent }} />
           </div>
         </div>
