@@ -6,6 +6,7 @@ import { ProductImage } from './product-illustration'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { formatTugrik } from '@/lib/format'
 import { getYouTubeId } from '@/lib/media'
+import { licenseVariants } from '@/lib/license'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,9 @@ export interface Product {
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const add = useCartStore((s) => s.add)
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
+  const variants = licenseVariants(product.duration)
+  const defaultVariant = variants[0]
+  const durationLabel = variants.length > 0 ? variants.map((v) => v.term).join(' · ') : ''
 
   const handleAdd = (e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -40,12 +44,15 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       toast.error('Энэ бүтээгдэхүүн түр дууссан байна')
       return
     }
+
+    const price = defaultVariant?.price ?? product.price
     add({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price,
       icon: product.icon,
       category: product.category,
+      duration: defaultVariant?.term,
     })
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
   }
@@ -65,9 +72,9 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       role="button"
       aria-label={`${product.name} дэлгэрэнгүй мэдээлэл`}
       className={cn(
-        'group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-premium transition-all duration-300 focus-visible:border-[#1677FF]',
+        'group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-premium transition-all duration-300 focus-visible:border-[#1677FF]',
         product.available
-          ? 'border-[#D6E4FF] hover:-translate-y-1 hover:shadow-premium-lg hover:border-[#1677FF]/40'
+          ? 'border-[#D6E4FF] hover:-translate-y-1 hover:border-[#1677FF]/40 hover:shadow-premium-lg'
           : 'border-slate-200 opacity-90',
       )}
     >
@@ -84,13 +91,17 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           <CircleOff className="size-3" /> Түр дууссан
         </span>
       ) : null}
-      {product.duration ? (
-        <span className="absolute left-3 bottom-3 z-10 inline-flex items-center gap-1 rounded-full border border-[#F59E0B]/20 bg-[#FFF5E6] px-2 py-0.5 text-[10px] font-bold text-[#92400E] shadow-premium">
-          <Clock className="size-2.5" /> {product.duration}
+      {durationLabel ? (
+        <span
+          title={durationLabel}
+          className="absolute bottom-3 left-3 z-10 inline-flex max-w-[68%] items-center gap-1 truncate rounded-full border border-[#F59E0B]/20 bg-[#FFF5E6] px-2 py-0.5 text-[10px] font-bold text-[#92400E] shadow-premium"
+        >
+          <Clock className="size-2.5 shrink-0" />
+          <span className="truncate">{durationLabel}</span>
         </span>
       ) : null}
       {product.tutorialVideoUrl && getYouTubeId(product.tutorialVideoUrl) ? (
-        <span className="absolute right-3 bottom-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#1677FF] px-2 py-0.5 text-[10px] font-bold text-white shadow-premium">
+        <span className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#1677FF] px-2 py-0.5 text-[10px] font-bold text-white shadow-premium">
           <PlayCircle className="size-2.5" /> Видео
         </span>
       ) : null}
@@ -135,7 +146,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
         <div className="mt-3 flex flex-wrap items-end gap-x-2 gap-y-1">
           <span className="text-xl font-extrabold tracking-tight text-[#102A43]">
-            {formatTugrik(product.price)}
+            {formatTugrik(defaultVariant?.price ?? product.price)}
           </span>
           {product.oldPrice ? (
             <span className="text-xs text-[#5B7290] line-through">
@@ -144,7 +155,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           ) : null}
         </div>
 
-        <div className="mt-auto pt-4 flex items-center gap-2">
+        <div className="mt-auto flex items-center gap-2 pt-4">
           <Button
             onClick={handleAdd}
             disabled={!product.available}
