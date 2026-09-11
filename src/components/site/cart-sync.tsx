@@ -32,6 +32,13 @@ export function CartSync() {
     useCartStore.setState({ syncBusy: true })
     setMessage('Сагс ачаалж байна…')
 
+    const unlockAfterLoadError = (error: unknown) => {
+      if (cancelled) return
+      failed = true
+      useCartStore.setState({ syncBusy: false })
+      setMessage(error instanceof Error ? error.message : 'Сагс ачаалж чадсангүй')
+    }
+
     const load = async (mergeGuest = false, background = false) => {
       const startingItems = useCartStore.getState().items
       const res = await fetch('/api/customer/cart', { cache: 'no-store', signal: controller.signal })
@@ -50,6 +57,7 @@ export function CartSync() {
       useCartStore.setState({ items, ownerId: customerId, syncBusy: false })
       applying = false
       initialized = true
+      failed = false
       setMessage('')
       if (mergeGuest && guest.length) { dirty = true; void save() }
     }
@@ -74,25 +82,40 @@ export function CartSync() {
         else { version = data.version; failed = false; setMessage('') }
       } catch (e) {
         if (!cancelled) { failed = true; setMessage(e instanceof Error ? e.message : 'Сагс хадгалагдсангүй') }
-        // Retain local items; retry only on a new edit or explicit user retry.
       } finally { saving = false }
       if (dirty && !cancelled) void save()
     }
+
     const unsubscribe = useCartStore.subscribe((state, old) => {
       if (state.items === old.items || applying || !initialized || cancelled) return
       dirty = true
       clearTimeout(timer)
       timer = setTimeout(() => { void save() }, 200)
     })
+
     retryAction.current = () => {
-      if (!initialized) void load(true).catch(e => setMessage(e instanceof Error ? e.message : 'Сагс ачаалж чадсангүй'))
-      else if (failed) { dirty = true; void save() }
-      else void load().catch(() => setMessage('Сагс шинэчилж чадсангүй'))
+      if (!initialized) {
+        useCartStore.setState({ syncBusy: true })
+        setMessage('Сагс ачаалж байна…')
+        void load(true).catch(unlockAfterLoadError)
+      } else if (failed) {
+        dirty = true
+        void save()
+      } else {
+        void load().catch(e => setMessage(e instanceof Error ? e.message : 'Сагс шинэчилж чадсангүй'))
+      }
     }
-    const refresh = () => { if (initialized && !dirty && !saving && !failed) void load(false, true).catch(() => setMessage('Сагс шинэчилж чадсангүй')) }
+
+    const refresh = () => {
+      if (initialized && !dirty && !saving && !failed) {
+        void load(false, true).catch(() => setMessage('Сагс шинэчилж чадсангүй'))
+      }
+    }
+
     window.addEventListener('focus', refresh)
     const interval = setInterval(refresh, 30000)
-    void load(true).catch(e => { if (!cancelled) setMessage(e instanceof Error ? e.message : 'Сагс ачаалж чадсангүй') })
+    void load(true).catch(unlockAfterLoadError)
+
     return () => {
       cancelled = true
       controller.abort()
