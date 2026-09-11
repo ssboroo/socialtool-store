@@ -11,7 +11,6 @@ export interface Customer {
   telegram: string | null
 }
 
-// All header, checkout and account views share the same authenticated customer.
 const useCustomerState = create<{
   customer: Customer | null
   loading: boolean
@@ -34,15 +33,17 @@ async function refreshCustomer() {
       const data = await res.json()
       if (started === revision) useCustomerState.setState({ customer: data.customer || null, loading: false })
     } catch {
-      if (started === revision) useCustomerState.setState({ loading: false })
-    } finally { pending = null }
+      if (started === revision) useCustomerState.setState({ customer: null, loading: false })
+    } finally {
+      pending = null
+    }
   })()
   return pending
 }
 
 export function useCustomer() {
   const { customer, loading, setCustomer } = useCustomerState()
-  const refresh = useCallback(refreshCustomer, [])
+  const refresh = useCallback(() => refreshCustomer(), [])
   useEffect(() => { void refresh() }, [refresh])
   const logout = useCallback(async () => {
     const res = await fetch('/api/auth/logout', { method: 'POST' })
