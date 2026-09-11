@@ -49,25 +49,37 @@ export function ProductDetailModal() {
 
   useEffect(() => {
     if (!selectedId) {
-      setProduct(null)
+      queueMicrotask(() => {
+        setProduct(null)
+        setLoading(false)
+        setQty(1)
+        setVideoPlaying(false)
+        setActiveImage(null)
+      })
       return
     }
 
     const controller = new AbortController()
-    setLoading(true)
-    setQty(1)
-    setVideoPlaying(false)
-    setActiveImage(null)
+    queueMicrotask(() => {
+      if (controller.signal.aborted) return
+      setProduct(null)
+      setLoading(true)
+      setQty(1)
+      setVideoPlaying(false)
+      setActiveImage(null)
+    })
 
     fetch(`/api/products/${selectedId}`, { signal: controller.signal, cache: 'no-store' })
       .then(async (r) => {
         if (!r.ok) throw new Error('Product request failed')
         return r.json() as Promise<Product>
       })
-      .then((d) => setProduct(d))
+      .then((data) => {
+        if (!controller.signal.aborted) setProduct(data)
+      })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
-        setProduct(null)
+        if (!controller.signal.aborted) setProduct(null)
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false)
@@ -185,10 +197,10 @@ export function ProductDetailModal() {
                 <div className="mt-5">
                   <h4 className="text-sm font-bold text-[#102A43]">Боломжууд</h4>
                   <ul className="mt-2.5 space-y-1.5">
-                    {features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm text-[#5B7290]">
+                    {features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm text-[#5B7290]">
                         <Check className="mt-0.5 size-4 shrink-0 text-[#16A34A]" />
-                        {f}
+                        {feature}
                       </li>
                     ))}
                   </ul>
