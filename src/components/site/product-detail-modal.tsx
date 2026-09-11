@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Star, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X } from 'lucide-react'
+import { Star, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
 import { useUIStore } from '@/store/cart'
 import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
@@ -29,6 +29,7 @@ interface Product {
   category: string
   rating: number
   reviewCount: number
+  available: boolean
   features?: string | null
   duration?: string | null
   tutorialVideoUrl?: string | null
@@ -48,29 +49,39 @@ export function ProductDetailModal() {
 
   useEffect(() => {
     if (!selectedId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProduct(null)
       return
     }
-    let cancelled = false
-     
+
+    const controller = new AbortController()
     setLoading(true)
-     
     setQty(1)
-     
     setVideoPlaying(false)
-     
     setActiveImage(null)
-    fetch(`/api/products/${selectedId}`)
-      .then((r) => r.json())
-      .then((d) => { if (!cancelled) setProduct(d) })
-      .catch(() => { if (!cancelled) setProduct(null) })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
+
+    fetch(`/api/products/${selectedId}`, { signal: controller.signal, cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) throw new Error('Product request failed')
+        return r.json() as Promise<Product>
+      })
+      .then((d) => setProduct(d))
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setProduct(null)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+
+    return () => controller.abort()
   }, [selectedId])
 
   const handleAdd = () => {
     if (!product) return
+    if (!product.available) {
+      toast.error('Энэ бүтээгдэхүүн түр дууссан байна')
+      return
+    }
     add(
       {
         id: product.id,
@@ -103,9 +114,8 @@ export function ProductDetailModal() {
           </div>
         ) : product ? (
           <div className="grid sm:grid-cols-2 max-h-[92vh] overflow-y-auto custom-scroll">
-            {/* illustration */}
             <div className="relative bg-gradient-to-br from-[#E8F1FF] to-[#F5F9FF] p-6 sm:p-8">
-              <div className="absolute top-4 left-4 flex gap-2">
+              <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
                 <span className="rounded-full bg-white/90 backdrop-blur border border-[#D6E4FF] px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA]">
                   {product.category}
                 </span>
@@ -114,11 +124,15 @@ export function ProductDetailModal() {
                     -{product.discount}%
                   </span>
                 ) : null}
+                {!product.available ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/90 px-2.5 py-1 text-[11px] font-bold text-white">
+                    <CircleOff className="size-3" /> Түр дууссан
+                  </span>
+                ) : null}
               </div>
-              <ProductImage image={product.image} icon={product.icon} alt={product.name} className="aspect-square w-full mt-6" />
+              <ProductImage image={product.image} icon={product.icon} alt={product.name} className={`aspect-square w-full mt-6 ${!product.available ? 'grayscale-[20%]' : ''}`} />
             </div>
 
-            {/* info */}
             <div className="p-6 sm:p-8 flex flex-col">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5">
@@ -188,7 +202,6 @@ export function ProductDetailModal() {
                 </p>
               </div>
 
-              {/* Tutorial video (YouTube) */}
               {(() => {
                 const ytId = product.tutorialVideoUrl ? getYouTubeId(product.tutorialVideoUrl) : null
                 if (!ytId) return null
@@ -208,11 +221,11 @@ export function ProductDetailModal() {
                         />
                       ) : (
                         <button
+                          type="button"
                           onClick={() => setVideoPlaying(true)}
                           className="absolute inset-0 size-full group"
                           aria-label="Видео тоглуулах"
                         >
-                          { }
                           <img
                             src={getYouTubeThumb(ytId)}
                             alt={product.name + ' заавар видео'}
@@ -234,7 +247,6 @@ export function ProductDetailModal() {
                 )
               })()}
 
-              {/* Instruction images gallery */}
               {(() => {
                 const images = parseImageList(product.instructionImages)
                 if (images.length === 0) return null
@@ -246,12 +258,12 @@ export function ProductDetailModal() {
                     <div className="mt-2.5 grid grid-cols-3 gap-2">
                       {images.map((src, i) => (
                         <button
+                          type="button"
                           key={i}
                           onClick={() => setActiveImage(src)}
                           className="group relative aspect-video overflow-hidden rounded-lg border border-[#D6E4FF] bg-[#F5F9FF]"
                           aria-label={`Зураг ${i + 1}`}
                         >
-                          { }
                           <img
                             src={src}
                             alt={`${product.name} заавар зураг ${i + 1}`}
@@ -267,13 +279,14 @@ export function ProductDetailModal() {
                 )
               })()}
 
-              {/* qty + add */}
               <div className="mt-auto pt-5 flex items-center gap-3">
                 <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
                   <button
+                    type="button"
+                    aria-label="Тоо ширхэг багасгах"
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
                     className="grid size-10 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
-                    disabled={qty <= 1}
+                    disabled={qty <= 1 || !product.available}
                   >
                     −
                   </button>
@@ -281,25 +294,28 @@ export function ProductDetailModal() {
                     {qty}
                   </span>
                   <button
-                    onClick={() => setQty((q) => q + 1)}
-                    className="grid size-10 place-items-center text-[#5B7290] hover:text-[#1677FF]"
+                    type="button"
+                    aria-label="Тоо ширхэг нэмэх"
+                    onClick={() => setQty((q) => Math.min(99, q + 1))}
+                    className="grid size-10 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
+                    disabled={qty >= 99 || !product.available}
                   >
                     +
                   </button>
                 </div>
                 <Button
                   onClick={handleAdd}
-                  className="flex-1 h-12 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg gap-2"
+                  disabled={!product.available}
+                  className={`flex-1 h-12 rounded-xl gap-2 ${product.available ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg' : 'bg-slate-200 text-slate-500 cursor-not-allowed hover:bg-slate-200'}`}
                 >
-                  <ShoppingCart className="size-4" />
-                  Сагсанд нэмэх · {formatTugrik(product.price * qty)}
+                  {product.available ? <ShoppingCart className="size-4" /> : <CircleOff className="size-4" />}
+                  {product.available ? `Сагсанд нэмэх · ${formatTugrik(product.price * qty)}` : 'Түр дууссан'}
                 </Button>
               </div>
             </div>
           </div>
         ) : null}
 
-        {/* Image lightbox */}
         {activeImage && (
           <div
             className="fixed inset-0 z-[60] grid place-items-center bg-black/80 backdrop-blur-sm p-4 cursor-zoom-out"
@@ -308,13 +324,13 @@ export function ProductDetailModal() {
             aria-label="Зураг томоор үзэх"
           >
             <button
+              type="button"
               className="absolute top-4 right-4 grid size-10 place-items-center rounded-full bg-white/15 backdrop-blur text-white hover:bg-white/25"
               onClick={(e) => { e.stopPropagation(); setActiveImage(null) }}
               aria-label="Хаах"
             >
               <X className="size-5" />
             </button>
-            { }
             <img
               src={activeImage}
               alt="Зааврын зураг томоор"
