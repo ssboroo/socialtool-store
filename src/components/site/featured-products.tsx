@@ -21,11 +21,18 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
   const [sort, setSort] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured')
 
   useEffect(() => {
-    const handler = (e: Event) => {
+    const categoryHandler = (e: Event) => {
       const slug = (e as CustomEvent<string>).detail
       setActiveCat(slug)
     }
-    window.addEventListener('st-category', handler)
+    const searchHandler = (e: Event) => {
+      const value = (e as CustomEvent<string>).detail || ''
+      setQuery(value)
+    }
+
+    window.addEventListener('st-category', categoryHandler)
+    window.addEventListener('st-search', searchHandler)
+
     try {
       const q = sessionStorage.getItem('st-search')
       if (q) {
@@ -33,7 +40,11 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
         sessionStorage.removeItem('st-search')
       }
     } catch {}
-    return () => window.removeEventListener('st-category', handler)
+
+    return () => {
+      window.removeEventListener('st-category', categoryHandler)
+      window.removeEventListener('st-search', searchHandler)
+    }
   }, [])
 
   useEffect(() => {
