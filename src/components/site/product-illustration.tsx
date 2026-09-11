@@ -3,7 +3,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const MAP: Record<string, { Icon: React.ComponentType<{ className?: string }>; gradient: string; accent: string }> = {
+const MAP: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; gradient: string; accent: string }> = {
   Facebook: { Icon: Facebook, gradient: 'from-[#E8F1FF] to-[#D6E4FF]', accent: '#1677FF' },
   Music2: { Icon: Music2, gradient: 'from-[#EEF4FF] to-[#D6E4FF]', accent: '#0B4DBA' },
   Instagram: { Icon: Instagram, gradient: 'from-[#FFE8F0] to-[#FFD6E8]', accent: '#E1306C' },
