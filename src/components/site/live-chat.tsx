@@ -167,7 +167,7 @@ export function LiveChat() {
       >
         <span className="absolute -inset-0.5 rounded-full bg-[#1677FF]/30 blur-md group-hover:opacity-100 opacity-0 transition-opacity" />
         <MessageCircle className="relative size-5" />
-        <span className="relative text-sm font-bold hidden sm:inline">Админтай холбогдох</span>
+        <span className="relative text-sm font-bold">Тусламж</span>
         {!open && (
           <span className="absolute -top-1 -right-1 flex size-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16A34A] opacity-75" />
