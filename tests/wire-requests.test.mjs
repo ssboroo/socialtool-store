@@ -1,7 +1,7 @@
 import {test} from 'node:test'
 import assert from 'node:assert/strict'
 import {createPaymentIntent,createCheckoutSession,WireApiError} from '../src/lib/wire.ts'
-test('Wire request contracts: auth, minor units, stable keys, operators and typed errors', async () => {
+test('Wire request contracts: auth, MNT amounts, stable keys, operators and typed errors', async () => {
  const original=global.fetch, key=process.env.WIRE_MN_API_KEY, ops=process.env.WIRE_MN_ALLOWED_OPERATORS
  const calls=[]
  try {
@@ -9,7 +9,7 @@ test('Wire request contracts: auth, minor units, stable keys, operators and type
  global.fetch=async (url,opts)=>{calls.push({url,...opts}); return Response.json({id:'pi_mock',url:'https://pay.wire.mn/c/mock'})}
  await createPaymentIntent({orderId:'order-a',amount:500})
  await createPaymentIntent({orderId:'order-a',amount:500})
- assert.equal(JSON.parse(calls[0].body).amount,50000)
+ assert.equal(JSON.parse(calls[0].body).amount,500)
  assert.equal(JSON.parse(calls[0].body).allowed_operators,undefined)
  assert.equal(calls[0].headers.Authorization,'Bearer sk_live_local_mock_only')
  assert.equal(calls[0].headers['Idempotency-Key'],calls[1].headers['Idempotency-Key'])
