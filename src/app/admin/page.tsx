@@ -7,6 +7,7 @@ import { AdminOrders } from '@/components/admin/orders'
 import { AdminProducts } from '@/components/admin/products'
 import { ProductAdminTools } from '@/components/admin/product-admin-tools'
 import { SupplierCatalog } from '@/components/admin/supplier-catalog'
+import { SupplierFeedCard } from '@/components/admin/supplier-feed-card'
 import { G2ASyncCard } from '@/components/admin/g2a-sync-card'
 import { AdminCategories } from '@/components/admin/categories'
 import { AdminReviews } from '@/components/admin/reviews'
@@ -140,7 +141,7 @@ export default function AdminPage() {
           {tab === 'overview' && <AdminOverview token={token} />}
           {tab === 'orders' && <AdminOrders token={token} />}
           {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><AdminProducts token={token} categories={categories} /></>}
-          {tab === 'suppliers' && <><G2ASyncCard /><SupplierCatalog /></>}
+          {tab === 'suppliers' && <><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
           {tab === 'categories' && <AdminCategories token={token} />}
           {tab === 'promotions' && <AdminPromotions token={token} />}
           {tab === 'reviews' && <AdminReviews token={token} />}
