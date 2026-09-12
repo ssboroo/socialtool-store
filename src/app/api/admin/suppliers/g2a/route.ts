@@ -1,3 +1,4 @@
+import type { SupplierCatalogItem } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
@@ -147,7 +148,7 @@ export async function POST(req: NextRequest) {
       })
     })
 
-    const syncedItems = []
+    const syncedItems: SupplierCatalogItem[] = []
     for (let start = 0; start < operations.length; start += 50) {
       syncedItems.push(...await db.$transaction(operations.slice(start, start + 50)))
     }
