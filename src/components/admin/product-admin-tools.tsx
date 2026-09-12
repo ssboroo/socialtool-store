@@ -31,15 +31,12 @@ export function ProductAdminTools({ token, categories }: { token: string; catego
   const [selected, setSelected] = useState('')
   const [duplicating, setDuplicating] = useState(false)
 
-  const loadProducts = async () => {
-    try {
-      const res = await fetch('/api/admin/products', { headers: { authorization: `Bearer ${token}` }, cache: 'no-store' })
-      const data = await res.json()
-      setProducts(Array.isArray(data) ? data : [])
-    } catch {}
-  }
-
-  useEffect(() => { void loadProducts() }, [token])
+  useEffect(() => {
+    fetch('/api/admin/products', { headers: { authorization: `Bearer ${token}` }, cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [token])
 
   const duplicate = async () => {
     const source = products.find(p => p.id === selected)
@@ -70,12 +67,9 @@ export function ProductAdminTools({ token, categories }: { token: string; catego
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Хуулбарлаж чадсангүй')
       toast.success('Бүтээгдэхүүний хуулбар үүслээ')
-      setSelected('')
-      await loadProducts()
-      window.dispatchEvent(new CustomEvent('admin-products-refresh'))
+      window.location.reload()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Хуулбарлаж чадсангүй')
-    } finally {
       setDuplicating(false)
     }
   }
@@ -88,10 +82,7 @@ export function ProductAdminTools({ token, categories }: { token: string; catego
           <p className="mt-0.5 text-xs text-[#5B7290]">Олон бараа CSV-ээр оруулах, зураг бөөнөөр холбох эсвэл одоо байгаа барааг хуулбарлах.</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <ProductBulkImport token={token} categories={categories} onImported={() => {
-            void loadProducts()
-            window.dispatchEvent(new CustomEvent('admin-products-refresh'))
-          }} />
+          <ProductBulkImport token={token} categories={categories} onImported={() => window.location.reload()} />
           <div className="flex min-w-0 items-center gap-2">
             <select
               value={selected}
