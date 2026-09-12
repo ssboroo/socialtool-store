@@ -11,13 +11,25 @@ function safeSlug(value: string) {
     .slice(0, 80)
 }
 
-function features(item: { brandName: string | null; regionName: string | null; serviceName: string }) {
+function features(item: { supplier: string; brandName: string | null; regionName: string | null; serviceName: string }) {
   return [
     item.brandName ? `Брэнд: ${item.brandName}` : null,
     item.regionName ? `Бүс: ${item.regionName}` : null,
     `Төрөл: ${item.serviceName}`,
-    'Каталог: G2G',
+    `Нийлүүлэгч: ${item.supplier}`,
   ].filter(Boolean).join(';')
+}
+
+function categorySlugFor(item: { supplier: string; serviceName: string }) {
+  const category = safeSlug(item.serviceName) || 'catalog'
+  if (item.supplier === 'G2G') return `supplier-${category}`
+  return `supplier-${safeSlug(item.supplier) || 'csv'}-${category}`.slice(0, 100)
+}
+
+function productSlugFor(item: { supplier: string; externalId: string; id: string }) {
+  const external = safeSlug(item.externalId) || item.id.toLowerCase()
+  if (item.supplier === 'G2G') return `g2g-${external}`.slice(0, 100)
+  return `supplier-${safeSlug(item.supplier) || 'csv'}-${external}`.slice(0, 100)
 }
 
 export async function POST(req: NextRequest) {
@@ -32,8 +44,8 @@ export async function POST(req: NextRequest) {
 
     const items = await db.supplierCatalogItem.findMany({
       where: ids.length
-        ? { supplier: 'G2G', id: { in: ids }, salePrice: { gt: 0 } }
-        : { supplier: 'G2G', salePrice: { gt: 0 }, published: false },
+        ? { id: { in: ids }, salePrice: { gt: 0 } }
+        : { salePrice: { gt: 0 }, published: false },
       orderBy: { updatedAt: 'asc' },
       take: ids.length ? ids.length : limit,
     })
@@ -45,8 +57,8 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       try {
         if (!item.salePrice || item.salePrice <= 0) continue
-        const categoryName = item.serviceName || 'G2G Catalog'
-        const categorySlug = `supplier-${safeSlug(categoryName) || 'g2g'}`
+        const categoryName = item.serviceName || `${item.supplier} Catalog`
+        const categorySlug = categorySlugFor({ supplier: item.supplier, serviceName: categoryName })
         const category = await db.category.upsert({
           where: { slug: categorySlug },
           update: { name: categoryName },
@@ -54,7 +66,7 @@ export async function POST(req: NextRequest) {
             name: categoryName,
             slug: categorySlug,
             icon: categoryName.toLowerCase().includes('gift') ? 'Gift' : 'Package',
-            description: 'Нийлүүлэгчийн каталогоос синк хийсэн бүтээгдэхүүнүүд',
+            description: `${item.supplier} нийлүүлэгчийн каталогоос оруулсан бүтээгдэхүүнүүд`,
             order: 100,
           },
         })
@@ -63,7 +75,7 @@ export async function POST(req: NextRequest) {
         const productData = {
           name: item.name,
           shortDesc,
-          description: `${item.name}. G2G supplier catalog-аас синк хийсэн бүтээгдэхүүн. Худалдан авахаасаа өмнө бүс, платформ болон хүргэлтийн нөхцөлийг шалгана уу.`,
+          description: `${item.name}. ${item.supplier} supplier catalog-аас оруулсан бүтээгдэхүүн. Худалдан авахаасаа өмнө бүс, платформ болон хүргэлтийн нөхцөлийг шалгана уу.`,
           price: item.salePrice,
           category: category.name,
           categoryId: category.id,
@@ -78,7 +90,7 @@ export async function POST(req: NextRequest) {
           product = await db.product.update({ where: { id: product.id }, data: productData })
           updated += 1
         } else {
-          const slug = `g2g-${safeSlug(item.externalId) || item.id.toLowerCase()}`.slice(0, 100)
+          const slug = productSlugFor(item)
           const bySlug = await db.product.findUnique({ where: { slug } })
           product = bySlug
             ? await db.product.update({ where: { id: bySlug.id }, data: productData })
@@ -97,7 +109,7 @@ export async function POST(req: NextRequest) {
     }
 
     const remaining = allPriced
-      ? await db.supplierCatalogItem.count({ where: { supplier: 'G2G', salePrice: { gt: 0 }, published: false } })
+      ? await db.supplierCatalogItem.count({ where: { salePrice: { gt: 0 }, published: false } })
       : 0
 
     return NextResponse.json({ ok: true, created, updated, errors, processed: items.length, remaining })
