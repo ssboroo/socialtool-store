@@ -13,7 +13,7 @@ function safeSlug(value: string) {
 
 function features(item: { supplier: string; brandName: string | null; regionName: string | null; serviceName: string }) {
   return [
-    item.brandName ? `Брэнд: ${item.brandName}` : null,
+    item.brandName ? `Брэнд/Платформ: ${item.brandName}` : null,
     item.regionName ? `Бүс: ${item.regionName}` : null,
     `Төрөл: ${item.serviceName}`,
     `Нийлүүлэгч: ${item.supplier}`,
@@ -29,7 +29,24 @@ function categorySlugFor(item: { supplier: string; serviceName: string }) {
 function productSlugFor(item: { supplier: string; externalId: string; id: string }) {
   const external = safeSlug(item.externalId) || item.id.toLowerCase()
   if (item.supplier === 'G2G') return `g2g-${external}`.slice(0, 100)
+  if (item.supplier === 'G2A') return `g2a-${external}`.slice(0, 100)
   return `supplier-${safeSlug(item.supplier) || 'csv'}-${external}`.slice(0, 100)
+}
+
+function safeG2AImage(item: { supplier: string; metadata: string | null }) {
+  if (item.supplier !== 'G2A' || !item.metadata) return null
+  try {
+    const parsed = JSON.parse(item.metadata) as {
+      product?: { portraitImage?: unknown; coverImage?: unknown; thumbnail?: unknown } | null
+    }
+    const candidates = [parsed.product?.portraitImage, parsed.product?.coverImage, parsed.product?.thumbnail]
+    for (const candidate of candidates) {
+      if (typeof candidate !== 'string') continue
+      const url = new URL(candidate)
+      if (url.protocol === 'https:' && url.hostname === 'images.g2a.com') return url.toString()
+    }
+  } catch {}
+  return null
 }
 
 export async function POST(req: NextRequest) {
@@ -72,6 +89,7 @@ export async function POST(req: NextRequest) {
         })
 
         const shortDesc = [item.brandName, item.regionName].filter(Boolean).join(' · ') || `${item.serviceName} бүтээгдэхүүн`
+        const image = safeG2AImage(item)
         const productData = {
           name: item.name,
           shortDesc,
@@ -80,8 +98,9 @@ export async function POST(req: NextRequest) {
           category: category.name,
           categoryId: category.id,
           icon: categoryName.toLowerCase().includes('gift') ? 'Gift' : 'Package',
+          ...(image ? { image } : {}),
           available: item.available,
-          deliveryInfo: 'Захиалгын дараа боловсруулна',
+          deliveryInfo: item.supplier === 'G2A' ? 'G2A Export API захиалгын дараа хүргэнэ' : 'Захиалгын дараа боловсруулна',
           features: features(item),
         }
 
