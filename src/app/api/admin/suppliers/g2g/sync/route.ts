@@ -9,7 +9,14 @@ function clean(value: unknown, max = 180) {
 
 export async function POST(req: NextRequest) {
   if (!getAdminFromRequest(req)) return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 })
-  if (!g2gConfigured()) return NextResponse.json({ error: 'G2G API key тохируулаагүй байна' }, { status: 409 })
+  if (!g2gConfigured()) {
+    return NextResponse.json({
+      ok: true,
+      disabled: true,
+      synced: 0,
+      message: 'G2G API access байхгүй. CSV Supplier горим идэвхтэй.',
+    })
+  }
 
   try {
     const body = await req.json() as Record<string, unknown>
