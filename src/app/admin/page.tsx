@@ -6,6 +6,7 @@ import { AdminOverview } from '@/components/admin/overview'
 import { AdminOrders } from '@/components/admin/orders'
 import { AdminProducts } from '@/components/admin/products'
 import { ProductAdminTools } from '@/components/admin/product-admin-tools'
+import { SupplierCatalog } from '@/components/admin/supplier-catalog'
 import { AdminCategories } from '@/components/admin/categories'
 import { AdminReviews } from '@/components/admin/reviews'
 import { AdminFaqs } from '@/components/admin/faqs'
@@ -17,7 +18,7 @@ import { Logo } from '@/components/site/logo'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, ShoppingBag, Package, MessageCircle, LogOut, ExternalLink,
-  Tag, Star, HelpCircle, Gift, Users, Settings,
+  Tag, Star, HelpCircle, Gift, Users, Settings, Database,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -30,7 +31,7 @@ interface Category {
 }
 
 type TabId =
-  | 'overview' | 'orders' | 'products' | 'categories'
+  | 'overview' | 'orders' | 'products' | 'suppliers' | 'categories'
   | 'reviews' | 'faqs' | 'promotions' | 'customers'
   | 'chat' | 'settings'
 
@@ -38,6 +39,7 @@ const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: 
   { id: 'overview', label: 'Тойм', Icon: LayoutDashboard },
   { id: 'orders', label: 'Захиалга', Icon: ShoppingBag },
   { id: 'products', label: 'Бүтээгдэхүүн', Icon: Package },
+  { id: 'suppliers', label: 'Нийлүүлэгч', Icon: Database },
   { id: 'categories', label: 'Ангилал', Icon: Tag },
   { id: 'promotions', label: 'Хямдрал', Icon: Gift },
   { id: 'reviews', label: 'Сэтгэгдэл', Icon: Star },
@@ -137,6 +139,7 @@ export default function AdminPage() {
           {tab === 'overview' && <AdminOverview token={token} />}
           {tab === 'orders' && <AdminOrders token={token} />}
           {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><AdminProducts token={token} categories={categories} /></>}
+          {tab === 'suppliers' && <SupplierCatalog />}
           {tab === 'categories' && <AdminCategories token={token} />}
           {tab === 'promotions' && <AdminPromotions token={token} />}
           {tab === 'reviews' && <AdminReviews token={token} />}

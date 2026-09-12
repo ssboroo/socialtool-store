@@ -116,12 +116,12 @@ model Review {
 }
 
 model ChatSession {
-  id           String        @id @default(cuid())
-  customerName String
-  phone        String?
-  createdAt    DateTime      @default(now())
-  lastMessageAt DateTime     @default(now())
-  messages     ChatMessage[]
+  id            String        @id @default(cuid())
+  customerName  String
+  phone         String?
+  createdAt     DateTime      @default(now())
+  lastMessageAt DateTime      @default(now())
+  messages      ChatMessage[]
 }
 
 model ChatMessage {
@@ -179,8 +179,41 @@ model Promotion {
 
 // Encoded image bytes are backed up with the persistent application database.
 model UploadedImage {
-  filename String @id
-  mimeType String
-  bytes Bytes
+  filename  String   @id
+  mimeType  String
+  bytes     Bytes
   createdAt DateTime @default(now())
+}
+
+// Supplier-neutral catalog. G2G is the first connector, but additional suppliers
+// can use the same table without changing the storefront Product model.
+model SupplierCatalogItem {
+  id              String   @id @default(cuid())
+  supplier        String
+  externalId      String
+  serviceId       String?
+  serviceName     String
+  categoryId      String?
+  categoryName    String?
+  brandId         String?
+  brandName       String?
+  regionName      String?
+  name            String
+  sourceUrl       String?
+  sourceCurrency  String?
+  sourcePrice     Float?
+  markupPercent   Float    @default(15)
+  salePrice       Int?
+  available       Boolean  @default(true)
+  published       Boolean  @default(false)
+  productId       String?
+  metadata        String?
+  lastSyncedAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([supplier, externalId])
+  @@index([supplier, serviceName])
+  @@index([brandName])
+  @@index([published])
 }
