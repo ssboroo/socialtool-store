@@ -69,14 +69,23 @@ model Order {
 }
 
 model OrderItem {
-  id           String  @id @default(cuid())
-  orderId      String
-  productId    String
-  productName  String
-  price        Int
-  quantity     Int
-  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product      Product @relation(fields: [productId], references: [id])
+  id                String   @id @default(cuid())
+  orderId           String
+  productId         String
+  productName       String
+  price             Int
+  quantity          Int
+  supplierName      String?
+  supplierSourceUrl String?
+  supplierCost      Float?
+  supplierCurrency  String?
+  deliveryCode      String?
+  deliveryNote      String?
+  fulfilledAt       DateTime?
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product  @relation(fields: [productId], references: [id])
+
+  @@index([supplierName])
 }
 
 model Payment {

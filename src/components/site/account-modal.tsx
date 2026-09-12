@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  User, ShoppingBag, CreditCard, LogOut, Loader2, Check, Package, Phone, Send, Mail, Copy,
+  User, ShoppingBag, CreditCard, LogOut, Loader2, Check, Package, Phone, Send, Mail, Copy, KeyRound,
 } from 'lucide-react'
 import type { Customer } from './auth-modal'
 import { formatTugrik, ORDER_STATUS_LABEL, ORDER_STATUS_COLOR } from '@/lib/format'
@@ -33,7 +33,16 @@ interface MyOrder {
   statusLabel: string
   createdAt: string
   itemCount: number
-  items: { id: string; productName: string; price: number; quantity: number }[]
+  items: {
+    id: string
+    productName: string
+    price: number
+    quantity: number
+    supplierName: string | null
+    deliveryCode: string | null
+    deliveryNote: string | null
+    fulfilledAt: string | null
+  }[]
   payment: { status: string; invoiceNumber: string | null; paidAt: string | null } | null
 }
 
@@ -96,7 +105,6 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
       <DialogContent className="sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">Миний бүртгэл</DialogTitle>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
-          {/* header */}
           <div className="px-6 py-5 bg-gradient-to-r from-[#E8F1FF] to-white border-b border-[#EEF4FF]">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
@@ -114,7 +122,6 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
             </div>
           </div>
 
-          {/* tabs */}
           <div className="px-6 pt-4 flex gap-2">
             {[
               { id: 'profile', label: 'Профайл', Icon: User },
@@ -194,11 +201,27 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
                           </div>
                           <span className="text-xs text-[#5B7290]">{new Date(o.createdAt).toLocaleString('mn-MN')}</span>
                         </div>
-                        <div className="p-4 space-y-1.5">
+                        <div className="p-4 space-y-2.5">
                           {o.items.map((it) => (
-                            <div key={it.id} className="flex items-center justify-between text-sm">
-                              <span className="text-[#102A43]">{it.productName} <span className="text-[#5B7290]">×{it.quantity}</span></span>
-                              <span className="text-[#102A43] font-medium">{formatTugrik(it.price * it.quantity)}</span>
+                            <div key={it.id} className="rounded-xl border border-[#EEF4FF] p-3">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-[#102A43]">{it.productName} <span className="text-[#5B7290]">×{it.quantity}</span></span>
+                                <span className="text-[#102A43] font-medium">{formatTugrik(it.price * it.quantity)}</span>
+                              </div>
+                              {it.supplierName && !it.deliveryCode ? (
+                                <div className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Төлбөр баталгаажсаны дараа key/code хүргэгдэнэ.</div>
+                              ) : null}
+                              {it.deliveryCode ? (
+                                <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800"><KeyRound className="size-3.5" /> Таны key / code</div>
+                                    <button type="button" onClick={() => copy(it.deliveryCode || '', 'Key/code')} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"><Copy className="size-3.5" /> Хуулах</button>
+                                  </div>
+                                  <pre className="mt-2 whitespace-pre-wrap break-all rounded-lg bg-white/80 p-3 font-mono text-sm font-semibold text-[#102A43]">{it.deliveryCode}</pre>
+                                  {it.deliveryNote ? <p className="mt-2 whitespace-pre-wrap text-xs text-emerald-900">{it.deliveryNote}</p> : null}
+                                  {it.fulfilledAt ? <p className="mt-2 text-[10px] text-emerald-700">Хүргэсэн: {new Date(it.fulfilledAt).toLocaleString('mn-MN')}</p> : null}
+                                </div>
+                              ) : null}
                             </div>
                           ))}
                           <div className="flex items-center justify-between pt-2 border-t border-[#EEF4FF]">

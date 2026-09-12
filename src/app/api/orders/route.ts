@@ -69,6 +69,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const supplierRows = await db.supplierCatalogItem.findMany({
+      where: { productId: { in: productIds }, published: true },
+      orderBy: { updatedAt: 'desc' },
+    })
+    const supplierMap = new Map<string, (typeof supplierRows)[number]>()
+    for (const row of supplierRows) {
+      if (row.productId && !supplierMap.has(row.productId)) supplierMap.set(row.productId, row)
+    }
+
     const total = typedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
     if (!Number.isSafeInteger(total) || total <= 0) {
       return NextResponse.json({ error: 'Захиалгын нийт дүн буруу байна' }, { status: 400 })
@@ -86,12 +95,19 @@ export async function POST(req: NextRequest) {
         status: 'PENDING_PAYMENT',
         customerId,
         items: {
-          create: typedItems.map((item) => ({
-            productId: item.productId,
-            productName: `${productMap.get(item.productId)!.name}${item.duration ? ` — ${item.duration}` : ''}`,
-            price: item.price,
-            quantity: item.quantity,
-          })),
+          create: typedItems.map((item) => {
+            const supplier = supplierMap.get(item.productId)
+            return {
+              productId: item.productId,
+              productName: `${productMap.get(item.productId)!.name}${item.duration ? ` — ${item.duration}` : ''}`,
+              price: item.price,
+              quantity: item.quantity,
+              supplierName: supplier?.supplier || null,
+              supplierSourceUrl: supplier?.sourceUrl || null,
+              supplierCost: supplier?.sourcePrice ?? null,
+              supplierCurrency: supplier?.sourceCurrency || null,
+            }
+          }),
         },
       },
       include: { items: true },

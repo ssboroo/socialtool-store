@@ -27,6 +27,10 @@ export async function GET(req: NextRequest) {
         productName: i.productName,
         price: i.price,
         quantity: i.quantity,
+        supplierName: i.supplierName,
+        deliveryCode: i.fulfilledAt ? i.deliveryCode : null,
+        deliveryNote: i.fulfilledAt ? i.deliveryNote : null,
+        fulfilledAt: i.fulfilledAt,
       })),
       payment: o.payment
         ? { status: o.payment.status, invoiceNumber: o.payment.invoiceNumber, paidAt: o.payment.paidAt }

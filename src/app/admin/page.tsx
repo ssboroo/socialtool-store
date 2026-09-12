@@ -9,6 +9,8 @@ import { ProductAdminTools } from '@/components/admin/product-admin-tools'
 import { SupplierCatalog } from '@/components/admin/supplier-catalog'
 import { SupplierFeedCard } from '@/components/admin/supplier-feed-card'
 import { G2ASyncCard } from '@/components/admin/g2a-sync-card'
+import { G2GManualProductCard } from '@/components/admin/g2g-manual-product-card'
+import { G2GFulfillment } from '@/components/admin/g2g-fulfillment'
 import { AdminCategories } from '@/components/admin/categories'
 import { AdminReviews } from '@/components/admin/reviews'
 import { AdminFaqs } from '@/components/admin/faqs'
@@ -20,7 +22,7 @@ import { Logo } from '@/components/site/logo'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, ShoppingBag, Package, MessageCircle, LogOut, ExternalLink,
-  Tag, Star, HelpCircle, Gift, Users, Settings, Database,
+  Tag, Star, HelpCircle, Gift, Users, Settings, Database, KeyRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -33,7 +35,7 @@ interface Category {
 }
 
 type TabId =
-  | 'overview' | 'orders' | 'products' | 'suppliers' | 'categories'
+  | 'overview' | 'orders' | 'products' | 'suppliers' | 'fulfillment' | 'categories'
   | 'reviews' | 'faqs' | 'promotions' | 'customers'
   | 'chat' | 'settings'
 
@@ -42,6 +44,7 @@ const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: 
   { id: 'orders', label: 'Захиалга', Icon: ShoppingBag },
   { id: 'products', label: 'Бүтээгдэхүүн', Icon: Package },
   { id: 'suppliers', label: 'Нийлүүлэгч', Icon: Database },
+  { id: 'fulfillment', label: 'G2G хүргэлт', Icon: KeyRound },
   { id: 'categories', label: 'Ангилал', Icon: Tag },
   { id: 'promotions', label: 'Хямдрал', Icon: Gift },
   { id: 'reviews', label: 'Сэтгэгдэл', Icon: Star },
@@ -141,7 +144,8 @@ export default function AdminPage() {
           {tab === 'overview' && <AdminOverview token={token} />}
           {tab === 'orders' && <AdminOrders token={token} />}
           {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><AdminProducts token={token} categories={categories} /></>}
-          {tab === 'suppliers' && <><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
+          {tab === 'suppliers' && <><G2GManualProductCard /><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
+          {tab === 'fulfillment' && <G2GFulfillment />}
           {tab === 'categories' && <AdminCategories token={token} />}
           {tab === 'promotions' && <AdminPromotions token={token} />}
           {tab === 'reviews' && <AdminReviews token={token} />}
