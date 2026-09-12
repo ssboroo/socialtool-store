@@ -114,7 +114,7 @@ export function CheckoutModal() {
     if (!form.phone.trim()) e.phone = 'Утас оруулна уу'
     else if (form.phone.replace(/\D/g, '').length < 7) e.phone = 'Утас зөв оруулна уу'
     if (!form.email.trim()) e.email = 'И-мэйл оруулна уу'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'И-мэйл зөв биш'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'И-мэйл хаягаа зөв оруулна уу.'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -163,8 +163,8 @@ export function CheckoutModal() {
   }
 
   const startPolling = () => {
-    // The status endpoint reads the DB (updated by the Qpay webhook) and
-    // also queries the Qpay API directly as a server-side fallback — so
+    // The status endpoint reads the DB (updated by the QPay webhook) and
+    // also queries the QPay API directly as a server-side fallback — so
     // polling alone confirms the payment, never the frontend redirect.
     setPolling(true)
     setPaymentError('')
@@ -187,7 +187,7 @@ export function CheckoutModal() {
                   <h2 className="text-base font-bold text-[#102A43]">Төлбөр төлөх</h2>
                   <p className="text-xs text-[#5B7290]">
                     {step === 'form' && 'Хүргэгдэх мэдээлэл'}
-                    {step === 'pay' && 'Qpay нэхэмжлэл'}
+                    {step === 'pay' && 'QPay нэхэмжлэл'}
                     {step === 'status' && 'Төлбөр шалгагдаж байна'}
                     {step === 'success' && 'Төлбөр амжилттай'}
                     {step === 'failed' && 'Төлбөр төлөгдсөнгүй'}
@@ -324,10 +324,10 @@ export function CheckoutModal() {
 
                 <div className="rounded-2xl border border-[#D6E4FF] bg-[#F5F9FF]/60 p-4 text-left">
                   <p className="text-sm font-bold text-[#102A43] flex items-center gap-1.5">
-                    <ShieldCheck className="size-4 text-[#16A34A]" /> Аюулгүй төлбөр — Qpay
+                    <ShieldCheck className="size-4 text-[#16A34A]" /> Аюулгүй төлбөр — QPay
                   </p>
                   <p className="mt-1.5 text-xs text-[#5B7290] leading-relaxed">
-                    Доорх товчийг дарж Qpay төлбөрийн хуудас руу шилжинэ үү. Төлбөрөө хийсний дараа энэ хуудас автомат хариуг хүлээж байна.
+                    Доорх товчийг дарж QPay төлбөрийн хуудас руу шилжинэ үү. Төлбөрөө хийсний дараа энэ хуудас төлбөрийн төлөвийг автоматаар шалгана.
                   </p>
                 </div>
 
@@ -339,7 +339,7 @@ export function CheckoutModal() {
                     onClick={startPolling}
                     className="flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg text-base font-bold transition-all hover:shadow-premium-lg"
                   >
-                    <ExternalLink className="size-5" /> Qpay-аар төлөх
+                    <ExternalLink className="size-5" /> QPay-аар төлөх
                   </a>
                 )}
 

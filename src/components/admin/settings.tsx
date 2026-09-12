@@ -11,8 +11,8 @@ import { toast } from 'sonner'
 const FIELDS: { key: string; label: string; group: string; icon: React.ComponentType<{ className?: string }>; multiline?: boolean }[] = [
   { key: 'privacyPolicy', label: 'Нууцлалын бодлого', group: 'Бодлого', icon: FileText, multiline: true },
   { key: 'termsOfService', label: 'Үйлчилгээний нөхцөл', group: 'Бодлого', icon: FileText, multiline: true },
-  { key: 'heroHeadline', label: 'Hero гол гарчиг', group: 'Нүүр хуудас', icon: FileText },
-  { key: 'heroSubtext', label: 'Hero дэд гарчиг', group: 'Нүүр хуудас', icon: FileText, multiline: true },
+  { key: 'heroHeadline', label: 'Нүүрний гол гарчиг', group: 'Нүүр хуудас', icon: FileText },
+  { key: 'heroSubtext', label: 'Нүүрний дэд тайлбар', group: 'Нүүр хуудас', icon: FileText, multiline: true },
   { key: 'heroPrimaryCta', label: 'Үндсэн товчийн текст', group: 'Нүүр хуудас', icon: FileText },
   { key: 'heroSecondaryCta', label: 'Хоёрдогч товчийн текст', group: 'Нүүр хуудас', icon: FileText },
   { key: 'promoTitle', label: 'Хямдралын гарчиг', group: 'Хямдрал', icon: Gift },
@@ -21,8 +21,8 @@ const FIELDS: { key: string; label: string; group: string; icon: React.Component
   { key: 'promoDiscountPercent', label: 'Хямдралын хувь (%)', group: 'Хямдрал', icon: Gift },
   { key: 'contactEmail', label: 'Холбооны и-мэйл', group: 'Холбоо', icon: Mail },
   { key: 'contactTelegram', label: 'Telegram хаяг', group: 'Холбоо', icon: Phone },
-  { key: 'footerDescription', label: 'Футерын тайлбар', group: 'Футер', icon: FileText, multiline: true },
-  { key: 'footerCopyright', label: 'Зохиогчийн эрх', group: 'Футер', icon: FileText },
+  { key: 'footerDescription', label: 'Хуудасны доод хэсгийн тайлбар', group: 'Хуудасны доод хэсэг', icon: FileText, multiline: true },
+  { key: 'footerCopyright', label: 'Зохиогчийн эрхийн бичвэр', group: 'Хуудасны доод хэсэг', icon: FileText },
 ]
 
 export function AdminSettings({ token }: { token: string }) {

@@ -42,7 +42,7 @@ export function Categories({ categories }: { categories: Category[] }) {
             <Sparkles className="size-3.5" /> Ангилал
           </span>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[#102A43] sm:text-4xl">
-            Алдартай <span className="gradient-text">ангиллууд</span>
+            Бүх <span className="gradient-text">ангилал</span>
           </h2>
           <p className="mt-3 text-[#5B7290]">
             Өөрийн хэрэгцээнд тохирох хэрэгслийг сонгож аваарай

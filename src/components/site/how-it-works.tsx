@@ -6,19 +6,19 @@ const STEPS = [
   {
     Icon: MousePointerClick,
     title: 'Хэрэгслээ сонгоно',
-    desc: 'Өөрийн хэрэгцээнд тохирох хэрэгслийг сагсанд нэмж сонгоно уу.',
+    desc: 'Хэрэгслээ сонгоод хугацаа, тоо ширхгээ тохируулж сагсанд нэмнэ.',
     color: 'from-[#1677FF] to-[#0B4DBA]',
   },
   {
     Icon: CreditCard,
     title: 'Төлбөрөө хийнэ',
-    desc: 'Wire.mn системээр банкны картаар, Qpay-аар аюулгүй төлбөрөө төлнө.',
+    desc: 'Захиалгын мэдээллээ оруулаад QPay-аар төлбөрөө төлнө.',
     color: 'from-[#0B4DBA] to-[#8B5CF6]',
   },
   {
     Icon: PackageCheck,
-    title: 'Хандалтаа хүлээн авна',
-    desc: 'Төлбөр баталгаажмагц и-мэйл, Telegram-аар шууд хандалтын мэдээлэл хүлээн авна.',
+    title: 'Захиалгаа хүлээн авна',
+    desc: 'Төлбөр баталгаажсаны дараа бүтээгдэхүүний нөхцөлийн дагуу хандалт эсвэл идэвхжүүлэлтийн заавраа авна.',
     color: 'from-[#16A34A] to-[#1677FF]',
   },
 ]
@@ -29,12 +29,12 @@ export function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
-            Хэрхэн ажилладаг вэ?
+            Хэрхэн захиалах вэ?
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-[#102A43]">
             Зөвхөн <span className="gradient-text">3 алхам</span>
           </h2>
-          <p className="mt-3 text-[#5B7290]">Энгийн, хурдан, аюулгүй — нэг дор дуусгана</p>
+          <p className="mt-3 text-[#5B7290]">Хэрэгслээ сонгоод дараах гурван алхмыг дагаарай.</p>
         </div>
 
         <div className="mt-12 relative">

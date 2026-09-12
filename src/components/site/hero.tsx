@@ -10,7 +10,7 @@ const floatingCards = [
   { label: 'Instagram', icon: 'IG', color: 'from-[#E1306C] to-[#F77737]', x: 'top-[2%] right-[6%]', delay: '1.5s' },
   { label: 'TikTok', icon: 'TT', color: 'from-[#1677FF] to-[#102A43]', x: 'top-[34%] left-[0%]', delay: '0.8s' },
   { label: 'Telegram', icon: 'TG', color: 'from-[#0B4DBA] to-[#1677FF]', x: 'top-[60%] left-[8%]', delay: '2.2s' },
-  { label: 'Email', icon: '@', color: 'from-[#16A34A] to-[#0B4DBA]', x: 'top-[26%] right-[0%]', delay: '1.1s' },
+  { label: 'И-мэйл', icon: '@', color: 'from-[#16A34A] to-[#0B4DBA]', x: 'top-[26%] right-[0%]', delay: '1.1s' },
   { label: 'AI', icon: 'AI', color: 'from-[#8B5CF6] to-[#1677FF]', x: 'top-[64%] right-[4%]', delay: '0.4s' },
 ]
 
@@ -20,9 +20,10 @@ function scrollTo(id: string) {
 
 export function Hero({ settings }: { settings?: Record<string, string> }) {
   const headline = settings?.heroHeadline || 'Таны дижитал ажлын хүчирхэг хэрэгслүүд'
-  const subtext = settings?.heroSubtext || 'Social media, AI, automation болон marketing хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай.'
+  const savedSubtext = settings?.heroSubtext === 'Social media, AI, automation болон marketing хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай.' ? '' : settings?.heroSubtext
+  const subtext = savedSubtext || 'Сошиал хуудас удирдах, ажлаа автоматжуулах, маркетинг болон хиймэл оюуны хэрэгслүүдийг нэг дороос сонгоорой.'
   const primaryCta = settings?.heroPrimaryCta || 'Бүх хэрэгсэл үзэх'
-  const secondaryCta = settings?.heroSecondaryCta || 'Хэрхэн ажиллах вэ?'
+  const secondaryCta = settings?.heroSecondaryCta || 'Хэрхэн захиалах вэ?'
   const slides = heroImages(settings)
   const headlineParts = headline.split(' ')
   const highlight = headlineParts.length > 1 ? headlineParts.pop()! : ''
@@ -42,7 +43,7 @@ export function Hero({ settings }: { settings?: Record<string, string> }) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16A34A] opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-[#16A34A]" />
               </span>
-              <span className="text-xs font-semibold text-[#102A43]">12,000+ хэрэглэгчид итгэж байна</span>
+              <span className="text-xs font-semibold text-[#102A43]">Таны дижитал хэрэгслийн дэлгүүр</span>
             </div>
 
             <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-[#102A43] sm:text-5xl lg:text-[56px]">
@@ -73,9 +74,9 @@ export function Hero({ settings }: { settings?: Record<string, string> }) {
 
             <div className="mx-auto mt-9 grid max-w-md grid-cols-3 gap-3 lg:mx-0">
               {[
-                { k: '15+', v: 'хэрэгсэл' },
-                { k: '24/7', v: 'тусламж' },
-                { k: '4.9★', v: 'үнэлгээ' },
+                { k: 'Сошиал', v: 'удирдлагын хэрэгсэл' },
+                { k: 'AI', v: 'хиймэл оюун' },
+                { k: 'Программ', v: 'дижитал бүтээгдэхүүн' },
               ].map((s) => (
                 <div key={s.v} className="text-center lg:text-left">
                   <div className="text-2xl font-extrabold text-[#102A43]">{s.k}</div>
@@ -86,8 +87,8 @@ export function Hero({ settings }: { settings?: Record<string, string> }) {
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#5B7290] lg:justify-start">
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-4 text-[#16A34A]" /> Аюулгүй төлбөр</span>
-              <span className="inline-flex items-center gap-1.5"><Zap className="size-4 text-[#1677FF]" /> Шууд хүргэлт</span>
-              <span className="inline-flex items-center gap-1.5"><Sparkles className="size-4 text-[#8B5CF6]" /> 7 хоногийн баталгаа</span>
+              <span className="inline-flex items-center gap-1.5"><Zap className="size-4 text-[#1677FF]" /> Дижитал бүтээгдэхүүн</span>
+              <span className="inline-flex items-center gap-1.5"><Sparkles className="size-4 text-[#8B5CF6]" /> Хэрэглэгчийн тусламж</span>
             </div>
           </div>
 

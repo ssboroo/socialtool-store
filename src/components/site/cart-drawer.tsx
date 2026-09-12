@@ -136,7 +136,7 @@ export function CartDrawer() {
                 Төлбөр төлөх
                 <ArrowRight className="size-4" />
               </Button>
-              <p className="text-center text-xs text-[#5B7290]">Аюулгүй төлбөр — Wire.mn системээр</p>
+              <p className="text-center text-xs text-[#5B7290]">Аюулгүй төлбөр — QPay</p>
             </div>
           </>
         )}
