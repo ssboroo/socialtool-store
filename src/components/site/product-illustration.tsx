@@ -1,9 +1,12 @@
+'use client'
+
+import { useState, type ComponentType, type SVGProps } from 'react'
 import {
   Facebook, Music2, Instagram, Twitter, Send, Mail, Sparkles, LayoutGrid, Package,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const MAP: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; gradient: string; accent: string }> = {
+const MAP: Record<string, { Icon: ComponentType<SVGProps<SVGSVGElement>>; gradient: string; accent: string }> = {
   Facebook: { Icon: Facebook, gradient: 'from-[#E8F1FF] to-[#D6E4FF]', accent: '#1677FF' },
   Music2: { Icon: Music2, gradient: 'from-[#EEF4FF] to-[#D6E4FF]', accent: '#0B4DBA' },
   Instagram: { Icon: Instagram, gradient: 'from-[#FFE8F0] to-[#FFD6E8]', accent: '#E1306C' },
@@ -14,7 +17,6 @@ const MAP: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGEleme
   LayoutGrid: { Icon: LayoutGrid, gradient: 'from-[#E8F1FF] to-[#D6E4FF]', accent: '#1677FF' },
 }
 
-/** The abstract gradient + icon illustration used as the fallback image. */
 export function ProductIllustration({
   icon,
   className,
@@ -39,7 +41,6 @@ export function ProductIllustration({
           </div>
         </div>
       </div>
-      {/* abstract dots */}
       <div className="absolute left-3 bottom-3 flex gap-1">
         <span className="size-1.5 rounded-full" style={{ background: meta.accent, opacity: 0.5 }} />
         <span className="size-1.5 rounded-full" style={{ background: meta.accent, opacity: 0.3 }} />
@@ -49,11 +50,54 @@ export function ProductIllustration({
   )
 }
 
-/**
- * Product image: shows the uploaded image when present, falls back to the
- * abstract icon illustration otherwise. Both are rendered inside the same
- * rounded container so the card layout stays consistent.
- */
+function retryUrl(src: string, attempt: number) {
+  if (!attempt || !src.startsWith('/uploads/products/')) return src
+  const separator = src.includes('?') ? '&' : '?'
+  return `${src}${separator}st_retry=${attempt}`
+}
+
+function ResilientProductImage({
+  image,
+  icon,
+  alt,
+  className,
+}: {
+  image: string
+  icon: string
+  alt: string
+  className?: string
+}) {
+  const [attempt, setAttempt] = useState(0)
+  const [loaded, setLoaded] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const retryable = image.startsWith('/uploads/products/')
+
+  return (
+    <div className={cn('relative overflow-hidden rounded-xl bg-[#F5F9FF]', className)}>
+      <ProductIllustration icon={icon} className="absolute inset-0 size-full rounded-none" />
+      {!failed && (
+        <img
+          key={`${image}-${attempt}`}
+          src={retryUrl(image, attempt)}
+          alt={alt}
+          className={cn(
+            'absolute inset-0 size-full object-cover transition-opacity duration-200',
+            loaded ? 'opacity-100' : 'opacity-0',
+          )}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            setLoaded(false)
+            if (retryable && attempt < 2) setAttempt((value) => value + 1)
+            else setFailed(true)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
 export function ProductImage({
   image,
   icon,
@@ -65,18 +109,6 @@ export function ProductImage({
   alt: string
   className?: string
 }) {
-  if (image) {
-    return (
-      <div className={cn('relative overflow-hidden rounded-xl bg-[#F5F9FF]', className)}>
-        { }
-        <img
-          src={image}
-          alt={alt}
-          className="absolute inset-0 size-full object-cover"
-          loading="lazy"
-        />
-      </div>
-    )
-  }
-  return <ProductIllustration icon={icon} className={className} />
+  if (!image) return <ProductIllustration icon={icon} className={className} />
+  return <ResilientProductImage key={image} image={image} icon={icon} alt={alt} className={className} />
 }
