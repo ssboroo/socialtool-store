@@ -5,11 +5,13 @@ import { getAdminFromRequest } from '@/lib/auth'
 const CONFIG_KEY = 'supplier:g2g:config'
 
 type ImportRow = {
+  supplier?: unknown
   externalId?: unknown
   name?: unknown
   serviceName?: unknown
   brandName?: unknown
   regionName?: unknown
+  sourceUrl?: unknown
   sourcePrice?: unknown
   sourceCurrency?: unknown
   salePrice?: unknown
@@ -26,6 +28,11 @@ function bool(value: unknown, fallback = true) {
   const normalized = String(value ?? '').trim().toLowerCase()
   if (!normalized) return fallback
   return !['false', '0', 'no', 'off', 'үгүй'].includes(normalized)
+}
+
+function supplierName(value: unknown) {
+  const raw = text(value, 60) || 'CSV'
+  return raw.toLowerCase() === 'g2g' ? 'G2G' : raw
 }
 
 async function config() {
@@ -64,19 +71,28 @@ export async function POST(req: NextRequest) {
     for (let index = 0; index < rows.length; index += 1) {
       const row = rows[index]
       try {
+        const supplier = supplierName(row.supplier)
         const externalId = text(row.externalId, 180)
         if (!externalId) throw new Error('externalId дутуу')
-        const existing = await db.supplierCatalogItem.findUnique({ where: { supplier_externalId: { supplier: 'G2G', externalId } } })
+        const existing = await db.supplierCatalogItem.findUnique({
+          where: { supplier_externalId: { supplier, externalId } },
+        })
         const rowName = text(row.name)
         if (!existing && !rowName) throw new Error('Шинэ мөрт name шаардлагатай')
 
         const sourceCurrency = (text(row.sourceCurrency, 8) || existing?.sourceCurrency || 'MNT').toUpperCase()
         const sourcePrice = row.sourcePrice === '' || row.sourcePrice == null ? existing?.sourcePrice ?? null : Number(row.sourcePrice)
-        const markupRaw = row.markupPercent === '' || row.markupPercent == null ? existing?.markupPercent ?? settings.markupPercent : Number(row.markupPercent)
-        const markupPercent = Number.isFinite(markupRaw) && markupRaw >= 0 && markupRaw <= 300 ? markupRaw : settings.markupPercent
+        const markupRaw = row.markupPercent === '' || row.markupPercent == null
+          ? existing?.markupPercent ?? settings.markupPercent
+          : Number(row.markupPercent)
+        const markupPercent = Number.isFinite(markupRaw) && markupRaw >= 0 && markupRaw <= 300
+          ? markupRaw
+          : settings.markupPercent
         const directSale = row.salePrice === '' || row.salePrice == null ? null : Number(row.salePrice)
 
-        let salePrice: number | null = directSale && Number.isFinite(directSale) && directSale > 0 ? roundSalePrice(directSale) : null
+        let salePrice: number | null = directSale && Number.isFinite(directSale) && directSale > 0
+          ? roundSalePrice(directSale)
+          : null
         if (!salePrice && sourcePrice != null) {
           if (!Number.isFinite(sourcePrice) || sourcePrice <= 0) throw new Error('sourcePrice буруу')
           const rate = settings.currencyRates[sourceCurrency]
@@ -85,6 +101,10 @@ export async function POST(req: NextRequest) {
         }
         if (!salePrice) throw new Error('salePrice эсвэл sourcePrice шаардлагатай')
 
+        const serviceName = text(row.serviceName, 180)
+        const brandName = text(row.brandName, 180)
+        const regionName = text(row.regionName, 80)
+        const sourceUrl = text(row.sourceUrl, 500)
         const data = {
           sourceCurrency,
           sourcePrice,
@@ -93,24 +113,28 @@ export async function POST(req: NextRequest) {
           available: bool(row.available, existing?.available ?? true),
           lastSyncedAt: new Date(),
           ...(rowName ? { name: rowName } : {}),
-          ...(text(row.serviceName, 180) ? { serviceName: text(row.serviceName, 180) } : {}),
-          ...(text(row.brandName, 180) ? { brandName: text(row.brandName, 180) } : {}),
-          ...(text(row.regionName, 80) ? { regionName: text(row.regionName, 80) } : {}),
+          ...(serviceName ? { serviceName } : {}),
+          ...(brandName ? { brandName } : {}),
+          ...(regionName ? { regionName } : {}),
+          ...(sourceUrl ? { sourceUrl } : {}),
         }
 
         if (existing) {
           await db.supplierCatalogItem.update({ where: { id: existing.id }, data })
           results.push({ row: index + 2, status: 'updated' })
         } else {
-          await db.supplierCatalogItem.create({ data: {
-            supplier: 'G2G',
-            externalId,
-            serviceName: text(row.serviceName, 180) || 'G2G Catalog',
-            brandName: text(row.brandName, 180) || null,
-            regionName: text(row.regionName, 80) || null,
-            name: rowName,
-            ...data,
-          } })
+          await db.supplierCatalogItem.create({
+            data: {
+              supplier,
+              externalId,
+              serviceName: serviceName || `${supplier} Catalog`,
+              brandName: brandName || null,
+              regionName: regionName || null,
+              sourceUrl: sourceUrl || null,
+              name: rowName,
+              ...data,
+            },
+          })
           results.push({ row: index + 2, status: 'created' })
         }
       } catch (error) {
