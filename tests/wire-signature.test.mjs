@@ -11,8 +11,11 @@ const sign = (timestamp, payload = body) => `t=${timestamp},v1=${crypto.createHm
 test('accepts documented WirePayment-Signature format', () => assert.equal(verifyWebhookSignature(body, sign(now)), true))
 test('rejects tampered body', () => assert.equal(verifyWebhookSignature(body + ' ', sign(now)), false))
 test('rejects expired and future deliveries', () => {
-  assert.equal(verifyWebhookSignature(body, sign(now - 301)), false)
-  assert.equal(verifyWebhookSignature(body, sign(now + 301)), false)
+  // Use a fresh timestamp here so suite/runtime startup delays cannot move the
+  // +301s case back inside the 300-second acceptance window.
+  const freshNow = Math.floor(Date.now() / 1000)
+  assert.equal(verifyWebhookSignature(body, sign(freshNow - 301)), false)
+  assert.equal(verifyWebhookSignature(body, sign(freshNow + 301)), false)
 })
 test('rejects unsigned, legacy, malformed, and ambiguous signatures', () => {
   for (const signature of ['', crypto.createHmac('sha256', secret).update(body).digest('hex'), `t=${now},v1=zz`, `t=${now},${sign(now)}`, 't=NaN,v1=00']) {
