@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { createElement, useEffect, useState } from 'react'
 import {
   AppWindow, BarChart3, Briefcase, Cloud, Code2, Facebook, Gamepad2, Headphones,
   Instagram, LayoutGrid, Loader2, Mail, Monitor, Music2, Package, Pencil, Plus,
@@ -53,6 +53,10 @@ const ICON_MAP = new Map(ICON_OPTIONS.map(option => [option.value, option]))
 
 function iconFor(value: string) {
   return ICON_MAP.get(value)?.Icon || Package
+}
+
+function renderIcon(value: string, className: string) {
+  return createElement(iconFor(value), { className })
 }
 
 export function AdminCategories({ token }: { token: string }) {
@@ -126,34 +130,31 @@ export function AdminCategories({ token }: { token: string }) {
             <p className="mt-3 text-sm text-[#5B7290]">Ангилал байхгүй</p>
           </div>
         ) : (
-          items.map((c) => {
-            const CategoryIcon = iconFor(c.icon)
-            return (
-              <div key={c.id} className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#E8F1FF] to-white text-[#0B4DBA] ring-1 ring-[#D6E4FF]">
-                      <CategoryIcon className="size-5" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-bold text-[#102A43]">{c.name}</p>
-                      <p className="text-xs text-[#5B7290]">/{c.slug}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => setEditing(c)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]">
-                      <Pencil className="size-4" />
-                    </button>
-                    <button onClick={() => remove(c.id)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500">
-                      <Trash2 className="size-4" />
-                    </button>
+          items.map((c) => (
+            <div key={c.id} className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#E8F1FF] to-white text-[#0B4DBA] ring-1 ring-[#D6E4FF]">
+                    {renderIcon(c.icon, 'size-5')}
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-[#102A43]">{c.name}</p>
+                    <p className="text-xs text-[#5B7290]">/{c.slug}</p>
                   </div>
                 </div>
-                <p className="mt-2 text-xs text-[#5B7290] line-clamp-2 min-h-[32px]">{c.description || 'Тайлбар байхгүй'}</p>
-                <p className="mt-2 text-[10px] text-[#5B7290]">Дүрс: {ICON_MAP.get(c.icon)?.label || c.icon} · Дараалал: {c.order}</p>
+                <div className="flex gap-1">
+                  <button onClick={() => setEditing(c)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]">
+                    <Pencil className="size-4" />
+                  </button>
+                  <button onClick={() => remove(c.id)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500">
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               </div>
-            )
-          })
+              <p className="mt-2 text-xs text-[#5B7290] line-clamp-2 min-h-[32px]">{c.description || 'Тайлбар байхгүй'}</p>
+              <p className="mt-2 text-[10px] text-[#5B7290]">Дүрс: {ICON_MAP.get(c.icon)?.label || c.icon} · Дараалал: {c.order}</p>
+            </div>
+          ))
         )}
       </div>
 
@@ -194,8 +195,6 @@ function CategoryFormDialog({
     })
   }
 
-  const PreviewIcon = iconFor(form.icon)
-
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
@@ -221,14 +220,14 @@ function CategoryFormDialog({
                   <SelectContent>
                     {ICON_OPTIONS.map(({ value, label, Icon }) => (
                       <SelectItem key={value} value={value}>
-                        <span className="flex items-center gap-2"><Icon className="size-4 text-[#0B4DBA]" />{label}</span>
+                        <span className="flex items-center gap-2">{createElement(Icon, { className: 'size-4 text-[#0B4DBA]' })}{label}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#1677FF] to-[#0B4DBA] text-white shadow-sm">
-                <PreviewIcon className="size-5" />
+                {renderIcon(form.icon, 'size-5')}
               </div>
             </div>
             <div>
