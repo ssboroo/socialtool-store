@@ -40,7 +40,10 @@ function imageResponse(req: Request, filename: string, bytes: Uint8Array, mimeTy
     'Content-Disposition': `inline; filename="${filename}"`,
   })
   if (req.headers.get('if-none-match') === etag) return new Response(null, { status: 304, headers })
-  return new Response(bytes, { headers })
+
+  const body = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(body).set(bytes)
+  return new Response(body, { headers })
 }
 
 export async function GET(req: Request, { params }: { params: Promise<{ filename: string }> }) {
