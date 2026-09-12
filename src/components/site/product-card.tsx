@@ -45,6 +45,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       return
     }
 
+    if (variants.length > 1) { setSelectedProduct(product.id); return }
     const price = defaultVariant?.price ?? product.price
     add({
       id: product.id,
@@ -78,6 +79,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           : 'border-slate-200 opacity-90',
       )}
     >
+      <div className="relative overflow-hidden bg-[#F5F9FF]">
       {product.discount ? (
         <span className="absolute left-3 top-3 z-10 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#DC2626] px-2.5 py-1 text-[11px] font-bold text-white shadow-premium">
           -{product.discount}%
@@ -106,7 +108,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
         </span>
       ) : null}
 
-      <div className="overflow-hidden bg-[#F5F9FF]">
+
         <ProductImage
           image={product.image}
           icon={product.icon}
@@ -121,13 +123,13 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
       <div className={cn('flex flex-1 flex-col', compact ? 'p-4' : 'p-4 lg:p-5')}>
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-0.5" aria-label={`${product.rating.toFixed(1)} үнэлгээ`}>
+          <div className="flex items-center gap-0.5" aria-label={product.reviewCount > 0 ? `${product.rating.toFixed(1)} үнэлгээ` : 'Үнэлгээ хараахан байхгүй'}>
             {[0, 1, 2, 3, 4].map((i) => (
               <Star
                 key={i}
                 className={cn(
                   'size-3.5',
-                  i < Math.round(product.rating)
+                  product.reviewCount > 0 && i < Math.round(product.rating)
                     ? 'fill-[#F59E0B] text-[#F59E0B]'
                     : 'fill-[#D6E4FF] text-[#D6E4FF]'
                 )}
@@ -135,7 +137,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
             ))}
           </div>
           <span className="text-xs text-[#5B7290]">
-            {product.rating.toFixed(1)} ({product.reviewCount})
+            {product.reviewCount > 0 ? `${product.rating.toFixed(1)} (${product.reviewCount})` : 'Үнэлгээ хараахан байхгүй'}
           </span>
         </div>
 
@@ -161,14 +163,14 @@ export function ProductCard({ product, compact = false }: { product: Product; co
             disabled={!product.available}
             size="sm"
             className={cn(
-              'h-9 flex-1 rounded-xl gap-1.5',
+              'h-10 min-w-0 flex-1 rounded-xl gap-1.5',
               product.available
                 ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium hover:shadow-premium-lg'
                 : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
             )}
           >
             {product.available ? <ShoppingCart className="size-4" /> : <CircleOff className="size-4" />}
-            {product.available ? 'Сагсанд нэмэх' : 'Түр дууссан'}
+            {product.available ? (variants.length > 1 ? 'Сонголт хийх' : 'Сагсанд нэмэх') : 'Түр дууссан'}
           </Button>
           <button
             type="button"

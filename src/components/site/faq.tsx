@@ -24,9 +24,9 @@ export function Faq({ faqs }: { faqs: Faq[] }) {
             <HelpCircle className="size-3.5" /> Түгээмэл асуулт
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-[#102A43]">
-            Таны асуусан <span className="gradient-text">асуултууд</span>
+            Түгээмэл <span className="gradient-text">асуултууд</span>
           </h2>
-          <p className="mt-3 text-[#5B7290]">Хариулт нь энд байгаа — хэрвээ олдохгүй бол админтай ярина уу</p>
+          <p className="mt-3 text-[#5B7290]">Хэрэгтэй хариултаа олоогүй бол админтай холбогдоорой.</p>
         </div>
 
         <div className="mt-8 rounded-2xl border border-[#D6E4FF] bg-white shadow-premium overflow-hidden">

@@ -13,6 +13,9 @@ import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
 import { formatTugrik } from '@/lib/format'
 import { getYouTubeId, getYouTubeEmbedUrl, getYouTubeThumb, parseImageList } from '@/lib/media'
+import { licenseOptions, licensePrice } from '@/lib/license'
+import { LicenseSelector } from './license-selector'
+import { ProductDescription } from './product-description'
 import { toast } from 'sonner'
 
 interface Product {
@@ -43,6 +46,9 @@ export function ProductDetailModal() {
   const add = useCartStore((s) => s.add)
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
+  const [duration, setDuration] = useState('')
+  const options = licenseOptions(product?.duration)
+  const selectedDuration = options.includes(duration) ? duration : options[0] || ''
   const [qty, setQty] = useState(1)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [activeImage, setActiveImage] = useState<string | null>(null)
@@ -53,6 +59,7 @@ export function ProductDetailModal() {
         setProduct(null)
         setLoading(false)
         setQty(1)
+      setDuration('')
         setVideoPlaying(false)
         setActiveImage(null)
       })
@@ -65,6 +72,7 @@ export function ProductDetailModal() {
       setProduct(null)
       setLoading(true)
       setQty(1)
+      setDuration('')
       setVideoPlaying(false)
       setActiveImage(null)
     })
@@ -98,7 +106,8 @@ export function ProductDetailModal() {
       {
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: licensePrice(product, selectedDuration),
+        duration: selectedDuration,
         icon: product.icon,
         category: product.category,
       },
@@ -151,12 +160,12 @@ export function ProductDetailModal() {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`size-4 ${i < Math.round(product.rating) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[#D6E4FF] fill-[#D6E4FF]'}`}
+                      className={`size-4 ${product.reviewCount > 0 && i < Math.round(product.rating) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[#D6E4FF] fill-[#D6E4FF]'}`}
                     />
                   ))}
                 </div>
                 <span className="text-xs text-[#5B7290]">
-                  {product.rating.toFixed(1)} · {product.reviewCount} сэтгэгдэл
+                  {product.reviewCount > 0 ? `${product.rating.toFixed(1)} · ${product.reviewCount} сэтгэгдэл` : 'Үнэлгээ хараахан байхгүй'}
                 </span>
               </div>
 
@@ -167,7 +176,7 @@ export function ProductDetailModal() {
 
               <div className="mt-4 flex items-end gap-3">
                 <span className="text-3xl font-extrabold text-[#102A43]">
-                  {formatTugrik(product.price)}
+                  {formatTugrik(licensePrice(product, selectedDuration))}
                 </span>
                 {product.oldPrice ? (
                   <span className="text-sm text-[#5B7290] line-through">
@@ -181,17 +190,15 @@ export function ProductDetailModal() {
                   <Check className="size-3.5" /> Баталгаатай
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#E8F1FF] px-2.5 py-1 text-xs font-semibold text-[#1677FF]">
-                  <Zap className="size-3.5" /> Шууд хүргэгдэнэ
+                  <Zap className="size-3.5" /> Дижитал бүтээгдэхүүн
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#F0EAFF] px-2.5 py-1 text-xs font-semibold text-[#8B5CF6]">
-                  <ShieldCheck className="size-3.5" /> 7 хоног баталгаа
+                  <ShieldCheck className="size-3.5" /> Нөхцөлийг тайлбараас харна уу
                 </span>
-                {product.duration ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#FFF5E6] px-2.5 py-1 text-xs font-semibold text-[#F59E0B]">
-                    <Clock className="size-3.5" /> Хугацаа: {product.duration}
-                  </span>
-                ) : null}
+
               </div>
+
+              <LicenseSelector options={options} value={selectedDuration} onChange={setDuration} />
 
               {features.length > 0 && (
                 <div className="mt-5">
@@ -209,9 +216,7 @@ export function ProductDetailModal() {
 
               <div className="mt-5 rounded-xl bg-[#F5F9FF] p-3.5">
                 <h4 className="text-xs font-bold text-[#102A43] uppercase tracking-wide">Тайлбар</h4>
-                <p className="mt-1.5 text-sm text-[#5B7290] leading-relaxed">
-                  {product.description}
-                </p>
+                <ProductDescription text={product.description} />
               </div>
 
               {(() => {
@@ -291,7 +296,7 @@ export function ProductDetailModal() {
                 )
               })()}
 
-              <div className="mt-auto pt-5 flex items-center gap-3">
+              <div className="mt-auto pt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
                   <button
                     type="button"
@@ -321,7 +326,7 @@ export function ProductDetailModal() {
                   className={`flex-1 h-12 rounded-xl gap-2 ${product.available ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg' : 'bg-slate-200 text-slate-500 cursor-not-allowed hover:bg-slate-200'}`}
                 >
                   {product.available ? <ShoppingCart className="size-4" /> : <CircleOff className="size-4" />}
-                  {product.available ? `Сагсанд нэмэх · ${formatTugrik(product.price * qty)}` : 'Түр дууссан'}
+                  {product.available ? `Сагсанд нэмэх · ${formatTugrik(licensePrice(product, selectedDuration) * qty)}` : 'Түр дууссан'}
                 </Button>
               </div>
             </div>

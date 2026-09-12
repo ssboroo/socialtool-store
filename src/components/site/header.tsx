@@ -13,7 +13,7 @@ const NAV = [
   { label: 'Нүүр', href: '#top' },
   { label: 'Бүх хэрэгсэл', href: '#products' },
   { label: 'Ангилал', href: '#categories' },
-  { label: 'Хэрхэн ажиллах вэ?', href: '#how' },
+  { label: 'Хэрхэн захиалах вэ?', href: '#how' },
   { label: 'Тусламж', href: '#faq' },
 ]
 
@@ -87,13 +87,13 @@ export function Header() {
             <Logo />
           </button>
 
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Үндсэн цэс">
+          <nav className="hidden items-center gap-1 xl:flex" aria-label="Үндсэн цэс">
             {NAV.map((n) => (
               <button
                 type="button"
                 key={n.label}
                 onClick={() => handleNav(n.href)}
-                className="rounded-lg px-3.5 py-2 text-sm font-medium text-[#102A43] transition-colors hover:bg-[#E8F1FF] hover:text-[#1677FF]"
+                className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-[#102A43] transition-colors hover:bg-[#E8F1FF] hover:text-[#1677FF]"
               >
                 {n.label}
               </button>
@@ -108,7 +108,7 @@ export function Header() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Хэрэгсэл хайх..."
-                className="h-9 w-44 rounded-full border-[#D6E4FF] bg-white pl-9 shadow-sm focus-visible:border-[#1677FF] focus-visible:ring-[#1677FF]/20 lg:w-56"
+                className="h-9 w-44 rounded-full border-[#D6E4FF] bg-white pl-9 shadow-sm focus-visible:border-[#1677FF] focus-visible:ring-[#1677FF]/20 xl:w-44"
               />
             </form>
 
@@ -196,7 +196,7 @@ export function Header() {
 
             <Button
               onClick={() => handleNav('#products')}
-              className="hidden h-9 gap-1.5 rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium transition-shadow hover:shadow-premium-lg sm:inline-flex"
+              className="hidden h-9 gap-1.5 rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium transition-shadow hover:shadow-premium-lg 2xl:inline-flex"
             >
               <Zap className="size-4" />
               Хэрэгсэл үзэх
@@ -208,7 +208,7 @@ export function Header() {
                 setMobileOpen((v) => !v)
                 setSearchOpen(false)
               }}
-              className="grid size-9 place-items-center rounded-full text-[#102A43] transition-colors hover:bg-[#E8F1FF] lg:hidden"
+              className="grid size-9 place-items-center rounded-full text-[#102A43] transition-colors hover:bg-[#E8F1FF] xl:hidden"
               aria-label="Цэс"
               aria-expanded={mobileOpen}
             >
@@ -235,7 +235,7 @@ export function Header() {
       )}
 
       {mobileOpen && (
-        <div className="border-t border-[#D6E4FF] bg-white/98 shadow-premium lg:hidden">
+        <div className="border-t border-[#D6E4FF] bg-white/98 shadow-premium xl:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3" aria-label="Гар утасны цэс">
             {NAV.map((n) => (
               <button

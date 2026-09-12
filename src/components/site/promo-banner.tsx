@@ -5,12 +5,13 @@ import { Gift, Timer, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 function useCountdown(deadline: Date) {
-  const [now, setNow] = useState(Date.now())
+  const [now, setNow] = useState<number | null>(null)
   useEffect(() => {
+    setNow(Date.now())
     const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
   }, [])
-  const diff = Math.max(0, deadline.getTime() - now)
+  const diff = Math.max(0, deadline.getTime() - (now ?? deadline.getTime()))
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
   const minutes = Math.floor((diff / (1000 * 60)) % 60)
@@ -22,15 +23,10 @@ export function PromoBanner({ promotion, settings }: {
   promotion?: { title: string; description: string; badgeText: string; discountPercent: number; endAt: string } | null
   settings?: Record<string, string>
 }) {
-  // Use the active promotion's end date if provided, otherwise default to 3 days
-  const [deadline] = useState(() => {
-    if (promotion?.endAt) return new Date(promotion.endAt)
-    const d = new Date()
-    d.setDate(d.getDate() + 3)
-    d.setHours(23, 59, 59, 0)
-    return d
-  })
+  const deadline = new Date(promotion?.endAt || 0)
   const { days, hours, minutes, seconds } = useCountdown(deadline)
+
+  if (!promotion || !Number.isFinite(deadline.getTime())) return null
 
   const title = promotion?.title || settings?.promoTitle || 'Шинэ хэрэглэгчдэд зориулсан онцгой хямдрал — 30% хүртэл'
   const description = promotion?.description || settings?.promoDescription || 'Анхны захиалгаа хийгчдэд зориулсан онцгой хямдрал. Хугацаа дуустал хүчинтэй.'
@@ -69,7 +65,7 @@ export function PromoBanner({ promotion, settings }: {
                 {description}
               </p>
 
-              <div className="mt-6 flex items-center gap-3">
+              <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                 <Button
                   onClick={scroll}
                   size="lg"
@@ -78,7 +74,7 @@ export function PromoBanner({ promotion, settings }: {
                   {cta}
                   <ArrowRight className="size-4" />
                 </Button>
-                <span className="text-xs text-white/70">{discount}% хүртэл хямдрал · Банкны картаар төлбөр хийх боломжтой</span>
+                <span className="text-xs text-white/70">{discount}% хүртэл хямдрал · QPay-аар төлөх боломжтой</span>
               </div>
             </div>
 
@@ -87,7 +83,7 @@ export function PromoBanner({ promotion, settings }: {
               <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 p-5">
                 <div className="flex items-center gap-2 text-white/90">
                   <Timer className="size-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wide">Дуусах хугацаа</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide">Үлдсэн хугацаа</span>
                 </div>
                 <div className="mt-4 grid grid-cols-4 gap-2.5">
                   {[

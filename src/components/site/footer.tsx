@@ -7,7 +7,7 @@ const LINKS = [
   { label: 'Нүүр', href: '#top' },
   { label: 'Бүх хэрэгсэл', href: '#products' },
   { label: 'Ангилал', href: '#categories' },
-  { label: 'Хэрхэн ажиллах вэ?', href: '#how' },
+  { label: 'Хэрхэн захиалах вэ?', href: '#how' },
   { label: 'Тусламж', href: '#faq' },
 ]
 
@@ -18,7 +18,7 @@ function scrollTo(href: string) {
 export function Footer({ settings }: { settings?: Record<string, string> }) {
   const contactEmail = settings?.contactEmail || 'help@socialtool.store'
   const contactTelegram = settings?.contactTelegram || 'socialtool'
-  const footerDescription = settings?.footerDescription || 'SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор. Монгол хэрэглэгчдэд зориулсан аюулгүй, шуурхай, баталгаатай дижитал хэрэгсэл.'
+  const footerDescription = settings?.footerDescription || 'SOCIALTOOL.STORE — Сошиал болон AI хэрэгслүүд нэг дор. Монгол хэрэглэгчдэд зориулсан аюулгүй, шуурхай, баталгаатай дижитал хэрэгсэл.'
   const footerCopyright = settings?.footerCopyright || '© 2026 SOCIALTOOL.STORE. Бүх эрх хуулиар хамгаалагдсан.'
 
   return (
@@ -34,10 +34,10 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F1FF] px-3 py-1.5 text-xs font-semibold text-[#0B4DBA]">
-                <ShieldCheck className="size-3.5" /> Wire.mn төлбөр
+                <ShieldCheck className="size-3.5" /> QPay төлбөр
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E6F7EB] px-3 py-1.5 text-xs font-semibold text-[#16A34A]">
-                <Zap className="size-3.5" /> Шууд хүргэлт
+                <Zap className="size-3.5" /> Дижитал бүтээгдэхүүн
               </span>
             </div>
           </div>
@@ -89,7 +89,7 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
             </ul>
             <div className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[#D6E4FF] bg-[#F5F9FF] px-3 py-2 text-xs text-[#5B7290]">
               <span className="size-2 rounded-full bg-[#16A34A] animate-pulse" />
-              24/7 туслах баг бэлэн байна
+              Чат болон Telegram-аар холбогдоорой
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
             {footerCopyright}
           </p>
           <p className="text-xs text-[#5B7290]">
-            Made with <span className="text-[#1677FF]">♥</span> in Mongolia
+            Монголд <span className="text-[#1677FF]">♥</span>-ээр бүтээв
           </p>
         </div>
       </div>
