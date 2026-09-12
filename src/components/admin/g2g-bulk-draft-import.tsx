@@ -12,10 +12,24 @@ type BulkRow = {
   sourcePrice?: string
   sourceCurrency?: string
   salePrice?: string
+  brandName?: string
+  regionName?: string
 }
+
+type CsvRow = Record<string, string>
 
 function cleanUrl(value: string) {
   return value.trim().replace(/\\/g, '')
+}
+
+function validG2GUrl(value: string) {
+  try {
+    const url = new URL(cleanUrl(value))
+    const host = url.hostname.toLowerCase()
+    return url.protocol === 'https:' && (host === 'g2g.com' || host.endsWith('.g2g.com'))
+  } catch {
+    return false
+  }
 }
 
 function parseMarkdownTable(text: string) {
@@ -28,15 +42,82 @@ function parseMarkdownTable(text: string) {
     if (cells[0].replace(/[-:]/g, '').trim() === '') continue
     const [serviceName, name, rawUrl, sourcePrice = '', sourceCurrency = 'USD', salePrice = ''] = cells
     const sourceUrl = cleanUrl(rawUrl)
-    if (!name || !sourceUrl) continue
-    try {
-      const url = new URL(sourceUrl)
-      const host = url.hostname.toLowerCase()
-      if (url.protocol !== 'https:' || !(host === 'g2g.com' || host.endsWith('.g2g.com'))) continue
-    } catch { continue }
-    rows.push({ serviceName: serviceName || 'G2G Marketplace', name, sourceUrl, sourcePrice, sourceCurrency, salePrice })
+    if (!name || !sourceUrl || !validG2GUrl(sourceUrl)) continue
+    rows.push({
+      serviceName: serviceName || 'G2G Marketplace',
+      brandName: serviceName || 'G2G Marketplace',
+      name,
+      sourceUrl,
+      sourcePrice,
+      sourceCurrency,
+      salePrice,
+    })
   }
   return rows
+}
+
+function parseCsv(text: string) {
+  const rawRows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let quoted = false
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i]
+    if (ch === '"') {
+      if (quoted && text[i + 1] === '"') {
+        cell += '"'
+        i += 1
+      } else {
+        quoted = !quoted
+      }
+    } else if (ch === ',' && !quoted) {
+      row.push(cell)
+      cell = ''
+    } else if ((ch === '\n' || ch === '\r') && !quoted) {
+      if (ch === '\r' && text[i + 1] === '\n') i += 1
+      row.push(cell)
+      cell = ''
+      if (row.some(value => value.trim())) rawRows.push(row)
+      row = []
+    } else {
+      cell += ch
+    }
+  }
+
+  row.push(cell)
+  if (row.some(value => value.trim())) rawRows.push(row)
+  if (rawRows.length < 2) return [] as BulkRow[]
+
+  const headers = rawRows[0].map(value => value.replace(/^\uFEFF/, '').trim())
+  const csvRows: CsvRow[] = rawRows.slice(1).map(values =>
+    Object.fromEntries(headers.map((header, index) => [header, (values[index] || '').trim()]))
+  )
+
+  return csvRows.flatMap((csvRow): BulkRow[] => {
+    const sourceUrl = cleanUrl(csvRow.sourceUrl || csvRow.url || '')
+    const name = csvRow.name || csvRow.product_name || ''
+    if (!name || !sourceUrl || !validG2GUrl(sourceUrl)) return []
+
+    const serviceName = csvRow.serviceName || csvRow.service_name || csvRow.brandName || csvRow.brand_name || 'G2G Marketplace'
+    return [{
+      serviceName,
+      brandName: csvRow.brandName || csvRow.brand_name || serviceName,
+      regionName: csvRow.regionName || csvRow.region_name || '',
+      name,
+      sourceUrl,
+      sourcePrice: csvRow.sourcePrice || csvRow.price || '',
+      sourceCurrency: csvRow.sourceCurrency || csvRow.currency || 'USD',
+      salePrice: csvRow.salePrice || '',
+    }]
+  })
+}
+
+function parseImportFile(fileName: string, text: string) {
+  if (/\.csv$/i.test(fileName)) return parseCsv(text)
+  const markdown = parseMarkdownTable(text)
+  if (markdown.length) return markdown
+  return parseCsv(text)
 }
 
 export function G2GBulkDraftImport() {
@@ -50,9 +131,9 @@ export function G2GBulkDraftImport() {
 
   const readFile = async (file: File) => {
     const text = await file.text()
-    const parsed = parseMarkdownTable(text)
+    const parsed = parseImportFile(file.name, text)
     if (!parsed.length) {
-      toast.error('G2G markdown хүснэгтийн мөр олдсонгүй')
+      toast.error('G2G CSV/Markdown дотор тохирох мөр олдсонгүй')
       setRows([])
       setFileName('')
       return
@@ -95,16 +176,16 @@ export function G2GBulkDraftImport() {
             <h2 className="text-lg font-extrabold text-[#102A43]">G2G жагсаалтыг бөөнөөр импортлох</h2>
           </div>
           <p className="mt-1 max-w-3xl text-sm text-[#5B7290]">
-            Category | Product name | G2G URL гэсэн markdown хүснэгтийг нэг дор уншаад Supplier Catalog-д draft болгон оруулна. Үнэ байгаа бол 4-р багана sourcePrice, 5-р багана currency, 6-р багана salePrice байж болно.
+            CSV эсвэл Markdown файлаас G2G бараануудыг нэг дор уншаад Supplier Catalog-д оруулна. sourcePrice + USD байвал одоогийн ханш, markup-аар зарах үнийг автоматаар бодно.
           </p>
         </div>
         <Button variant="outline" className="rounded-xl" onClick={() => fileRef.current?.click()} disabled={busy}>
-          <FileUp className="size-4" /> Файл сонгох
+          <FileUp className="size-4" /> CSV / MD файл сонгох
         </Button>
         <input
           ref={fileRef}
           type="file"
-          accept=".md,.txt,text/plain,text/markdown"
+          accept=".csv,.md,.txt,text/csv,text/plain,text/markdown"
           className="hidden"
           onChange={e => {
             const file = e.target.files?.[0]
@@ -119,12 +200,16 @@ export function G2GBulkDraftImport() {
           <div className="rounded-xl border border-violet-200 bg-white p-3 text-sm">
             <b>{fileName}</b> · <span className="text-violet-700 font-bold">{rows.length} бараа</span>
             <div className="mt-2 space-y-1 text-xs text-[#5B7290]">
-              {preview.map((row, index) => <div key={`${row.sourceUrl}-${index}`} className="truncate">{index + 1}. {row.serviceName} · {row.name}</div>)}
+              {preview.map((row, index) => (
+                <div key={`${row.sourceUrl}-${index}`} className="truncate">
+                  {index + 1}. {row.serviceName} · {row.name}{row.sourcePrice ? ` · ${row.sourcePrice} ${row.sourceCurrency || 'USD'}` : ''}
+                </div>
+              ))}
               {rows.length > preview.length ? <div>… +{rows.length - preview.length} бараа</div> : null}
             </div>
           </div>
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            Таны одоогийн файлд үнэ байхгүй бол бараанууд <b>“Үнэ дутуу” draft</b> байдлаар орно. Худалдан авагчид харагдуулахын өмнө өртөг/зарах үнийг тохируулна.
+            CSV-д sourcePrice байгаа бол зарах үнэ автоматаар бодогдоно. USD ханш тохируулаагүй бол бараа үнэ дутуу draft байдлаар орж болно.
           </div>
           <Button onClick={importRows} disabled={busy} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-[#1677FF] text-white">
             {busy ? <Loader2 className="size-4 animate-spin" /> : <PackagePlus className="size-4" />}
@@ -134,7 +219,7 @@ export function G2GBulkDraftImport() {
         </div>
       ) : (
         <div className="mt-4 rounded-xl border border-dashed border-violet-200 bg-white/70 p-4 text-center text-xs text-[#5B7290]">
-          Таны явуулсан шиг <b>.md</b> файлаа сонгоход бүх мөрийг автоматаар танина.
+          <b>.csv, .md, .txt</b> файл сонгож болно. Таны 124 барааны CSV файлыг шууд танина.
         </div>
       )}
     </div>
