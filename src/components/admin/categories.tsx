@@ -1,7 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Plus, Pencil, Trash2, Search, Tag } from 'lucide-react'
+import {
+  AppWindow, BarChart3, Briefcase, Cloud, Code2, Facebook, Gamepad2, Headphones,
+  Instagram, LayoutGrid, Loader2, Mail, Monitor, Music2, Package, Pencil, Plus,
+  ShieldCheck, Sparkles, Tag, Trash2, Twitter, Video, type LucideIcon,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,7 +16,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 
 interface Category {
   id: string
@@ -23,7 +26,34 @@ interface Category {
   order: number
 }
 
-const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package']
+type IconOption = { value: string; label: string; Icon: LucideIcon }
+
+const ICON_OPTIONS: IconOption[] = [
+  { value: 'Facebook', label: 'Facebook', Icon: Facebook },
+  { value: 'Instagram', label: 'Instagram', Icon: Instagram },
+  { value: 'Twitter', label: 'X / Twitter', Icon: Twitter },
+  { value: 'Music2', label: 'TikTok / Music', Icon: Music2 },
+  { value: 'Sparkles', label: 'AI', Icon: Sparkles },
+  { value: 'Headphones', label: 'Хөгжим & Аудио', Icon: Headphones },
+  { value: 'AppWindow', label: 'Программ & Лиценз', Icon: AppWindow },
+  { value: 'ShieldCheck', label: 'VPN & Аюулгүй байдал', Icon: ShieldCheck },
+  { value: 'Code2', label: 'Код & Хөгжүүлэлт', Icon: Code2 },
+  { value: 'Mail', label: 'И-мэйл & Аккаунт', Icon: Mail },
+  { value: 'Gamepad2', label: 'Gaming & Network', Icon: Gamepad2 },
+  { value: 'Cloud', label: 'Cloud & Storage', Icon: Cloud },
+  { value: 'BarChart3', label: 'Аналитик & Маркетинг', Icon: BarChart3 },
+  { value: 'Briefcase', label: 'Office & Бүтээмж', Icon: Briefcase },
+  { value: 'Monitor', label: 'Windows & Лиценз', Icon: Monitor },
+  { value: 'Video', label: 'Видео & Дизайн', Icon: Video },
+  { value: 'Package', label: 'Ерөнхий бүтээгдэхүүн', Icon: Package },
+  { value: 'LayoutGrid', label: 'Ерөнхий ангилал', Icon: LayoutGrid },
+]
+
+const ICON_MAP = new Map(ICON_OPTIONS.map(option => [option.value, option]))
+
+function iconFor(value: string) {
+  return ICON_MAP.get(value)?.Icon || Package
+}
 
 export function AdminCategories({ token }: { token: string }) {
   const [items, setItems] = useState<Category[]>([])
@@ -96,31 +126,34 @@ export function AdminCategories({ token }: { token: string }) {
             <p className="mt-3 text-sm text-[#5B7290]">Ангилал байхгүй</p>
           </div>
         ) : (
-          items.map((c) => (
-            <div key={c.id} className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="grid size-9 place-items-center rounded-xl bg-[#E8F1FF] text-[#0B4DBA] text-xs font-bold">
-                    {c.icon.slice(0, 2)}
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-[#102A43]">{c.name}</p>
-                    <p className="text-xs text-[#5B7290]">/{c.slug}</p>
+          items.map((c) => {
+            const CategoryIcon = iconFor(c.icon)
+            return (
+              <div key={c.id} className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#E8F1FF] to-white text-[#0B4DBA] ring-1 ring-[#D6E4FF]">
+                      <CategoryIcon className="size-5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-bold text-[#102A43]">{c.name}</p>
+                      <p className="text-xs text-[#5B7290]">/{c.slug}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => setEditing(c)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]">
+                      <Pencil className="size-4" />
+                    </button>
+                    <button onClick={() => remove(c.id)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500">
+                      <Trash2 className="size-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-1">
-                  <button onClick={() => setEditing(c)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]">
-                    <Pencil className="size-4" />
-                  </button>
-                  <button onClick={() => remove(c.id)} className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500">
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
+                <p className="mt-2 text-xs text-[#5B7290] line-clamp-2 min-h-[32px]">{c.description || 'Тайлбар байхгүй'}</p>
+                <p className="mt-2 text-[10px] text-[#5B7290]">Дүрс: {ICON_MAP.get(c.icon)?.label || c.icon} · Дараалал: {c.order}</p>
               </div>
-              <p className="mt-2 text-xs text-[#5B7290] line-clamp-2 min-h-[32px]">{c.description || 'Тайлбар байхгүй'}</p>
-              <p className="mt-2 text-[10px] text-[#5B7290]">Дараалал: {c.order}</p>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
@@ -145,7 +178,6 @@ function CategoryFormDialog({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({ name: category.name, slug: category.slug, icon: category.icon, description: category.description || '', order: String(category.order) })
     } else if (open) {
-       
       setForm({ name: '', slug: '', icon: 'Package', description: '', order: '0' })
     }
   }, [category, open])
@@ -162,6 +194,8 @@ function CategoryFormDialog({
     })
   }
 
+  const PreviewIcon = iconFor(form.icon)
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
@@ -173,24 +207,33 @@ function CategoryFormDialog({
           <div className="p-6 space-y-4">
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Нэр *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Facebook Tool" />
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Facebook хэрэгсэл" />
             </div>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Slug (опц — хоосон үлдвэл автоматаар)</Label>
               <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="facebook" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Дүрс</Label>
                 <Select value={form.icon} onValueChange={(v) => setForm({ ...form, icon: v })}>
                   <SelectTrigger className="mt-1 border-[#D6E4FF]"><SelectValue /></SelectTrigger>
-                  <SelectContent>{ICONS.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {ICON_OPTIONS.map(({ value, label, Icon }) => (
+                      <SelectItem key={value} value={value}>
+                        <span className="flex items-center gap-2"><Icon className="size-4 text-[#0B4DBA]" />{label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-xs font-semibold text-[#102A43]">Дараалал</Label>
-                <Input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} className="mt-1 border-[#D6E4FF]" />
+              <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#1677FF] to-[#0B4DBA] text-white shadow-sm">
+                <PreviewIcon className="size-5" />
               </div>
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-[#102A43]">Дараалал</Label>
+              <Input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} className="mt-1 border-[#D6E4FF]" />
             </div>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Тайлбар</Label>
