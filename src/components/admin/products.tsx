@@ -1,6 +1,7 @@
 'use client'
 import { licenseOptions, licenseVariants } from '@/lib/license'
 import { productImageSuggestions } from '@/lib/product-image-suggestions'
+import { BulkProductImages } from './bulk-product-images'
 import { DescriptionEditor } from './description-editor'
 
 import { useEffect, useState } from 'react'
@@ -52,6 +53,8 @@ interface Product {
 const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package']
 
 export function AdminProducts({ token, categories }: { token: string; categories: Category[] }) {
+  const [selected, setSelected] = useState<string[]>([])
+  const [bulkProducts, setBulkProducts] = useState<Product[] | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
@@ -60,6 +63,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
   const [saving, setSaving] = useState(false)
 
   const load = () => {
+    setSelected([])
     setLoading(true)
     fetch(`/api/admin/products?q=${encodeURIComponent(q)}`, { headers: { authorization: `Bearer ${token}` } })
       .then((r) => r.json())
@@ -123,6 +127,13 @@ export function AdminProducts({ token, categories }: { token: string; categories
         </Button>
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3">
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading || !products.length} checked={products.length > 0 && selected.length === Math.min(products.length,100)} onChange={e=>setSelected(e.target.checked?products.slice(0,100).map(p=>p.id):[])} />Харагдаж буй барааг сонгох (100 хүртэл)</label>
+        <span className="text-sm">{selected.length} сонгосон</span>
+        <Button type="button" disabled={loading || !selected.length} onClick={()=>setBulkProducts(products.filter(p=>selected.includes(p.id)))}>Зургийг бөөнөөр солих</Button>
+        {selected.length>0&&<Button type="button" variant="ghost" onClick={()=>setSelected([])}>Сонголт цэвэрлэх</Button>}
+      </div>
+      {bulkProducts && <BulkProductImages products={bulkProducts} token={token} onClose={()=>setBulkProducts(null)} onSaved={()=>{setBulkProducts(null);load()}} />}
       <div className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium overflow-hidden">
         {loading ? (
           <div className="grid place-items-center py-20">
@@ -138,7 +149,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
             <table className="w-full text-sm">
               <thead className="bg-[#F5F9FF] text-[#5B7290] text-xs uppercase">
                 <tr>
-                  <th className="text-left px-5 py-3 font-semibold">Нэр</th>
+                  <th className="px-3 py-3"><span className="sr-only">Сонгох</span></th><th className="text-left px-5 py-3 font-semibold">Нэр</th>
                   <th className="text-left px-5 py-3 font-semibold">Ангилал</th>
                   <th className="text-left px-5 py-3 font-semibold">Үнэ</th>
                   <th className="text-left px-5 py-3 font-semibold">Үнэлгээ</th>
@@ -148,7 +159,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
               </thead>
               <tbody className="divide-y divide-[#EEF4FF]">
                 {products.map((p) => (
-                  <tr key={p.id} className="hover:bg-[#F5F9FF]/40">
+                  <tr key={p.id} className="hover:bg-[#F5F9FF]/40"><td className="px-3"><input type="checkbox" aria-label={`${p.name} сонгох`} checked={selected.includes(p.id)} disabled={!selected.includes(p.id) && selected.length>=100} onChange={e=>setSelected(v=>e.target.checked?[...v,p.id]:v.filter(id=>id!==p.id))} /></td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <ProductImage image={p.image} icon={p.icon} alt={p.name} className="size-11 shrink-0" />

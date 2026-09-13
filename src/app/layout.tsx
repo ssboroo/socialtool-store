@@ -1,6 +1,9 @@
+import { ThemeProvider } from "@/components/site/theme-provider";
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./theme.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
@@ -15,6 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/logo-fallback.png", type: "image/png" }], apple: "/apple-icon.png" },
   title: "SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор",
   description:
     "Facebook, Instagram, TikTok, Telegram, Twitter/X, Email, AI хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай. Шуурхай хүргэлт, баталгаатай бүтээгдэхүүн.",
@@ -47,9 +52,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
+        <ThemeProvider>
         {children}
         <Toaster />
         <SonnerToaster richColors position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );
