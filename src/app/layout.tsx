@@ -21,12 +21,9 @@ export const metadata: Metadata = {
   applicationName: 'SOCIALTOOL.STORE',
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: [
-      { url: '/socialtool-logo.png', type: 'image/png', sizes: '512x512' },
-      { url: '/favicon.ico', type: 'image/x-icon' },
-    ],
+    icon: [{ url: '/socialtool-logo.png', type: 'image/png', sizes: '192x192' }],
     shortcut: '/socialtool-logo.png',
-    apple: [{ url: '/socialtool-logo.png', type: 'image/png', sizes: '512x512' }],
+    apple: [{ url: '/socialtool-logo.png', type: 'image/png', sizes: '192x192' }],
   },
   openGraph: {
     type: 'website',
@@ -34,7 +31,7 @@ export const metadata: Metadata = {
     title: 'SOCIALTOOL.STORE — Social Media & AI Tools',
     description: 'Social media, AI, automation болон marketing хэрэгслүүд нэг дор.',
     url: baseUrl,
-    images: [{ url: '/socialtool-logo.png', width: 512, height: 512, alt: 'SOCIALTOOL.STORE logo' }],
+    images: [{ url: '/socialtool-logo.png', width: 192, height: 192, alt: 'SOCIALTOOL.STORE logo' }],
   },
   twitter: {
     card: 'summary',
