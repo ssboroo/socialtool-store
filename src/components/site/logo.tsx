@@ -1,37 +1,11 @@
 'use client'
-
 import Image from 'next/image'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-
 export function Logo({ className, withText = true }: { className?: string; withText?: boolean }) {
-  const [src, setSrc] = useState('/socialtool-logo-s.png')
-
-  return (
-    <div className={cn('flex items-center gap-2.5', className)}>
-      <div className="relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-[#1677FF] to-[#0B4DBA] shadow-sm ring-1 ring-[#D6E4FF]">
-        <span className="absolute text-sm font-black text-white">S</span>
-        <Image
-          src={src}
-          alt="SOCIALTOOL.STORE"
-          width={36}
-          height={36}
-          priority
-          unoptimized
-          onError={() => setSrc('/logo.svg')}
-          className="relative z-10 size-9 object-contain"
-        />
-      </div>
-      {withText && (
-        <div className="flex flex-col leading-none">
-          <span className="text-[15px] font-bold tracking-tight text-[#102A43]">
-            SOCIALTOOL<span className="text-[#1677FF]">.STORE</span>
-          </span>
-          <span className="text-[10px] font-medium text-[#5B7290] tracking-wide">
-            Social media &amp; AI tools
-          </span>
-        </div>
-      )}
-    </div>
-  )
+  const [failed, setFailed] = useState(false)
+  return <div className={cn('flex min-w-0 items-center gap-2.5 sm:gap-3', className)}>
+    <Image src={failed ? '/logo-fallback.png' : '/logo.svg'} alt={withText ? '' : 'Socialtool'} width={48} height={48} priority unoptimized onError={() => { if (!failed) setFailed(true) }} className="size-10 shrink-0 object-contain sm:size-12" />
+    {withText && <div className="min-w-0 text-left leading-tight"><div className="whitespace-nowrap text-[15px] font-extrabold tracking-tight text-slate-900 sm:text-xl xl:text-[22px]">SOCIALTOOL.<span className="text-blue-600">STORE</span></div><div className="mt-0.5 whitespace-nowrap text-[9px] text-slate-500 sm:text-xs">Social media &amp; AI tools</div></div>}
+  </div>
 }

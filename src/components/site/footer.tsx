@@ -1,5 +1,6 @@
 'use client'
 
+import { telegramUsername } from '@/lib/public-contact'
 import { Logo } from './logo'
 import { Mail, Send, ShieldCheck, Zap } from 'lucide-react'
 
@@ -17,7 +18,7 @@ function scrollTo(href: string) {
 
 export function Footer({ settings }: { settings?: Record<string, string> }) {
   const contactEmail = settings?.contactEmail || 'help@socialtool.store'
-  const contactTelegram = settings?.contactTelegram || 'socialtool'
+  const contactTelegram = settings?.contactTelegram || telegramUsername
   const footerDescription = settings?.footerDescription || 'SOCIALTOOL.STORE — Сошиал болон AI хэрэгслүүд нэг дор. Монгол хэрэглэгчдэд зориулсан аюулгүй, шуурхай, баталгаатай дижитал хэрэгсэл.'
   const footerCopyright = settings?.footerCopyright || '© 2026 SOCIALTOOL.STORE. Бүх эрх хуулиар хамгаалагдсан.'
 

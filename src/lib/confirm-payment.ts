@@ -16,6 +16,19 @@ export async function confirmPayment(paymentId: string, intentId: string, transa
     if (!updated.count) return false
     const payment = await tx.payment.findUniqueOrThrow({ where: { id: paymentId } })
     await tx.order.updateMany({ where: { id: payment.orderId, status: { in: ['PENDING_PAYMENT', 'PENDING', 'FAILED', 'EXPIRED'] } }, data: { status: 'PAID', paymentId } })
+    const order = await tx.order.findUniqueOrThrow({ where: { id: payment.orderId } })
+    if (order.chatSessionId) {
+      await tx.chatMessage.create({ data: {
+        sessionId: order.chatSessionId,
+        sender: 'system',
+        content: `Таны төлбөр амжилттай бүртгэгдлээ ✅
+
+Бид тантай удахгүй холбогдож барааг хүргэнэ. Түр хүлээгээрэй.
+
+Захиалгын дугаар: ${order.orderNumber}`,
+      } })
+      await tx.chatSession.update({ where: { id: order.chatSessionId }, data: { lastMessageAt: new Date() } })
+    }
     return true
   })
 }

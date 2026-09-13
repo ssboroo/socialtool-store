@@ -128,6 +128,8 @@ test('local production API: registration, admin, image upload and account-isolat
     orderPayload.items[0].duration = 'invalid'
     assert.equal((await request('/api/orders', json(orderPayload, cookieA))).status, 400)
     console.log('Verified: two license variants sync between sessions; order retains authoritative name, term and total; invalid term rejected')
+    assert.ok(order.chatSessionId)
+    assert.equal(await db.chatMessage.count({where:{sessionId:order.chatSessionId,sender:'system'}}),0)
     const payment = await db.payment.create({ data: { orderId: order.id, amount: 300, wirePaymentIntentId: 'pi_wrong_amount' } })
     assert.equal((await request('/api/payment/wire/status?orderId='+order.id)).status,502)
     assert.equal((await db.payment.findUnique({ where:{id:payment.id} })).status,'PENDING')
@@ -138,6 +140,9 @@ test('local production API: registration, admin, image upload and account-isolat
     await db.order.update({ where:{id:order.id}, data:{status:'DELIVERED'} })
     await request('/api/payment/wire/status?orderId='+order.id)
     assert.equal((await db.order.findUnique({where:{id:order.id}})).status,'DELIVERED')
+    const systemMessages = await db.chatMessage.findMany({where:{sessionId:order.chatSessionId,sender:'system'}})
+    assert.equal(systemMessages.length,1)
+    assert.ok(systemMessages[0].content.includes(order.orderNumber))
     console.log('Verified: wrong payment amount cannot fulfill; valid amount confirms; delivered order does not regress')
     const pricedDuration = JSON.stringify([{ term: '1 жил', price: 120 }, { term: 'Хугацаагүй', price: 250 }])
     assert.equal((await request('/api/admin/products/' + product.id, { ...json({ duration: pricedDuration }), method: 'PUT', headers: { ...adminHeaders, 'Content-Type': 'application/json' } })).status, 200)

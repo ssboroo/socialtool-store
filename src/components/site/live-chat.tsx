@@ -5,11 +5,12 @@ import { io, type Socket } from 'socket.io-client'
 import { MessageCircle, X, Send, Phone, User, Loader2, Sparkles, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { telegramUsername, telegramUrl } from '@/lib/public-contact'
 import { toast } from 'sonner'
 
 interface ChatMsg {
   id: string
-  sender: 'customer' | 'admin'
+  sender: 'customer' | 'admin' | 'system'
   content: string
   createdAt: string
 }
@@ -34,6 +35,20 @@ export function LiveChat() {
     return () => window.removeEventListener('st-open-chat', openHandler)
   }, [])
 
+  useEffect(() => {
+    const restore = (id: string) => {
+      if (!/^[a-zA-Z0-9_-]{10,100}$/.test(id)) return
+      socketRef.current?.disconnect()
+      setSessionId(id)
+      setRegistered(true)
+      setMessages([])
+    }
+    try { const id = sessionStorage.getItem('st-order-chat'); if (id) restore(id) } catch {}
+    const change = (event: Event) => { const id = (event as CustomEvent).detail; if (typeof id === 'string') restore(id) }
+    window.addEventListener('st-chat-session', change)
+    return () => window.removeEventListener('st-chat-session', change)
+  }, [])
+
   // auto scroll
   useEffect(() => {
     if (scrollRef.current) {
@@ -46,16 +61,18 @@ export function LiveChat() {
     if (!registered || !sessionId) return
     let stopped = false
     const seen = new Set(messages.map((m) => m.id))
+    let initial = true
     const poll = async () => {
       try {
         const res = await fetch(`/api/chat/sessions/${sessionId}`)
         if (!res.ok) return
         const data = await res.json()
         if (stopped) return
-        const newMsgs = (data.messages || []).filter((m: ChatMsg) => m.sender === 'admin' && !seen.has(m.id))
+        const newMsgs = (data.messages || []).filter((m: ChatMsg) => !seen.has(m.id) && (initial || m.sender !== 'customer'))
+        initial = false
         if (newMsgs.length > 0) {
           newMsgs.forEach((m: ChatMsg) => seen.add(m.id))
-          setMessages((prev) => [...prev, ...newMsgs])
+          setMessages(prev => [...prev, ...newMsgs.filter((m: ChatMsg) => !prev.some(p => p.id === m.id))])
         }
       } catch {}
     }
@@ -79,6 +96,8 @@ export function LiveChat() {
         body: JSON.stringify({ customerName: name.trim(), phone: phone.trim() || null }),
       })
       const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Чат эхлүүлж чадсангүй')
+      try { sessionStorage.setItem('st-order-chat', data.sessionId) } catch {}
       setSessionId(data.sessionId)
       setRegistered(true)
       setMessages([
@@ -249,13 +268,13 @@ export function LiveChat() {
                   Чатыг эхлүүлэх
                 </Button>
                 <a
-                  href="https://t.me/socialtool"
+                  href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-1.5 rounded-xl border border-[#D6E4FF] bg-white px-4 py-2.5 text-sm font-semibold text-[#0B4DBA] hover:bg-[#E8F1FF] transition-colors"
                 >
                   <ExternalLink className="size-4" />
-                  Telegram-аар шууд холбогдох
+                  Telegram · @{telegramUsername}
                 </a>
               </div>
             </div>
@@ -302,12 +321,12 @@ export function LiveChat() {
                   </Button>
                 </div>
                 <a
-                  href="https://t.me/socialtool"
+                  href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2 inline-flex items-center gap-1 text-[11px] text-[#5B7290] hover:text-[#1677FF]"
                 >
-                  <ExternalLink className="size-3" /> Telegram-аар шууд холбогдох
+                  <ExternalLink className="size-3" /> Telegram · @{telegramUsername}
                 </a>
               </div>
             </>
