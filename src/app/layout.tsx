@@ -19,7 +19,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/logo-fallback.png", type: "image/png" }], apple: "/apple-icon.png" },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32 48x48 64x64 128x128 256x256" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/logo-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/apple-icon.png",
+  },
   title: "SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор",
   description:
     "Facebook, Instagram, TikTok, Telegram, Twitter/X, Email, AI хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай. Шуурхай хүргэлт, баталгаатай бүтээгдэхүүн.",
