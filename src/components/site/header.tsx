@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
+import { ThemeToggle } from './theme-toggle'
 import { Notifications } from './notifications'
 import { Logo } from './logo'
 import { Button } from '@/components/ui/button'
@@ -83,7 +84,7 @@ export function Header() {
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-3 sm:gap-4">
+        <div className="flex h-16 items-center justify-between gap-1 sm:gap-3">
           <button type="button" onClick={() => handleNav('#top')} className="shrink-0 rounded-xl" aria-label="Нүүр хуудас">
             <Logo />
           </button>
@@ -101,7 +102,7 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-0 sm:gap-2">
             <form onSubmit={submitSearch} className="relative hidden items-center md:flex">
               <Search className="pointer-events-none absolute left-3 size-4 text-[#5B7290]" />
               <Input
@@ -140,6 +141,7 @@ export function Header() {
               )}
             </button>
 
+            <span className="hidden sm:contents"><ThemeToggle /></span>
             <Notifications />
 
             {loading ? null : customer ? (
@@ -239,7 +241,7 @@ export function Header() {
 
       {mobileOpen && (
         <div className="border-t border-[#D6E4FF] bg-white/98 shadow-premium xl:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3" aria-label="Гар утасны цэс"><form onSubmit={e => { submitSearch(e); setMobileOpen(false) }} className="mb-2 sm:hidden"><Input aria-label="Хэрэгсэл хайх" placeholder="Хэрэгсэл хайх…" value={query} onChange={e => setQuery(e.target.value)} /></form>
+          <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3" aria-label="Гар утасны цэс"><div className="mb-2 flex items-center justify-between sm:hidden"><span className="text-sm">Гэрэлтэй / харанхуй горим</span><ThemeToggle /></div><form onSubmit={e => { submitSearch(e); setMobileOpen(false) }} className="mb-2 sm:hidden"><Input aria-label="Хэрэгсэл хайх" placeholder="Хэрэгсэл хайх…" value={query} onChange={e => setQuery(e.target.value)} /></form>
             {NAV.map((n) => (
               <button
                 type="button"
