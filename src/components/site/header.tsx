@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
+import { Notifications } from './notifications'
 import { Logo } from './logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -118,7 +119,7 @@ export function Header() {
                 setSearchOpen((v) => !v)
                 setMobileOpen(false)
               }}
-              className="grid size-9 place-items-center rounded-full text-[#102A43] transition-colors hover:bg-[#E8F1FF] md:hidden"
+              className="hidden size-9 place-items-center rounded-full text-[#102A43] transition-colors hover:bg-[#E8F1FF] sm:grid md:hidden"
               aria-label="Хайх"
               aria-expanded={searchOpen}
             >
@@ -138,6 +139,8 @@ export function Header() {
                 </span>
               )}
             </button>
+
+            <Notifications />
 
             {loading ? null : customer ? (
               <div className="relative">
@@ -236,7 +239,7 @@ export function Header() {
 
       {mobileOpen && (
         <div className="border-t border-[#D6E4FF] bg-white/98 shadow-premium xl:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3" aria-label="Гар утасны цэс">
+          <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3" aria-label="Гар утасны цэс"><form onSubmit={e => { submitSearch(e); setMobileOpen(false) }} className="mb-2 sm:hidden"><Input aria-label="Хэрэгсэл хайх" placeholder="Хэрэгсэл хайх…" value={query} onChange={e => setQuery(e.target.value)} /></form>
             {NAV.map((n) => (
               <button
                 type="button"

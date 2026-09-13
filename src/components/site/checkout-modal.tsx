@@ -1,4 +1,5 @@
 'use client'
+import { rememberChat, savedChats } from '@/lib/chat-history'
 import { cartKey } from '@/lib/license'
 
 import { useEffect, useState, useRef } from 'react'
@@ -139,7 +140,7 @@ export function CheckoutModal() {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Захиалга үүсгэхэд алдаа гарлаа')
         if (data.chatSessionId) {
-          try { sessionStorage.setItem('st-order-chat', data.chatSessionId) } catch {}
+          rememberChat(data.chatSessionId)
           window.dispatchEvent(new CustomEvent('st-chat-session', { detail: data.chatSessionId }))
         }
         currentOrder = { orderNumber: data.orderNumber, orderId: data.orderId, amount: data.amount }
