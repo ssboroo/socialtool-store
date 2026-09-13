@@ -135,6 +135,7 @@ model ChatSession {
 }
 
 model ChatMessage {
+  customerReadAt DateTime?
   id        String      @id @default(cuid())
   sessionId String
   sender    String

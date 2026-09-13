@@ -1,4 +1,5 @@
 'use client'
+import { rememberChat, savedChats } from '@/lib/chat-history'
 
 import { useEffect, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
@@ -38,12 +39,13 @@ export function LiveChat() {
   useEffect(() => {
     const restore = (id: string) => {
       if (!/^[a-zA-Z0-9_-]{10,100}$/.test(id)) return
+      rememberChat(id)
       socketRef.current?.disconnect()
       setSessionId(id)
       setRegistered(true)
       setMessages([])
     }
-    try { const id = sessionStorage.getItem('st-order-chat'); if (id) restore(id) } catch {}
+    try { const id = sessionStorage.getItem('st-order-chat') || savedChats()[0]; if (id) restore(id) } catch {}
     const change = (event: Event) => { const id = (event as CustomEvent).detail; if (typeof id === 'string') restore(id) }
     window.addEventListener('st-chat-session', change)
     return () => window.removeEventListener('st-chat-session', change)
@@ -97,7 +99,7 @@ export function LiveChat() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Чат эхлүүлж чадсангүй')
-      try { sessionStorage.setItem('st-order-chat', data.sessionId) } catch {}
+      rememberChat(data.sessionId)
       setSessionId(data.sessionId)
       setRegistered(true)
       setMessages([
