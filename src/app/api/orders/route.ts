@@ -84,9 +84,12 @@ export async function POST(req: NextRequest) {
     }
     const orderNumber = generateOrderNumber()
 
-    const order = await db.order.create({
+    const order = await db.$transaction(async tx => {
+      const chat = await tx.chatSession.create({ data: { customerName: customerName.trim(), phone: phone.trim() } })
+      return tx.order.create({
       data: {
         orderNumber,
+        chatSessionId: chat.id,
         customerName: customerName.trim(),
         phone: phone.trim(),
         email: normalizedEmail,
@@ -111,6 +114,7 @@ export async function POST(req: NextRequest) {
         },
       },
       include: { items: true },
+      })
     })
 
     const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin?order=${order.id}`
@@ -130,6 +134,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       orderId: order.id,
+      chatSessionId: order.chatSessionId,
       orderNumber: order.orderNumber,
       amount: order.totalAmount,
     })

@@ -4,6 +4,7 @@ import { useState, type ComponentType, type SVGProps } from 'react'
 import {
   Facebook, Music2, Instagram, Twitter, Send, Mail, Sparkles, LayoutGrid, Package,
 } from 'lucide-react'
+import { suggestProductImage } from '@/lib/product-image-suggestions'
 import { cn } from '@/lib/utils'
 
 const MAP: Record<string, { Icon: ComponentType<SVGProps<SVGSVGElement>>; gradient: string; accent: string }> = {
@@ -109,6 +110,6 @@ export function ProductImage({
   alt: string
   className?: string
 }) {
-  if (!image) return <ProductIllustration icon={icon} className={className} />
+  if (!image) return <ResilientProductImage key={suggestProductImage(alt, icon)} image={suggestProductImage(alt, icon)} icon={icon} alt={alt} className={className} />
   return <ResilientProductImage key={image} image={image} icon={icon} alt={alt} className={className} />
 }

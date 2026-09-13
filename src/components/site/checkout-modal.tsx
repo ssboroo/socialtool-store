@@ -84,6 +84,7 @@ export function CheckoutModal() {
         if (data.status === 'PAID') {
           setPolling(false)
           setStep('success')
+          window.dispatchEvent(new Event('st-open-chat'))
           clear()
           setPendingOrder(null)
           return
@@ -137,6 +138,10 @@ export function CheckoutModal() {
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Захиалга үүсгэхэд алдаа гарлаа')
+        if (data.chatSessionId) {
+          try { sessionStorage.setItem('st-order-chat', data.chatSessionId) } catch {}
+          window.dispatchEvent(new CustomEvent('st-chat-session', { detail: data.chatSessionId }))
+        }
         currentOrder = { orderNumber: data.orderNumber, orderId: data.orderId, amount: data.amount }
         setPendingOrder({ fingerprint, order: currentOrder })
       }
@@ -396,8 +401,7 @@ export function CheckoutModal() {
                 </div>
                 <h3 className="text-2xl font-extrabold text-[#102A43]">Баярлалаа! 🎉</h3>
                 <p className="text-sm text-[#5B7290] max-w-sm mx-auto">
-                  Төлбөр амжилттай төлөгдлөө. Таны хэрэгсэл, хандалтын мэдээлэл
-                  и-мэйл болон Telegram-аар тун удахгүй хүргэгдэх болно.
+                  Таны төлбөр амжилттай бүртгэгдлээ ✅ Бид тантай удахгүй холбогдож барааг хүргэнэ. Түр хүлээгээрэй.
                 </p>
                 <div className="rounded-2xl border border-[#D6E4FF] bg-[#F5F9FF]/50 p-4 text-left">
                   <div className="flex items-center justify-between text-sm">
@@ -418,8 +422,8 @@ export function CheckoutModal() {
                     <span className="font-bold text-[#102A43]">{formatTugrik(order.amount)}</span>
                   </div>
                 </div>
-                <Button onClick={close} className="w-full h-12 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
-                  Үргэлжлүүлэх
+                <Button onClick={() => { close(); window.dispatchEvent(new Event('st-open-chat')) }} className="w-full h-12 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
+                  Захиалгын чат нээх
                 </Button>
               </div>
             )}

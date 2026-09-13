@@ -53,6 +53,7 @@ model Product {
 model Order {
   id            String      @id @default(cuid())
   orderNumber   String      @unique
+  chatSessionId String?
   customerName  String
   phone         String
   email         String

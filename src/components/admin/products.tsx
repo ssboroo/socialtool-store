@@ -1,5 +1,6 @@
 'use client'
 import { licenseOptions, licenseVariants } from '@/lib/license'
+import { productImageSuggestions } from '@/lib/product-image-suggestions'
 import { DescriptionEditor } from './description-editor'
 
 import { useEffect, useState } from 'react'
@@ -251,6 +252,7 @@ function ProductFormDialog({
     tutorialVideoUrl: '',
     instructionImages: '',
   })
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -409,6 +411,11 @@ function ProductFormDialog({
             </div>
           </div>
 
+          <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+            <Button type="button" variant="outline" onClick={() => setShowSuggestions(v => !v)}>Зураг санал болгох</Button>
+            <p className="mt-2 text-xs text-slate-500">Нэр, ангилалд тохирсон загвар сонгоод бүтээгдэхүүнээ хадгална. Зураггүй бараанд тохирох загвар автоматаар харагдана.</p>
+            {showSuggestions && <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">{productImageSuggestions(form.name, categories.find(c => c.id === form.categoryId)?.name).map(option => <button key={option.image} type="button" aria-pressed={form.image === option.image} onClick={() => setForm(v => ({ ...v, image: option.image }))} className={`overflow-hidden rounded-xl border bg-white p-2 text-xs ${form.image === option.image ? 'border-blue-600 ring-2 ring-blue-200' : 'border-blue-100'}`}><img src={option.image} alt={option.label} className="aspect-[8/5] w-full rounded-lg object-contain" /><span className="mt-2 block">{option.label}</span><span className="mt-1 block text-blue-600">{form.image === option.image ? 'Сонгосон' : 'Зураг ашиглах'}</span></button>)}</div>}
+          </div>
           {/* Product image upload */}
           <div className="rounded-xl border border-[#D6E4FF] bg-[#F5F9FF]/40 p-4 space-y-3">
             <h4 className="text-xs font-bold text-[#0B4DBA] uppercase tracking-wide flex items-center gap-1.5">
