@@ -1,70 +1,89 @@
-import { ThemeProvider } from "@/components/site/theme-provider";
-import { siteUrl } from "@/lib/site-url";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import "./theme.css";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import type { Metadata, Viewport } from 'next'
+import { siteUrl } from '@/lib/site-url'
+import { ThemeProvider } from '@/components/site/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
+import './globals.css'
+import './storefront.css'
+import './store-design.css'
+import './catalog-polish.css'
+import './production-polish.css'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const baseUrl = siteUrl()
+const brandLogo = `${baseUrl}/socialtool-logo.png`
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'SOCIALTOOL.STORE — Social Media & AI Tools',
+    template: '%s | SOCIALTOOL.STORE',
+  },
+  description: 'Social media, AI, automation болон marketing хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай.',
+  applicationName: 'SOCIALTOOL.STORE',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: [
-      { url: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32 48x48 64x64 128x128 256x256" },
-      { url: "/icon.png", type: "image/png", sizes: "192x192" },
-      { url: "/logo-512.png", type: "image/png", sizes: "512x512" },
+      { url: '/socialtool-logo.png', type: 'image/png', sizes: '512x512' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
     ],
-    apple: "/apple-icon.png",
+    shortcut: '/socialtool-logo.png',
+    apple: [{ url: '/socialtool-logo.png', type: 'image/png', sizes: '512x512' }],
   },
-  title: "SOCIALTOOL.STORE — Social media & AI хэрэгслүүд нэг дор",
-  description:
-    "Facebook, Instagram, TikTok, Telegram, Twitter/X, Email, AI хэрэгслүүдийг нэг дороос аюулгүй, хурдан аваарай. Шуурхай хүргэлт, баталгаатай бүтээгдэхүүн.",
-  keywords: [
-    "social media tools",
-    "MMO tools",
-    "Facebook tool",
-    "Instagram automation",
-    "TikTok growth",
-    "Telegram bot",
-    "AI tool",
-    "эх хэрэгсэл",
-    " маркетинг хэрэгсэл",
-  ],
-  authors: [{ name: "SOCIALTOOL.STORE" }],
   openGraph: {
-    title: "SOCIALTOOL.STORE",
-    description: "Social media & AI хэрэгслүүд нэг дор",
-    type: "website",
+    type: 'website',
+    siteName: 'SOCIALTOOL.STORE',
+    title: 'SOCIALTOOL.STORE — Social Media & AI Tools',
+    description: 'Social media, AI, automation болон marketing хэрэгслүүд нэг дор.',
+    url: baseUrl,
+    images: [{ url: '/socialtool-logo.png', width: 512, height: 512, alt: 'SOCIALTOOL.STORE logo' }],
   },
-};
+  twitter: {
+    card: 'summary',
+    title: 'SOCIALTOOL.STORE — Social Media & AI Tools',
+    description: 'Social media, AI, automation болон marketing хэрэгслүүд нэг дор.',
+    images: ['/socialtool-logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#1677FF',
+  colorScheme: 'light',
+}
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'SOCIALTOOL.STORE',
+  url: baseUrl,
+  logo: brandLogo,
+}
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'SOCIALTOOL.STORE',
+  url: baseUrl,
+}
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="mn" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
-      >
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+      </head>
+      <body>
         <ThemeProvider>
-        {children}
-        <Toaster />
-        <SonnerToaster richColors position="top-center" />
+          {children}
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

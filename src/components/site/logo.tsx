@@ -1,11 +1,32 @@
 'use client'
+
 import Image from 'next/image'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
+
 export function Logo({ className, withText = true }: { className?: string; withText?: boolean }) {
-  const [failed, setFailed] = useState(false)
-  return <div className={cn('flex min-w-0 items-center gap-2.5 sm:gap-3', className)}>
-    <Image src={failed ? '/logo-fallback.png' : '/socialtool-ribbon.webp'} alt={withText ? '' : 'Socialtool'} width={48} height={48} priority unoptimized onError={() => { if (!failed) setFailed(true) }} className="size-12 shrink-0 rounded-full object-contain sm:size-14" />
-    {withText && <div className="min-w-0 text-left leading-tight"><div className="whitespace-nowrap text-[18px] font-bold tracking-[-0.065em] text-slate-900 sm:text-[25px] xl:text-[26px]" style={{ fontFamily: "'Avenir Next', 'Trebuchet MS', Arial, sans-serif" }}>socialtool<span className="text-blue-600">.store</span></div><div className="mt-0.5 whitespace-nowrap text-[9px] font-medium tracking-[0.045em] text-slate-500 sm:text-[10px]">Social media &amp; AI tools</div></div>}
-  </div>
+  return (
+    <div className={cn('flex items-center gap-2.5', className)}>
+      <div className="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-transparent sm:size-11">
+        <Image
+          src="/socialtool-logo.png"
+          alt="SOCIALTOOL.STORE"
+          width={512}
+          height={512}
+          priority
+          unoptimized
+          className="size-full object-contain"
+        />
+      </div>
+      {withText && (
+        <div className="flex flex-col leading-none">
+          <span className="text-[15px] font-extrabold tracking-tight text-[#102A43]">
+            SOCIALTOOL<span className="text-[#1677FF]">.STORE</span>
+          </span>
+          <span className="mt-0.5 text-[10px] font-medium tracking-wide text-[#5B7290]">
+            Social media &amp; AI tools
+          </span>
+        </div>
+      )}
+    </div>
+  )
 }
