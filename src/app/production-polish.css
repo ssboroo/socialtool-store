@@ -5,6 +5,15 @@ html {
   background: #F5F9FF;
 }
 
+html.dark {
+  background: #07111F;
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
 body {
   -moz-osx-font-smoothing: grayscale;
   font-kerning: normal;
@@ -42,6 +51,127 @@ option {
 
 #products article img {
   image-rendering: auto;
+}
+
+/* The storefront was designed with explicit light hex utilities. These mappings
+   make the existing components follow the active next-themes class without
+   having to duplicate every component just for dark mode. */
+.dark [class~="text-[#102A43]"] {
+  color: #EAF2FF !important;
+}
+
+.dark [class~="text-[#5B7290]"] {
+  color: #A9BED8 !important;
+}
+
+.dark [class~="text-[#0B4DBA]"] {
+  color: #7CB3FF !important;
+}
+
+.dark [class~="bg-white"],
+.dark [class~="bg-white/95"],
+.dark [class~="bg-white/90"],
+.dark [class~="bg-white/80"],
+.dark [class~="bg-white/45"] {
+  background-color: #0E1C2F !important;
+}
+
+.dark [class~="bg-[#F5F9FF]"] {
+  background-color: #07111F !important;
+}
+
+.dark [class~="bg-[#EEF4FF]"] {
+  background-color: #10233A !important;
+}
+
+.dark [class~="bg-[#E8F1FF]"] {
+  background-color: #142944 !important;
+}
+
+.dark [class~="border-[#D6E4FF]"],
+.dark [class~="border-[#EEF4FF]"] {
+  border-color: #29405E !important;
+}
+
+.dark header {
+  border-color: #20334D !important;
+}
+
+.dark footer {
+  border-color: #20334D !important;
+  background: #081422 !important;
+}
+
+.dark footer h1,
+.dark footer h2,
+.dark footer h3,
+.dark footer h4,
+.dark footer strong,
+.dark footer button,
+.dark footer a {
+  color: #EAF2FF;
+}
+
+.dark footer p,
+.dark footer li,
+.dark footer small {
+  color: #A9BED8;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  color: #EAF2FF;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #7F97B5;
+}
+
+.dark .storefront {
+  --ink: #EAF2FF;
+  --muted: #A9BED8;
+  background:
+    radial-gradient(ellipse 75% 470px at 90% 0, #1677ff24, transparent),
+    radial-gradient(ellipse 60% 400px at 4% 0, #4f46e522, transparent),
+    linear-gradient(180deg, #07111F, #0A1728 760px);
+  color: #EAF2FF;
+}
+
+.dark .store-nav-surface,
+.dark .store-filter-bar,
+.dark .store-product-card,
+.dark .store-product-detail {
+  background: rgba(14, 28, 47, 0.9) !important;
+  border-color: #29405E !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .store-search,
+.dark .store-sort,
+.dark .store-view-switch,
+.dark .store-category-tabs button,
+.dark .store-detail-quantity input {
+  background: #10233A !important;
+  border-color: #29405E !important;
+  color: #EAF2FF !important;
+}
+
+.dark .store-card-body h3,
+.dark .store-card-body > div > span,
+.dark .store-detail-summary h2,
+.dark .store-detail-price,
+.dark .storefront #top h1 {
+  color: #EAF2FF !important;
+}
+
+.dark .store-card-body > p,
+.dark .store-detail-excerpt,
+.dark .store-breadcrumb,
+.dark .store-catalog-meta,
+.dark .store-hero-copy > p {
+  color: #A9BED8 !important;
 }
 
 @media (max-width: 639px) {
