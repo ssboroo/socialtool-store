@@ -1,0 +1,32 @@
+/* Shared typography for the editor, preview and storefront. */
+.description-copy.description-copy { min-width:0; font-family:inherit; font-size:16px; font-weight:400; line-height:1.75; color:#334e68; overflow-wrap:anywhere; }
+.description-copy.description-copy > :first-child { margin-top:0; }
+.description-copy.description-copy > :last-child { margin-bottom:0; }
+.description-copy.description-copy p { margin:0 0 12px; white-space:pre-line; }
+.description-copy.description-copy :is(h1,h2,h3,h4,h5,h6) { color:#102a43; font-weight:700; line-height:1.4; letter-spacing:normal; margin:24px 0 10px; }
+.description-copy.description-copy h1 { font-size:24px; }
+.description-copy.description-copy h2 { font-size:20px; }
+.description-copy.description-copy h3 { font-size:18px; }
+.description-copy.description-copy :is(h4,h5,h6) { font-size:16px; }
+.description-copy.description-copy :is(strong,b) { color:#102a43; font-weight:700; }
+.description-copy.description-copy :is(em,i) { font-style:italic; }
+.description-copy.description-copy :is(ul,ol) { margin:12px 0; padding-left:24px; }
+.description-copy.description-copy ul { list-style-type:disc; }
+.description-copy.description-copy ol { list-style-type:decimal; }
+.description-copy.description-copy li { margin:4px 0; line-height:1.75; }
+.description-copy.description-copy li > p { margin-bottom:4px; }
+.description-copy.description-copy li::marker { color:#1677ff; }
+.description-copy.description-copy a { color:#1260ce; text-decoration:underline; text-underline-offset:3px; }
+.description-copy.description-copy blockquote { margin:16px 0; padding:12px 16px; border-left:3px solid #1677ff; background:#f2f7ff; }
+.description-copy.description-copy pre { max-width:100%; overflow:auto; margin:16px 0; border-radius:10px; padding:16px; background:#102a43; color:#f3f7fc; font-size:14px; line-height:1.6; }
+.description-copy.description-copy code { font-size:0.9em; }
+.description-copy.description-copy pre code { font-size:inherit; }
+.description-copy.description-copy img { display:block; max-width:100%; height:auto; border-radius:12px; margin:16px auto; }
+.description-copy.description-copy hr { margin:24px 0; border:0; border-top:1px solid #d6e4ff; }
+.description-editor .mdxeditor { font-family:inherit; --font-body:inherit; }
+.description-editor [role="toolbar"] { flex-wrap:wrap; gap:4px; border-bottom:1px solid #d6e4ff; padding:8px; }
+.description-editor [role="toolbar"] button { min-width:36px; min-height:36px; }
+.dark .description-copy.description-copy { color:#c4d2e6; }
+.dark .description-copy.description-copy :is(strong,b,h1,h2,h3,h4,h5,h6) { color:#f0f6ff; }
+.dark .description-copy.description-copy a { color:#86bdff; }
+.dark .description-copy.description-copy blockquote { background:#1a2940; }
