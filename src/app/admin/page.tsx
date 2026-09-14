@@ -11,6 +11,7 @@ import { SupplierFeedCard } from '@/components/admin/supplier-feed-card'
 import { G2ASyncCard } from '@/components/admin/g2a-sync-card'
 import { G2GManualProductCard } from '@/components/admin/g2g-manual-product-card'
 import { G2GBulkDraftImport } from '@/components/admin/g2g-bulk-draft-import'
+import { G2GRepriceCard } from '@/components/admin/g2g-reprice-card'
 import { G2GFulfillment } from '@/components/admin/g2g-fulfillment'
 import { AdminCategories } from '@/components/admin/categories'
 import { AdminReviews } from '@/components/admin/reviews'
@@ -145,7 +146,7 @@ export default function AdminPage() {
           {tab === 'overview' && <AdminOverview token={token} />}
           {tab === 'orders' && <AdminOrders token={token} />}
           {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><AdminProducts token={token} categories={categories} /></>}
-          {tab === 'suppliers' && <><G2GBulkDraftImport /><G2GManualProductCard /><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
+          {tab === 'suppliers' && <><G2GBulkDraftImport /><G2GManualProductCard /><G2GRepriceCard /><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
           {tab === 'fulfillment' && <G2GFulfillment />}
           {tab === 'categories' && <AdminCategories token={token} />}
           {tab === 'promotions' && <AdminPromotions token={token} />}
