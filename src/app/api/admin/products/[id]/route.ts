@@ -21,6 +21,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!current) return NextResponse.json({ error: 'Бүтээгдэхүүн олдсонгүй' }, { status: 404 })
 
     const body = await req.json() as Record<string, unknown>
+    if ('expectedUpdatedAt' in body && (typeof body.expectedUpdatedAt !== 'string' || body.expectedUpdatedAt !== current.updatedAt.toISOString())) return NextResponse.json({ error: 'Энэ барааг өөр газраас шинэчилсэн байна. Нооргоо хуулж аваад жагсаалтаа шинэчилнэ үү.' }, { status: 409 })
     if ('duration' in body && !validLicenseConfig(body.duration)) {
       return NextResponse.json({ error: 'Хугацааны тохиргоо буруу байна' }, { status: 400 })
     }
@@ -84,9 +85,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if ('featured' in body) data.featured = body.featured === true
     if ('available' in body) data.available = body.available === true
 
-    const product = await db.product.update({ where: { id }, data })
+    const product = await db.$transaction(async tx => {
+      const updated = await tx.product.updateMany({ where: { id, updatedAt: current.updatedAt }, data })
+      if (updated.count !== 1) throw new Error('EDIT_CONFLICT')
+      return tx.product.findUniqueOrThrow({ where: { id } })
+    })
     return NextResponse.json(product)
   } catch (e) {
+    if (e instanceof Error && e.message === 'EDIT_CONFLICT') return NextResponse.json({ error: 'Барааны мэдээлэл өөрчлөгдсөн байна. Жагсаалтаа шинэчилнэ үү.' }, { status: 409 })
     if (e instanceof SyntaxError) return NextResponse.json({ error: 'Хүсэлтийн бүтэц буруу байна' }, { status: 400 })
     console.error('Admin product update error:', e)
     return NextResponse.json({ error: 'Бүтээгдэхүүн шинэчлэхэд алдаа гарлаа' }, { status: 500 })

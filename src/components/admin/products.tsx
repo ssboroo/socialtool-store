@@ -1,6 +1,8 @@
 'use client'
 import { licenseOptions, licenseVariants } from '@/lib/license'
 import { productImageSuggestions } from '@/lib/product-image-suggestions'
+import { QuickProductEditor, type QuickProduct } from './quick-product-editor'
+import { BulkProductEdit } from './bulk-product-edit'
 import { BulkProductImages } from './bulk-product-images'
 import { DescriptionEditor } from './description-editor'
 
@@ -28,6 +30,7 @@ interface Category {
   icon: string
 }
 interface Product {
+  updatedAt: string
   id: string
   name: string
   slug: string
@@ -60,6 +63,9 @@ export function AdminProducts({ token, categories }: { token: string; categories
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
+  const [quick, setQuick] = useState<Product | null>(null)
+  const [bulkEdit, setBulkEdit] = useState<Product[] | null>(null)
+  const [copy, setCopy] = useState<Product | null>(null)
   const [saving, setSaving] = useState(false)
 
   const load = () => {
@@ -85,13 +91,14 @@ export function AdminProducts({ token, categories }: { token: string; categories
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
-        body: JSON.stringify(data),
+        body: JSON.stringify({...data, ...(isEdit ? {expectedUpdatedAt: editing!.updatedAt} : {})}),
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
       toast.success(isEdit ? 'Шинэчлэгдлээ' : 'Үүсгэгдлээ')
       setEditing(null)
       setCreating(false)
+      setCopy(null)
       load()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Алдаа')
@@ -122,7 +129,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
           <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#5B7290]" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Хайх..." className="pl-9 border-[#D6E4FF] bg-white" />
         </div>
-        <Button onClick={() => setCreating(true)} className="rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white gap-1.5">
+        <Button onClick={() => {setCopy(null);setCreating(true)}} className="rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white gap-1.5">
           <Plus className="size-4" /> Шинэ бүтээгдэхүүн
         </Button>
       </div>
@@ -130,9 +137,12 @@ export function AdminProducts({ token, categories }: { token: string; categories
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3">
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading || !products.length} checked={products.length > 0 && selected.length === Math.min(products.length,100)} onChange={e=>setSelected(e.target.checked?products.slice(0,100).map(p=>p.id):[])} />Харагдаж буй барааг сонгох (100 хүртэл)</label>
         <span className="text-sm">{selected.length} сонгосон</span>
+        <Button type="button" disabled={loading || !selected.length} onClick={()=>setBulkEdit(products.filter(p=>selected.includes(p.id)))}>Бөөнөөр засах</Button>
         <Button type="button" disabled={loading || !selected.length} onClick={()=>setBulkProducts(products.filter(p=>selected.includes(p.id)))}>Зургийг бөөнөөр солих</Button>
         {selected.length>0&&<Button type="button" variant="ghost" onClick={()=>setSelected([])}>Сонголт цэвэрлэх</Button>}
       </div>
+      {bulkEdit && <BulkProductEdit products={bulkEdit} categories={categories} token={token} onClose={()=>setBulkEdit(null)} onSaved={()=>{setBulkEdit(null);load()}} />}
+      {quick && <QuickProductEditor key={quick.id} product={quick} categories={categories} token={token} onClose={()=>setQuick(null)} onSaved={(p:QuickProduct)=>{setProducts(v=>v.map(item=>item.id===p.id?{...item,...p}:item));setQuick(v=>v?{...v,...p}:null)}} onAdvanced={()=>{setEditing(quick);setQuick(null)}} />}
       {bulkProducts && <BulkProductImages products={bulkProducts} token={token} onClose={()=>setBulkProducts(null)} onSaved={()=>{setBulkProducts(null);load()}} />}
       <div className="rounded-2xl bg-white border border-[#D6E4FF] shadow-premium overflow-hidden">
         {loading ? (
@@ -159,12 +169,12 @@ export function AdminProducts({ token, categories }: { token: string; categories
               </thead>
               <tbody className="divide-y divide-[#EEF4FF]">
                 {products.map((p) => (
-                  <tr key={p.id} className="hover:bg-[#F5F9FF]/40"><td className="px-3"><input type="checkbox" aria-label={`${p.name} сонгох`} checked={selected.includes(p.id)} disabled={!selected.includes(p.id) && selected.length>=100} onChange={e=>setSelected(v=>e.target.checked?[...v,p.id]:v.filter(id=>id!==p.id))} /></td>
+                  <tr key={p.id} className="cursor-pointer hover:bg-[#F5F9FF]/40" onClick={e=>{if(!(e.target as HTMLElement).closest('button,input,a,label'))setQuick(p)}}><td className="px-3"><input type="checkbox" aria-label={`${p.name} сонгох`} checked={selected.includes(p.id)} disabled={!selected.includes(p.id) && selected.length>=100} onChange={e=>setSelected(v=>e.target.checked?[...v,p.id]:v.filter(id=>id!==p.id))} /></td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <ProductImage image={p.image} icon={p.icon} alt={p.name} className="size-11 shrink-0" />
                         <div className="min-w-0">
-                          <p className="font-semibold text-[#102A43] truncate">{p.name}</p>
+                          <button type="button" className="font-semibold text-[#102A43] text-left truncate" onClick={()=>setQuick(p)} aria-label={`${p.name} шуурхай засах`}>{p.name}</button>
                           <p className="text-xs text-[#5B7290] truncate max-w-xs">{p.shortDesc}</p>
                         </div>
                       </div>
@@ -199,12 +209,13 @@ export function AdminProducts({ token, categories }: { token: string; categories
                     <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => setEditing(p)}
+                          onClick={() => setQuick(p)}
                           className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]"
-                          aria-label="Засах"
+                          aria-label="Шуурхай засах"
                         >
                           <Pencil className="size-4" />
                         </button>
+                        <button type="button" className="rounded-lg p-2 text-xs text-blue-600" onClick={()=>{setCopy({...p,name:p.name+' (хуулбар)'});setCreating(true)}}>Хуулбарлах</button>
                         <button
                           onClick={() => remove(p.id)}
                           className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-red-50 hover:text-red-500"
@@ -225,10 +236,10 @@ export function AdminProducts({ token, categories }: { token: string; categories
       <ProductFormDialog
         token={token}
         open={creating || !!editing}
-        product={editing}
+        product={editing || copy}
         categories={categories}
         saving={saving}
-        onClose={() => { setEditing(null); setCreating(false) }}
+        onClose={() => { if(saving)return;setEditing(null); setCreating(false);setCopy(null) }}
         onSave={save}
       />
     </div>
@@ -500,7 +511,7 @@ function ProductFormDialog({
                   {!['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) && <option value="custom">Одоогийн хугацаа: {form.duration}</option>}
                 </select>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">{licenseOptions(form.duration).map(term => <label key={term} className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-sm font-semibold">{term} · Үнэ (₮)<Input type="number" min="1" step="1" value={form.termPrices[term] ?? ''} placeholder={form.price || 'Үнэ'} onChange={e => setForm(current => ({ ...current, termPrices: { ...current.termPrices, [term]: e.target.value } }))} className="mt-2 bg-white" /><span className="mt-1 block text-xs font-normal text-slate-500">Хоосон бол үндсэн үнэ үйлчилнэ.</span></label>)}</div>
-                <p className="mt-2 text-xs text-[#5B7290]">Ширхгээр борлуулахад хугацаа харагдахгүй. Худалдан авагч тоо ширхэгээ сагсанд оруулна. Хугацааны хувилбарууд одоогийн ижил үнээр борлуулагдана.</p>
+                <p className="mt-2 text-xs text-[#5B7290]">Ширхгээр борлуулахад хугацаа харагдахгүй. Худалдан авагч тоо ширхэгээ сагсанд оруулна. Хугацааны хувилбар бүрд тусдаа үнэ тохируулж болно.</p>
               </div>
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Заавар видео (YouTube URL)</Label>
