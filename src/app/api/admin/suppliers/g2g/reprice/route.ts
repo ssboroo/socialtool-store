@@ -122,30 +122,25 @@ export async function POST(req: NextRequest) {
     const productById = new Map(products.map(product => [product.id, product]))
 
     if (apply) {
-      const now = new Date()
-      const operations = []
-      for (const item of calculable) {
-        operations.push(db.supplierCatalogItem.update({
-          where: { id: item.id },
-          data: { markupPercent, salePrice: item.newSalePrice },
-        }))
-        if (item.productId) {
+      for (let start = 0; start < calculable.length; start += 25) {
+        const chunk = calculable.slice(start, start + 25)
+        await Promise.all(chunk.map(async item => {
+          await db.supplierCatalogItem.update({
+            where: { id: item.id },
+            data: { markupPercent, salePrice: item.newSalePrice },
+          })
+          if (!item.productId) return
           const product = productById.get(item.productId)
-          if (product) {
-            const clearDiscount = product.oldPrice != null && product.oldPrice <= item.newSalePrice
-            operations.push(db.product.update({
-              where: { id: item.productId },
-              data: {
-                price: item.newSalePrice,
-                ...(clearDiscount ? { oldPrice: null, discount: null } : {}),
-              },
-            }))
-          }
-        }
-      }
-
-      for (let start = 0; start < operations.length; start += 100) {
-        await db.$transaction(operations.slice(start, start + 100))
+          if (!product) return
+          const clearDiscount = product.oldPrice != null && product.oldPrice <= item.newSalePrice
+          await db.product.update({
+            where: { id: item.productId },
+            data: {
+              price: item.newSalePrice,
+              ...(clearDiscount ? { oldPrice: null, discount: null } : {}),
+            },
+          })
+        }))
       }
 
       await db.siteSetting.upsert({
@@ -153,7 +148,6 @@ export async function POST(req: NextRequest) {
         update: { value: JSON.stringify({ markupPercent, currencyRates }) },
         create: { key: CONFIG_KEY, value: JSON.stringify({ markupPercent, currencyRates }) },
       })
-      void now
     }
 
     return NextResponse.json({
