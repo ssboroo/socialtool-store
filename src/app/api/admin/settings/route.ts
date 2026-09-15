@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { validHeroVideo } from '@/lib/hero-video'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
 
@@ -17,7 +18,7 @@ export async function PUT(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, string>
     const allowed = [
-      'privacyPolicy', 'termsOfService', 'heroImage', 'heroImages', 'heroHeadline', 'heroSubtext', 'heroPrimaryCta', 'heroSecondaryCta',
+      'heroMediaType', 'heroVideoUrl', 'privacyPolicy', 'termsOfService', 'heroImage', 'heroImages', 'heroHeadline', 'heroSubtext', 'heroPrimaryCta', 'heroSecondaryCta',
       'promoTitle', 'promoDescription', 'promoCta', 'promoDiscountPercent',
       'contactEmail', 'contactTelegram',
       'footerDescription', 'footerCopyright',
@@ -30,6 +31,8 @@ export async function PUT(req: NextRequest) {
       try { images = JSON.parse(body.heroImages) } catch { images = null }
       if (!Array.isArray(images) || images.length > 10 || images.some(v => typeof v !== 'string' || !/^\/uploads\/products\/[A-Za-z0-9_-]+\.webp$/.test(v))) return NextResponse.json({ error: 'Слайдын зураг буруу байна.' }, { status: 400 })
     }
+    if ('heroMediaType' in body && !['images','video'].includes(body.heroMediaType)) return NextResponse.json({error:'Баннерын төрөл буруу байна.'},{status:400})
+    if ('heroVideoUrl' in body && !validHeroVideo(body.heroVideoUrl)) return NextResponse.json({error:'HTTPS MP4 эсвэл WebM шууд холбоос оруулна уу.'},{status:400})
     for (const key of allowed) {
       if (key in body) {
         await db.siteSetting.upsert({
