@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, SlidersHorizontal, PackageOpen } from 'lucide-react'
+import { Search, ChevronDown, PackageOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ProductCard, type Product } from './product-card'
+
+import { CategoryIcon } from './category-icon'
 
 interface Category {
   id: string
@@ -85,15 +87,15 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
       <aside id="categories" className="catalog-sidebar" aria-label="Бүтээгдэхүүний ангилал">
         <div className="catalog-side-panel">
           <h2>Ангилал</h2>
-          <label className="catalog-mobile-select">Ангилал сонгох
-            <select value={activeCat} onChange={e=>setActiveCat(e.target.value)}>
-              <option value="all">Бүх хэрэгсэл</option>
-              {categories.map(c=><option key={c.id} value={c.slug}>{c.name}</option>)}
-            </select>
-          </label>
+          <details className="catalog-mobile-picker">
+            <summary><CategoryIcon name={categoryName} slug={activeCat}/><span><small>Ангилал сонгох</small><strong>{categoryName}</strong></span><ChevronDown className="size-4"/></summary>
+            <div className="catalog-mobile-options">
+              {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={e=>{setActiveCat(c.slug);const details=e.currentTarget.closest('details');if(details){details.open=false;details.querySelector('summary')?.focus()}}}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
+            </div>
+          </details>
           <nav className="catalog-category-list">
             {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}>
-              <SlidersHorizontal className="size-4 shrink-0"/><span>{c.name}</span>
+              <CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span>
             </button>)}
           </nav>
         </div>
