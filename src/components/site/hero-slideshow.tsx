@@ -43,7 +43,7 @@ export function HeroSlideshow({ images }: { images: string[] }) {
       }}
       className="relative mx-auto w-full max-w-[560px] overflow-hidden rounded-3xl border border-blue-200/70 bg-white p-2 shadow-[0_24px_60px_-24px_#1677ff60] transition-transform duration-500 hover:-translate-y-1 sm:p-3"
     >
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#EEF4FF]">
+      <div className="hero-wide-frame relative aspect-video overflow-hidden rounded-2xl bg-[#EEF4FF]">
         <img
           key={`${images[active]}-${active}`}
           src={images[active]}

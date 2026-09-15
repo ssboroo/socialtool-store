@@ -1,9 +1,13 @@
 'use client'
 import { ArrowRight, Play, Sparkles, Monitor, Workflow } from 'lucide-react'
 import { heroImages } from '@/lib/hero-images'
+import { HeroVideo } from './hero-video'
+import { validHeroVideo } from '@/lib/hero-video'
 import { HeroSlideshow } from './hero-slideshow'
 export function Hero({settings}:{settings?:Record<string,string>}) {
   const slides=heroImages(settings)
+  const video=settings?.heroVideoUrl
+  const useVideo=settings?.heroMediaType==='video' && !!video && validHeroVideo(video)
   return <section id="top" className="shop-hero">
     <div className="shop-hero-inner">
       <div className="shop-hero-copy">
@@ -13,7 +17,7 @@ export function Hero({settings}:{settings?:Record<string,string>}) {
         <div className="shop-hero-actions"><a href="#products" className="shop-primary-link">{settings?.heroPrimaryCta||'Бүх хэрэгсэл үзэх'}<ArrowRight className="size-4"/></a><a href="#how" className="shop-secondary-link"><Play className="size-4"/>{settings?.heroSecondaryCta||'Хэрхэн захиалах вэ?'}</a></div>
         <div className="shop-hero-topics" aria-label="Хэрэгслийн төрлүүд"><span><Sparkles size={17}/>AI хэрэгсэл</span><span><Monitor size={17}/>Программ</span><span><Workflow size={17}/>Автоматжуулалт</span></div>
       </div>
-      <div className="shop-hero-visual">{slides.length>0?<HeroSlideshow images={slides}/>:<div className="shop-hero-placeholder"><Sparkles className="size-12"/><strong>SOCIALTOOL<span>.STORE</span></strong><p>Илүү олон боломж.<br/>Нэг дор.</p></div>}</div>
+      <div className="shop-hero-visual">{useVideo?<HeroVideo key={video} src={video!} poster={slides[0]}/>:slides.length>0?<HeroSlideshow images={slides}/>:<div className="shop-hero-placeholder"><Sparkles className="size-12"/><strong>SOCIALTOOL<span>.STORE</span></strong><p>Илүү олон боломж.<br/>Нэг дор.</p></div>}</div>
     </div>
   </section>
 }

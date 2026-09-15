@@ -284,3 +284,12 @@ body>div header { border-color:var(--shop-line); }
  .shop-hero-topics span { font-size:11px; padding:6px 8px; }
 }
 @media(max-width:359px) { .catalog-mobile-options { grid-template-columns:minmax(0,1fr); } }
+
+/* Keep category interactions from re-anchoring to lower product rows. */
+.catalog-section { overflow-anchor:none; }
+.catalog-results { min-height:65vh; }
+.shop-hero-inner { grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); }
+.shop-hero-visual>section { max-width:none; width:100%; }
+.hero-wide-frame { aspect-ratio:16/9; }
+.hero-wide-video { display:block; width:100%; aspect-ratio:16/9; object-fit:contain; border-radius:16px; background:#07111f; }
+@media(max-width:767px) { .shop-hero-inner { grid-template-columns:minmax(0,1fr); } .shop-hero-visual>section { max-width:none; } }

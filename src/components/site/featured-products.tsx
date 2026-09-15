@@ -65,7 +65,7 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
         })
         if (!res.ok) return
         const data = (await res.json()) as Product[]
-        setProducts(data)
+        if (!controller.signal.aborted) setProducts(data)
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return
       } finally {
@@ -90,7 +90,7 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
           <details className="catalog-mobile-picker">
             <summary><CategoryIcon name={categoryName} slug={activeCat}/><span><small>Ангилал сонгох</small><strong>{categoryName}</strong></span><ChevronDown className="size-4"/></summary>
             <div className="catalog-mobile-options">
-              {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={e=>{setActiveCat(c.slug);const details=e.currentTarget.closest('details');if(details){details.open=false;details.querySelector('summary')?.focus()}}}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
+              {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={e=>{setActiveCat(c.slug);const details=e.currentTarget.closest('details');if(details){details.open=false;details.querySelector('summary')?.focus({preventScroll:true})}}}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
             </div>
           </details>
           <nav className="catalog-category-list">
@@ -109,8 +109,7 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
             <label><span className="sr-only">Эрэмбэлэх</span><select value={sort} onChange={e=>setSort(e.target.value as typeof sort)}><option value="featured">Онцлох эхэнд</option><option value="price-asc">Үнэ: багаас их</option><option value="price-desc">Үнэ: ихээс бага</option><option value="rating">Үнэлгээгээр</option></select></label>
           </div>
         </div>
-        {loading?<div className={gridClass} aria-label="Ачаалж байна">{Array.from({length:6},(_,i)=><div key={i} className="h-96 rounded-2xl bg-muted animate-pulse"/>)}</div>
-        :products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
+        {products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
         :<div className={gridClass}>{products.map(p=><ProductCard key={p.id} product={p}/>)}</div>}
       </div>
     </div>
