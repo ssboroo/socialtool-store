@@ -1,4 +1,5 @@
 'use client'
+import { useCustomer } from '@/hooks/use-customer'
 import { rememberChat, savedChats } from '@/lib/chat-history'
 
 import { useEffect, useRef, useState } from 'react'
@@ -17,6 +18,12 @@ interface ChatMsg {
 }
 
 export function LiveChat() {
+  const { customer, loading } = useCustomer()
+  if (loading) return null
+  return <ChatPanel key={customer?.id || 'guest'} />
+}
+
+function ChatPanel() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -26,6 +33,7 @@ export function LiveChat() {
   const [connecting, setConnecting] = useState(false)
   const [connected, setConnected] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const active = useRef(true)
   const socketRef = useRef<Socket | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -98,6 +106,7 @@ export function LiveChat() {
         body: JSON.stringify({ customerName: name.trim(), phone: phone.trim() || null }),
       })
       const data = await res.json()
+      if (!active.current) return
       if (!res.ok) throw new Error(data.error || 'Чат эхлүүлж чадсангүй')
       rememberChat(data.sessionId)
       setSessionId(data.sessionId)
@@ -173,7 +182,9 @@ export function LiveChat() {
   }
 
   useEffect(() => {
+    active.current = true
     return () => {
+      active.current = false
       socketRef.current?.disconnect()
     }
   }, [])

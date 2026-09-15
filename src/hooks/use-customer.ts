@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from 'react'
 import { create } from 'zustand'
+import { syncChatIdentity } from '@/lib/chat-history'
 
 export interface Customer {
   id: string
@@ -18,7 +19,7 @@ const useCustomerState = create<{
 }>((set) => ({
   customer: null,
   loading: true,
-  setCustomer: (customer) => { revision++; set({ customer, loading: false }) },
+  setCustomer: (customer) => { revision++; syncChatIdentity(customer?.id || null); set({ customer, loading: false }) },
 }))
 let revision = 0
 let pending: Promise<void> | null = null
@@ -31,9 +32,9 @@ async function refreshCustomer() {
       const res = await fetch('/api/auth/me', { cache: 'no-store' })
       if (!res.ok) throw new Error('Session unavailable')
       const data = await res.json()
-      if (started === revision) useCustomerState.setState({ customer: data.customer || null, loading: false })
+      if (started === revision) useCustomerState.getState().setCustomer(data.customer || null)
     } catch {
-      if (started === revision) useCustomerState.setState({ customer: null, loading: false })
+      if (started === revision) useCustomerState.getState().setCustomer(null)
     } finally {
       pending = null
     }
