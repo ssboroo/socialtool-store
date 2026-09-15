@@ -77,113 +77,40 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
     }
   }, [activeCat, query, sort])
 
-  const gridClass = 'mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 lg:gap-5'
 
-  return (
-    <section id="products" className="relative bg-gradient-to-b from-transparent to-[#EEF4FF]/40 py-12 lg:py-16">
-      <div className="mx-auto w-full max-w-[1680px] px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF] shadow-sm">
-              <SlidersHorizontal className="size-3.5" /> Бүтээгдэхүүн
-            </span>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[#102A43] sm:text-4xl">
-              Онцлох <span className="gradient-text">хэрэгслүүд</span>
-            </h2>
-            <p className="mt-2 text-[#5B7290]" aria-live="polite">
-              {loading ? 'Хайж байна…' : `${products.length} хэрэгсэл — аюулгүй, шуурхай хүргэлттэй`}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:min-w-[430px]">
-            <label className="relative block">
-              <span className="sr-only">Хэрэгсэл хайх</span>
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#5B7290]" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Хэрэгсэл хайх..."
-                className="h-10 w-full rounded-xl border-[#D6E4FF] bg-white pl-9 shadow-sm focus-visible:border-[#1677FF]"
-              />
-            </label>
-            <label>
-              <span className="sr-only">Эрэмбэлэх</span>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as typeof sort)}
-                className="h-10 w-full rounded-xl border border-[#D6E4FF] bg-white px-3 text-sm text-[#102A43] shadow-sm focus:border-[#1677FF] focus:outline-none sm:w-auto"
-              >
-                <option value="featured">Онцлох</option>
-                <option value="price-asc">Үнэ: Багаас их</option>
-                <option value="price-desc">Үнэ: Ихээс бага</option>
-                <option value="rating">Үнэлгээ</option>
-              </select>
-            </label>
+  const categoryName = activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
+  const gridClass = 'catalog-grid'
+  return <section id="products" className="catalog-section">
+    <div className="catalog-layout">
+      <aside id="categories" className="catalog-sidebar" aria-label="Бүтээгдэхүүний ангилал">
+        <div className="catalog-side-panel">
+          <h2>Ангилал</h2>
+          <label className="catalog-mobile-select">Ангилал сонгох
+            <select value={activeCat} onChange={e=>setActiveCat(e.target.value)}>
+              <option value="all">Бүх хэрэгсэл</option>
+              {categories.map(c=><option key={c.id} value={c.slug}>{c.name}</option>)}
+            </select>
+          </label>
+          <nav className="catalog-category-list">
+            {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}>
+              <SlidersHorizontal className="size-4 shrink-0"/><span>{c.name}</span>
+            </button>)}
+          </nav>
+        </div>
+        <div className="catalog-side-note"><span>SOCIALTOOL.STORE</span><p>Илүү бүтээмжтэй.<br/>Илүү олон боломж.</p><span>Таны дижитал туслагч</span></div>
+      </aside>
+      <div className="catalog-results">
+        <div className="catalog-toolbar">
+          <div><span className="catalog-eyebrow">ДИЖИТАЛ ХЭРЭГСЛҮҮД</span><h2>{categoryName}</h2><p aria-live="polite">{loading?'Хайж байна…':products.length+' бүтээгдэхүүн'}</p></div>
+          <div className="catalog-search">
+            <label className="relative"><span className="sr-only">Хэрэгсэл хайх</span><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/><Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Нэрээр хайх…" className="h-11 pl-9 bg-card"/></label>
+            <label><span className="sr-only">Эрэмбэлэх</span><select value={sort} onChange={e=>setSort(e.target.value as typeof sort)}><option value="featured">Онцлох эхэнд</option><option value="price-asc">Үнэ: багаас их</option><option value="price-desc">Үнэ: ихээс бага</option><option value="rating">Үнэлгээгээр</option></select></label>
           </div>
         </div>
-
-        <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-blue-200 bg-blue-50/70 p-3 dark:border-slate-600 dark:bg-slate-900">
-          <button
-            type="button"
-            aria-pressed={activeCat === 'all'}
-            onClick={() => setActiveCat('all')}
-            className={`min-h-11 max-w-full whitespace-normal break-words rounded-xl border px-4 py-2 text-sm font-semibold leading-5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-              activeCat === 'all'
-                ? 'border-blue-700 bg-blue-700 text-white shadow-md dark:border-blue-400 dark:bg-blue-600'
-                : 'border-blue-300 bg-white text-slate-900 hover:border-blue-600 hover:bg-blue-100 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100'
-            }`}
-          >
-            Бүгд
-          </button>
-          {categories.map((c) => (
-            <button
-              type="button"
-              key={c.id}
-              aria-pressed={activeCat === c.slug}
-              onClick={() => setActiveCat(c.slug)}
-              className={`min-h-11 max-w-full whitespace-normal break-words rounded-xl border px-4 py-2 text-sm font-semibold leading-5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-                activeCat === c.slug
-                  ? 'border-blue-700 bg-blue-700 text-white shadow-md dark:border-blue-400 dark:bg-blue-600'
-                  : 'border-blue-300 bg-white text-slate-900 hover:border-blue-600 hover:bg-blue-100 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className={gridClass} aria-label="Бүтээгдэхүүн ачаалж байна">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="h-[350px] animate-pulse rounded-2xl border border-[#D6E4FF] bg-white/70" />
-            ))}
-          </div>
-        ) : products.length === 0 ? (
-          <div className="mt-12 flex flex-col items-center justify-center rounded-3xl border border-dashed border-[#D6E4FF] bg-white/60 py-16 text-center">
-            <div className="grid size-16 place-items-center rounded-2xl bg-[#E8F1FF]">
-              <PackageOpen className="size-8 text-[#1677FF]" />
-            </div>
-            <h3 className="mt-4 text-lg font-bold text-[#102A43]">Хэрэгсэл олдсонгүй</h3>
-            <p className="mt-1 text-sm text-[#5B7290]">Өөр үгээр хайх эсвэл шүүлтүүрээ цэвэрлээрэй</p>
-            <Button
-              variant="outline"
-              className="mt-4 rounded-full border-[#D6E4FF] bg-white"
-              onClick={() => {
-                setQuery('')
-                setActiveCat('all')
-              }}
-            >
-              Шүүлтүүр цэвэрлэх
-            </Button>
-          </div>
-        ) : (
-          <div className={gridClass}>
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        )}
+        {loading?<div className={gridClass} aria-label="Ачаалж байна">{Array.from({length:6},(_,i)=><div key={i} className="h-96 rounded-2xl bg-muted animate-pulse"/>)}</div>
+        :products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
+        :<div className={gridClass}>{products.map(p=><ProductCard key={p.id} product={p}/>)}</div>}
       </div>
-    </section>
-  )
+    </div>
+  </section>
 }
