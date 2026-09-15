@@ -122,15 +122,15 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
           </div>
         </div>
 
-        <div className="custom-scroll -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+        <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-blue-200 bg-blue-50/70 p-3 dark:border-slate-600 dark:bg-slate-900">
           <button
             type="button"
             aria-pressed={activeCat === 'all'}
             onClick={() => setActiveCat('all')}
-            className={`h-9 shrink-0 rounded-full px-4 text-xs font-semibold transition-all ${
+            className={`min-h-11 max-w-full whitespace-normal break-words rounded-xl border px-4 py-2 text-sm font-semibold leading-5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
               activeCat === 'all'
-                ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium'
-                : 'border border-[#D6E4FF] bg-white text-[#102A43] hover:border-[#1677FF]/40 hover:bg-[#E8F1FF]'
+                ? 'border-blue-700 bg-blue-700 text-white shadow-md dark:border-blue-400 dark:bg-blue-600'
+                : 'border-blue-300 bg-white text-slate-900 hover:border-blue-600 hover:bg-blue-100 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100'
             }`}
           >
             Бүгд
@@ -141,10 +141,10 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
               key={c.id}
               aria-pressed={activeCat === c.slug}
               onClick={() => setActiveCat(c.slug)}
-              className={`h-9 shrink-0 rounded-full px-4 text-xs font-semibold transition-all ${
+              className={`min-h-11 max-w-full whitespace-normal break-words rounded-xl border px-4 py-2 text-sm font-semibold leading-5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                 activeCat === c.slug
-                  ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium'
-                  : 'border border-[#D6E4FF] bg-white text-[#102A43] hover:border-[#1677FF]/40 hover:bg-[#E8F1FF]'
+                  ? 'border-blue-700 bg-blue-700 text-white shadow-md dark:border-blue-400 dark:bg-blue-600'
+                  : 'border-blue-300 bg-white text-slate-900 hover:border-blue-600 hover:bg-blue-100 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100'
               }`}
             >
               {c.name}

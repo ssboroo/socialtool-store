@@ -323,7 +323,7 @@ export function ProductDetailModal() {
                 <Button
                   onClick={handleAdd}
                   disabled={!product.available}
-                  className={`flex-1 h-12 rounded-xl gap-2 ${product.available ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg' : 'bg-slate-200 text-slate-500 cursor-not-allowed hover:bg-slate-200'}`}
+                  className={`flex-1 min-w-0 h-auto min-h-12 whitespace-normal break-words py-3 leading-5 rounded-xl gap-2 ${product.available ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium-lg' : 'bg-slate-200 text-slate-500 cursor-not-allowed hover:bg-slate-200'}`}
                 >
                   {product.available ? <ShoppingCart className="size-4" /> : <CircleOff className="size-4" />}
                   {product.available ? `Сагсанд нэмэх · ${formatTugrik(licensePrice(product, selectedDuration) * qty)}` : 'Түр дууссан'}

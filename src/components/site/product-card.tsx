@@ -85,7 +85,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           -{product.discount}%
         </span>
       ) : null}
-      <span className="absolute right-3 top-3 z-10 max-w-[54%] truncate rounded-full border border-[#D6E4FF] bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA] backdrop-blur">
+      <span className="absolute right-3 top-3 z-10 max-w-[75%] whitespace-normal break-words leading-4 rounded-full border border-[#D6E4FF] bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA] backdrop-blur">
         {product.category}
       </span>
       {!product.available ? (
@@ -122,7 +122,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       </div>
 
       <div className={cn('flex flex-1 flex-col', compact ? 'p-4' : 'p-4 lg:p-5')}>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <div className="flex items-center gap-0.5" aria-label={product.reviewCount > 0 ? `${product.rating.toFixed(1)} үнэлгээ` : 'Үнэлгээ хараахан байхгүй'}>
             {[0, 1, 2, 3, 4].map((i) => (
               <Star
@@ -157,13 +157,13 @@ export function ProductCard({ product, compact = false }: { product: Product; co
           ) : null}
         </div>
 
-        <div className="mt-auto flex items-center gap-2 pt-4">
+        <div className="mt-auto grid grid-cols-1 gap-2 pt-4">
           <Button
             onClick={handleAdd}
             disabled={!product.available}
             size="sm"
             className={cn(
-              'h-10 min-w-0 flex-1 rounded-xl gap-1.5',
+              'h-auto min-h-11 w-full min-w-0 whitespace-normal break-words px-3 py-2 text-sm leading-5 rounded-xl gap-1.5',
               product.available
                 ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium hover:shadow-premium-lg'
                 : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
@@ -179,7 +179,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
               e.stopPropagation()
               openDetail()
             }}
-            className="inline-flex h-9 shrink-0 items-center gap-1 rounded-xl border border-[#D6E4FF] bg-white px-3 text-xs font-semibold text-[#102A43] transition-colors hover:bg-[#E8F1FF]"
+            className="inline-flex min-h-10 w-full items-center justify-center gap-1 rounded-xl border border-[#D6E4FF] bg-white px-3 text-xs font-semibold text-[#102A43] transition-colors hover:bg-[#E8F1FF]"
           >
             Дэлгэрэнгүй
             <ArrowRight className="size-3.5" />

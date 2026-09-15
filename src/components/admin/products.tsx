@@ -155,8 +155,8 @@ export function AdminProducts({ token, categories }: { token: string; categories
             <p className="mt-3 text-sm text-[#5B7290]">Бүтээгдэхүүн олдсонгүй</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Бүтээгдэхүүний хүснэгт — хажуу тийш гүйлгэж бүх баганыг харна">
+            <table className="w-full min-w-[1050px] table-fixed text-sm"><colgroup><col className="w-12"/><col className="w-[32%]"/><col className="w-[17%]"/><col className="w-[14%]"/><col className="w-24"/><col className="w-24"/><col className="w-44"/></colgroup>
               <thead className="bg-[#F5F9FF] text-[#5B7290] text-xs uppercase">
                 <tr>
                   <th className="px-3 py-3"><span className="sr-only">Сонгох</span></th><th className="text-left px-5 py-3 font-semibold">Нэр</th>
@@ -174,12 +174,12 @@ export function AdminProducts({ token, categories }: { token: string; categories
                       <div className="flex items-center gap-3">
                         <ProductImage image={p.image} icon={p.icon} alt={p.name} className="size-11 shrink-0" />
                         <div className="min-w-0">
-                          <button type="button" className="font-semibold text-[#102A43] text-left truncate" onClick={()=>setQuick(p)} aria-label={`${p.name} шуурхай засах`}>{p.name}</button>
-                          <p className="text-xs text-[#5B7290] truncate max-w-xs">{p.shortDesc}</p>
+                          <button type="button" className="w-full whitespace-normal break-words font-semibold leading-6 text-[#102A43] text-left" onClick={()=>setQuick(p)} aria-label={`${p.name} шуурхай засах`}>{p.name}</button>
+                          <p className="text-sm leading-5 text-[#5B7290] whitespace-normal break-words">{p.shortDesc}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-[#5B7290] whitespace-nowrap">{p.category}</td>
+                    <td className="px-5 py-3 font-medium text-[#102A43] whitespace-normal break-words">{p.category}</td>
                     <td className="px-5 py-3">
                       <span className="font-bold text-[#102A43]">{formatTugrik(p.price)}</span>
                       {p.oldPrice && (
@@ -207,7 +207,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
                       </div>
                     </td>
                     <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex flex-wrap items-center justify-end gap-1">
                         <button
                           onClick={() => setQuick(p)}
                           className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]"
@@ -375,7 +375,7 @@ function ProductFormDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-3xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">{product ? 'Засах' : 'Шинэ бүтээгдэхүүн'}</DialogTitle>
-        <form onSubmit={submit} className="max-h-[94vh] overflow-y-auto custom-scroll">
+        <form onSubmit={submit} className="max-h-[94vh] min-w-0 overflow-y-auto custom-scroll [&_label]:whitespace-normal [&_label]:break-words [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:max-w-full [&_button]:max-w-full [&_button]:whitespace-normal [&_button]:h-auto [&_button]:min-h-9">
           <div className="px-6 py-4 border-b border-[#EEF4FF] bg-gradient-to-r from-[#E8F1FF] to-white flex items-center justify-between">
             <h2 className="text-base font-bold text-[#102A43]">{product ? 'Бүтээгдэхүүн засах' : 'Шинэ бүтээгдэхүүн'}</h2>
             <button type="button" onClick={onClose} className="grid size-8 place-items-center rounded-full hover:bg-[#E8F1FF]"><X className="size-4" /></button>
@@ -393,7 +393,7 @@ function ProductFormDialog({
               <Label className="text-xs font-semibold text-[#102A43]">Бүрэн тайлбар</Label>
               <DescriptionEditor key={`${product?.id || "new"}-${open}`} value={form.description} onChange={description => setForm(current => ({ ...current, description }))} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Үнэ (₮) *</Label>
                 <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="89000" />
@@ -403,7 +403,7 @@ function ProductFormDialog({
                 <Input type="number" value={form.oldPrice} onChange={(e) => setForm({ ...form, oldPrice: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="120000" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Ангилал *</Label>
                 <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
@@ -436,7 +436,7 @@ function ProductFormDialog({
           <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
             <Button type="button" variant="outline" onClick={() => setShowSuggestions(v => !v)}>Зураг санал болгох</Button>
             <p className="mt-2 text-xs text-slate-500">Нэр, ангилалд тохирсон загвар сонгоод бүтээгдэхүүнээ хадгална. Зураггүй бараанд тохирох загвар автоматаар харагдана.</p>
-            {showSuggestions && <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">{productImageSuggestions(form.name, categories.find(c => c.id === form.categoryId)?.name).map(option => <button key={option.image} type="button" aria-pressed={form.image === option.image} onClick={() => setForm(v => ({ ...v, image: option.image }))} className={`overflow-hidden rounded-xl border bg-white p-2 text-xs ${form.image === option.image ? 'border-blue-600 ring-2 ring-blue-200' : 'border-blue-100'}`}><img src={option.image} alt={option.label} className="aspect-[8/5] w-full rounded-lg object-contain" /><span className="mt-2 block">{option.label}</span><span className="mt-1 block text-blue-600">{form.image === option.image ? 'Сонгосон' : 'Зураг ашиглах'}</span></button>)}</div>}
+            {showSuggestions && <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:grid-cols-4">{productImageSuggestions(form.name, categories.find(c => c.id === form.categoryId)?.name).map(option => <button key={option.image} type="button" aria-pressed={form.image === option.image} onClick={() => setForm(v => ({ ...v, image: option.image }))} className={`overflow-hidden rounded-xl border bg-white p-2 text-xs ${form.image === option.image ? 'border-blue-600 ring-2 ring-blue-200' : 'border-blue-100'}`}><img src={option.image} alt={option.label} className="aspect-[8/5] w-full rounded-lg object-contain" /><span className="mt-2 block">{option.label}</span><span className="mt-1 block text-blue-600">{form.image === option.image ? 'Сонгосон' : 'Зураг ашиглах'}</span></button>)}</div>}
           </div>
           {/* Product image upload */}
           <div className="rounded-xl border border-[#D6E4FF] bg-[#F5F9FF]/40 p-4 space-y-3">

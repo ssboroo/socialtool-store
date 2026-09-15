@@ -103,7 +103,7 @@ export default function AdminPage() {
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-[#D6E4FF]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Logo />
+            <a href="/#top" aria-label="Нүүр хуудас руу очих" className="min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"><Logo /></a>
             <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#E8F1FF] px-2.5 py-1 text-[11px] font-bold text-[#0B4DBA]">Админ</span>
           </div>
           <div className="flex items-center gap-2">
