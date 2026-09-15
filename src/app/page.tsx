@@ -1,7 +1,6 @@
 import { db } from '@/lib/db'
 import { Header } from '@/components/site/header'
 import { Hero } from '@/components/site/hero'
-import { Categories } from '@/components/site/categories'
 import { FeaturedProducts } from '@/components/site/featured-products'
 import { WhyChooseUs } from '@/components/site/why-choose-us'
 import { HowItWorks } from '@/components/site/how-it-works'
@@ -74,7 +73,6 @@ export default async function Home() {
       <Header />
       <main className="flex-1">
         <Hero settings={settings} />
-        <Categories categories={serializedCategories} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
         <WhyChooseUs />

@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, ShoppingCart, ArrowRight, Clock, PlayCircle, CircleOff } from 'lucide-react'
+import { Star, ShoppingCart, Clock, PlayCircle, CircleOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from './product-illustration'
 import { useCartStore, useUIStore } from '@/store/cart'
@@ -60,132 +60,27 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
   const openDetail = () => setSelectedProduct(product.id)
 
-  return (
-    <article
-      onClick={openDetail}
-      onKeyDown={(e) => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
-          e.preventDefault()
-          openDetail()
-        }
-      }}
-      tabIndex={0}
-      role="button"
-      aria-label={`${product.name} дэлгэрэнгүй мэдээлэл`}
-      className={cn(
-        'group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-premium transition-all duration-300 focus-visible:border-[#1677FF]',
-        product.available
-          ? 'border-[#D6E4FF] hover:-translate-y-1 hover:border-[#1677FF]/40 hover:shadow-premium-lg'
-          : 'border-slate-200 opacity-90',
-      )}
-    >
-      <div className="relative overflow-hidden bg-[#F5F9FF]">
-      {product.discount ? (
-        <span className="absolute left-3 top-3 z-10 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#DC2626] px-2.5 py-1 text-[11px] font-bold text-white shadow-premium">
-          -{product.discount}%
-        </span>
-      ) : null}
-      <span className="absolute right-3 top-3 z-10 max-w-[75%] whitespace-normal break-words leading-4 rounded-full border border-[#D6E4FF] bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA] backdrop-blur">
-        {product.category}
-      </span>
-      {!product.available ? (
-        <span className="absolute left-3 top-12 z-10 inline-flex items-center gap-1 rounded-full bg-slate-800/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-premium">
-          <CircleOff className="size-3" /> Түр дууссан
-        </span>
-      ) : null}
-      {durationLabel ? (
-        <span
-          title={durationLabel}
-          className="absolute bottom-3 left-3 z-10 inline-flex max-w-[68%] items-center gap-1 truncate rounded-full border border-[#F59E0B]/20 bg-[#FFF5E6] px-2 py-0.5 text-[10px] font-bold text-[#92400E] shadow-premium"
-        >
-          <Clock className="size-2.5 shrink-0" />
-          <span className="truncate">{durationLabel}</span>
-        </span>
-      ) : null}
-      {product.tutorialVideoUrl && getYouTubeId(product.tutorialVideoUrl) ? (
-        <span className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#1677FF] px-2 py-0.5 text-[10px] font-bold text-white shadow-premium">
-          <PlayCircle className="size-2.5" /> Видео
-        </span>
-      ) : null}
 
-
-        <ProductImage
-          image={product.image}
-          icon={product.icon}
-          alt={product.name}
-          className={cn(
-            compact ? 'aspect-[4/3] w-full' : 'aspect-[16/10] w-full',
-            'transition-transform duration-500 group-hover:scale-[1.025]',
-            !product.available && 'grayscale-[20%]',
-          )}
-        />
+  return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
+    <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
+      <ProductImage image={product.image} icon={product.icon} alt={product.name} className="aspect-[4/3] w-full"/>
+      {product.discount ? <span className="shop-discount">−{product.discount}%</span>:null}
+      {product.tutorialVideoUrl&&getYouTubeId(product.tutorialVideoUrl)?<span className="shop-video"><PlayCircle className="size-3.5"/>Заавар видео</span>:null}
+    </button>
+    <div className="shop-product-body">
+      <span className="shop-product-category">{product.category}</span>
+      <h3><button type="button" onClick={openDetail}>{product.name}</button></h3>
+      <p className="shop-product-summary">{product.shortDesc}</p>
+      <div className="shop-product-meta">
+        {durationLabel&&<span><Clock className="size-4"/>{durationLabel}</span>}
+        {product.reviewCount>0&&<span><Star className="size-4 fill-amber-400 text-amber-400"/>{product.rating.toFixed(1)} ({product.reviewCount})</span>}
+        {!product.available&&<span>Түр дууссан</span>}
       </div>
-
-      <div className={cn('flex flex-1 flex-col', compact ? 'p-4' : 'p-4 lg:p-5')}>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className="flex items-center gap-0.5" aria-label={product.reviewCount > 0 ? `${product.rating.toFixed(1)} үнэлгээ` : 'Үнэлгээ хараахан байхгүй'}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <Star
-                key={i}
-                className={cn(
-                  'size-3.5',
-                  product.reviewCount > 0 && i < Math.round(product.rating)
-                    ? 'fill-[#F59E0B] text-[#F59E0B]'
-                    : 'fill-[#D6E4FF] text-[#D6E4FF]'
-                )}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-[#5B7290]">
-            {product.reviewCount > 0 ? `${product.rating.toFixed(1)} (${product.reviewCount})` : 'Үнэлгээ хараахан байхгүй'}
-          </span>
-        </div>
-
-        <h3 className="mt-2 line-clamp-2 min-h-[2.5rem] text-[15px] font-bold leading-snug text-[#102A43]">
-          {product.name}
-        </h3>
-        <p className="mt-1 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-[#5B7290]">{product.shortDesc}</p>
-
-        <div className="mt-3 flex flex-wrap items-end gap-x-2 gap-y-1">
-          <span className="text-xl font-extrabold tracking-tight text-[#102A43]">
-            {formatTugrik(defaultVariant?.price ?? product.price)}
-          </span>
-          {product.oldPrice ? (
-            <span className="text-xs text-[#5B7290] line-through">
-              {formatTugrik(product.oldPrice)}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="mt-auto grid grid-cols-1 gap-2 pt-4">
-          <Button
-            onClick={handleAdd}
-            disabled={!product.available}
-            size="sm"
-            className={cn(
-              'h-auto min-h-11 w-full min-w-0 whitespace-normal break-words px-3 py-2 text-sm leading-5 rounded-xl gap-1.5',
-              product.available
-                ? 'bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white shadow-premium hover:shadow-premium-lg'
-                : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
-            )}
-          >
-            {product.available ? <ShoppingCart className="size-4" /> : <CircleOff className="size-4" />}
-            {product.available ? (variants.length > 1 ? 'Сонголт хийх' : 'Сагсанд нэмэх') : 'Түр дууссан'}
-          </Button>
-          <button
-            type="button"
-            aria-label={`${product.name} дэлгэрэнгүй`}
-            onClick={(e) => {
-              e.stopPropagation()
-              openDetail()
-            }}
-            className="inline-flex min-h-10 w-full items-center justify-center gap-1 rounded-xl border border-[#D6E4FF] bg-white px-3 text-xs font-semibold text-[#102A43] transition-colors hover:bg-[#E8F1FF]"
-          >
-            Дэлгэрэнгүй
-            <ArrowRight className="size-3.5" />
-          </button>
-        </div>
-      </div>
-    </article>
-  )
+      <div className="shop-product-price"><strong>{formatTugrik(defaultVariant?.price??product.price)}</strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}</div>
+      <Button onClick={handleAdd} disabled={!product.available} className="shop-product-buy">
+        {product.available?<ShoppingCart className="size-4"/>:<CircleOff className="size-4"/>}
+        {product.available?(variants.length>1?'Сонголт хийх':'Сагсанд нэмэх'):'Түр дууссан'}
+      </Button>
+    </div>
+  </article>
 }
