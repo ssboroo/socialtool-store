@@ -3,9 +3,15 @@ import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import { PrismaClient } from '@prisma/client'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { realpathSync } from 'node:fs'
 test('quick edit and bulk API validation, optimistic concurrency, atomic rollback and AI configuration',async()=>{
  const url=process.env.TEST_DATABASE_URL
- assert.ok(url?.startsWith('file:/tmp/'),'Use a dedicated test database under /tmp')
+ assert.ok(url?.startsWith('file:'),'Use an explicit isolated TEST_DATABASE_URL')
+ const relativeDatabasePath=path.relative(realpathSync.native(tmpdir()),realpathSync.native(fileURLToPath(url)))
+ assert.ok(relativeDatabasePath && !relativeDatabasePath.startsWith('..') && !path.isAbsolute(relativeDatabasePath),'Use a dedicated test database inside the OS temporary directory')
  const db=new PrismaClient({datasources:{db:{url}}})
  const suffix=randomBytes(8).toString('hex'),password=randomBytes(24).toString('hex')
  const child=spawn(process.execPath,['.next/standalone/server.js'],{env:{...process.env,DATABASE_URL:url,JWT_SECRET:randomBytes(32).toString('hex'),ADMIN_USERNAME:suffix,ADMIN_PASSWORD:password,PORT:'3239',HOSTNAME:'127.0.0.1',OPENAI_API_KEY:'',PRODUCT_AI_MODEL:''},stdio:'ignore'})

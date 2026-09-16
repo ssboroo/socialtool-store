@@ -16,6 +16,7 @@ export function CartSync() {
     const previous = useCartStore.getState()
     if (!customerId) {
       if (previous.ownerId) useCartStore.setState({ items: [], ownerId: null, syncBusy: false })
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep the status message synchronized with the external cart ownership transition.
       setMessage('')
       return
     }

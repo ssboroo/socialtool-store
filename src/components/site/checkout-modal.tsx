@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -179,8 +180,9 @@ export function CheckoutModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && close()}>
-      <DialogContent className="store-dialog sm:max-w-lg p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="customer-surface store-dialog sm:max-w-lg p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">Төлбөр төлөх</DialogTitle>
+        <DialogDescription className="sr-only">Захиалгаа баталгаажуулж төлбөрийн төлөв шалгах</DialogDescription>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
           {/* header */}
           <div className="px-6 py-5 border-b border-[#EEF4FF] bg-gradient-to-r from-[#E8F1FF] to-white">

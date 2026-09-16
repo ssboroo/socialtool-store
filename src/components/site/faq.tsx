@@ -17,7 +17,7 @@ export interface Faq {
 
 export function Faq({ faqs }: { faqs: Faq[] }) {
   return (
-    <section id="faq" className="relative py-16 lg:py-20">
+    <section id="faq" className="store-service-section relative py-16 lg:py-20">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
@@ -29,7 +29,7 @@ export function Faq({ faqs }: { faqs: Faq[] }) {
           <p className="mt-3 text-[#5B7290]">Хэрэгтэй хариултаа олоогүй бол админтай холбогдоорой.</p>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-[#D6E4FF] bg-white shadow-premium overflow-hidden">
+        <div className="store-service-card mt-8 rounded-2xl border border-[#D6E4FF] bg-white shadow-premium overflow-hidden">
           <Accordion type="single" collapsible defaultValue="faq-0">
             {faqs.map((f, i) => (
               <AccordionItem key={f.id} value={`faq-${i}`} className="border-b border-[#EEF4FF] last:border-0">

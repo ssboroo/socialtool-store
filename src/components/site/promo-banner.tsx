@@ -42,7 +42,7 @@ export function PromoBanner({ promotion, settings }: {
     document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   return (
-    <section className="relative py-10 lg:py-14">
+    <section className="store-service-section relative py-10 lg:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1677FF] via-[#0B4DBA] to-[#1677FF] p-8 lg:p-12 shadow-premium-lg">
           <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-2xl" />

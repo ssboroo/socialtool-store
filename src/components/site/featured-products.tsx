@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, ChevronDown, PackageOpen } from 'lucide-react'
+import { Search, ChevronDown, PackageOpen, CircleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ProductCard, type Product } from './product-card'
@@ -18,6 +18,8 @@ interface Category {
 export function FeaturedProducts({ categories, initialProducts }: { categories: Category[]; initialProducts: Product[] }) {
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [loading, setLoading] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [retry, setRetry] = useState(0)
   const [activeCat, setActiveCat] = useState<string>('all')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured')
@@ -38,6 +40,7 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
     try {
       const q = sessionStorage.getItem('st-search')
       if (q) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate browser-owned storage or imperative UI state after mount; SSR cannot read this source.
         setQuery(q)
         sessionStorage.removeItem('st-search')
       }
@@ -53,6 +56,7 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
     const controller = new AbortController()
     const timer = window.setTimeout(async () => {
       setLoading(true)
+      setFailed(false)
       try {
         const params = new URLSearchParams()
         if (activeCat !== 'all') params.set('category', activeCat)
@@ -63,11 +67,12 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
           signal: controller.signal,
           cache: 'no-store',
         })
-        if (!res.ok) return
+        if (!res.ok) throw new Error('Unable to load products')
         const data = (await res.json()) as Product[]
         if (!controller.signal.aborted) setProducts(data)
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return
+        if (!controller.signal.aborted) setFailed(true)
       } finally {
         if (!controller.signal.aborted) setLoading(false)
       }
@@ -77,10 +82,11 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [activeCat, query, sort])
+  }, [activeCat, query, sort, retry])
 
 
   const categoryName = activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
+  const filterCategories = [{ id: 'all', slug: 'all', name: 'Бүх хэрэгсэл' }, ...categories.filter(c => c.slug !== 'all')]
   const gridClass = 'catalog-grid'
   return <section id="products" className="catalog-section">
     <div className="catalog-layout">
@@ -90,11 +96,11 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
           <details className="catalog-mobile-picker">
             <summary><CategoryIcon name={categoryName} slug={activeCat}/><span><small>Ангилал сонгох</small><strong>{categoryName}</strong></span><ChevronDown className="size-4"/></summary>
             <div className="catalog-mobile-options">
-              {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={e=>{setActiveCat(c.slug);const details=e.currentTarget.closest('details');if(details){details.open=false;details.querySelector('summary')?.focus({preventScroll:true})}}}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
+              {filterCategories.map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={e=>{setActiveCat(c.slug);const details=e.currentTarget.closest('details');if(details){details.open=false;details.querySelector('summary')?.focus({preventScroll:true})}}}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
             </div>
           </details>
           <nav className="catalog-category-list">
-            {[{id:'all',slug:'all',name:'Бүх хэрэгсэл'},...categories].map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}>
+            {filterCategories.map(c=><button type="button" key={c.id} aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}>
               <CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span>
             </button>)}
           </nav>
@@ -103,14 +109,23 @@ export function FeaturedProducts({ categories, initialProducts }: { categories: 
       </aside>
       <div className="catalog-results">
         <div className="catalog-toolbar">
-          <div><span className="catalog-eyebrow">ДИЖИТАЛ ХЭРЭГСЛҮҮД</span><h2>{categoryName}</h2><p aria-live="polite">{loading?'Хайж байна…':products.length+' бүтээгдэхүүн'}</p></div>
+          <div><span className="catalog-eyebrow">ДИЖИТАЛ ХЭРЭГСЛҮҮД</span><h2>{categoryName}</h2><p aria-live="polite">{loading?'Хайж байна…':failed?'Мэдээлэл шинэчлэгдсэнгүй':products.length+' бүтээгдэхүүн'}</p></div>
           <div className="catalog-search">
             <label className="relative"><span className="sr-only">Хэрэгсэл хайх</span><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/><Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Нэрээр хайх…" className="h-11 pl-9 bg-card"/></label>
             <label><span className="sr-only">Эрэмбэлэх</span><select value={sort} onChange={e=>setSort(e.target.value as typeof sort)}><option value="featured">Онцлох эхэнд</option><option value="price-asc">Үнэ: багаас их</option><option value="price-desc">Үнэ: ихээс бага</option><option value="rating">Үнэлгээгээр</option></select></label>
           </div>
         </div>
-        {products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
-        :<div className={gridClass}>{products.map(p=><ProductCard key={p.id} product={p}/>)}</div>}
+        <nav className="catalog-chips" aria-label="Ангиллаар шүүх">
+          {filterCategories.map(c => (
+            <button key={c.id} type="button" aria-pressed={activeCat === c.slug} onClick={() => setActiveCat(c.slug)}>{c.name}</button>
+          ))}
+        </nav>
+        {failed && <div className="catalog-error" role="alert"><CircleAlert className="mx-auto size-8"/><h3>Хэрэгслүүдийг ачаалж чадсангүй</h3><p>Холболтоо шалгаад дахин оролдоорой.</p><Button variant="outline" onClick={() => setRetry(value => value + 1)}>Дахин оролдох</Button></div>}
+        <div aria-busy={loading}>
+          {loading ? <div className={gridClass} aria-hidden="true">{Array.from({length: 8}, (_, i) => <div key={i} className="catalog-skeleton"><div className="catalog-skeleton-art"/><div className="catalog-skeleton-line"/><div className="catalog-skeleton-line"/></div>)}</div>
+          : failed ? null : products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
+          :<div className={gridClass}>{products.map(p=><ProductCard key={p.id} product={p}/>)}</div>}
+        </div>
       </div>
     </div>
   </section>

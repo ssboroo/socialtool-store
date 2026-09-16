@@ -280,6 +280,7 @@ function ProductFormDialog({
   useEffect(() => {
     if (product) {
        
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve existing modal draft hydration and reset timing during the visual update.
       setForm({
         name: product.name,
         shortDesc: product.shortDesc,

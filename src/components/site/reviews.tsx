@@ -30,7 +30,7 @@ function Avatar({ name }: { name: string }) {
 
 export function Reviews({ reviews }: { reviews: Review[] }) {
   return (
-    <section className="relative py-16 lg:py-20 bg-gradient-to-b from-transparent to-[#EEF4FF]/40">
+    <section className="store-service-section relative py-16 lg:py-20 bg-gradient-to-b from-transparent to-[#EEF4FF]/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
@@ -46,7 +46,7 @@ export function Reviews({ reviews }: { reviews: Review[] }) {
           {reviews.map((r) => (
             <div
               key={r.id}
-              className="group relative rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
+              className="store-service-card group relative rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
             >
               <Quote className="absolute right-5 top-5 size-8 text-[#1677FF]/10 group-hover:text-[#1677FF]/20 transition-colors" />
               <div className="flex items-center gap-0.5">

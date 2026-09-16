@@ -210,7 +210,7 @@ function ChatPanel() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-[380px] max-h-[600px] h-[80vh] max-h-[560px] rounded-2xl bg-white border border-[#D6E4FF] shadow-premium-lg overflow-hidden flex flex-col animate-in slide-in-from-bottom-2">
+        <div className="customer-surface store-chat fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-[380px] max-h-[600px] h-[80vh] max-h-[560px] rounded-2xl bg-white border border-[#D6E4FF] shadow-premium-lg overflow-hidden flex flex-col animate-in slide-in-from-bottom-2">
           {/* header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
             <div className="flex items-center gap-2.5">
@@ -253,7 +253,7 @@ function ChatPanel() {
                     <User className="size-3.5" /> Нэр
                   </label>
                   <Input
-                    value={name}
+                    aria-label="Нэр" value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Таны нэр"
                     className="mt-1 border-[#D6E4FF]"
@@ -265,7 +265,7 @@ function ChatPanel() {
                     <Phone className="size-3.5" /> Утас (заавал биш)
                   </label>
                   <Input
-                    value={phone}
+                    aria-label="Утас" value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="99112233"
                     className="mt-1 border-[#D6E4FF]"
@@ -316,7 +316,7 @@ function ChatPanel() {
               </div>
               <div className="border-t border-[#EEF4FF] p-3 bg-white">
                 <div className="flex items-end gap-2">
-                  <textarea
+                  <textarea aria-label="Мессеж"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKey}

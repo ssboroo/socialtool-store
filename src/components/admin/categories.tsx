@@ -74,6 +74,7 @@ export function AdminCategories({ token }: { token: string }) {
       .finally(() => setLoading(false))
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the existing fetch/loading lifecycle; changing effect timing is outside this visual update.
   useEffect(() => { load() }, [token])
 
   const save = async (data: Partial<Category> & { name: string }) => {

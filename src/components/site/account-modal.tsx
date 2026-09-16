@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import {
-  Dialog, DialogContent, DialogTitle,
+  Dialog, DialogContent, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,11 +54,13 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
   const [savingProfile, setSavingProfile] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve existing modal draft hydration and reset timing during the visual update.
     if (customer) setProfile({ name: customer.name, phone: customer.phone, telegram: customer.telegram || '' })
   }, [customer])
 
   useEffect(() => {
     if (!open || !customer) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve existing modal draft hydration and reset timing during the visual update.
     setLoadingOrders(true)
     fetch('/api/customer/orders')
       .then((r) => r.json())
@@ -102,8 +104,9 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="customer-surface sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">Миний бүртгэл</DialogTitle>
+        <DialogDescription className="sr-only">Хувийн мэдээлэл болон захиалгын түүх</DialogDescription>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
           <div className="px-6 py-5 bg-gradient-to-r from-[#E8F1FF] to-white border-b border-[#EEF4FF]">
             <div className="flex items-center justify-between gap-3">
@@ -157,16 +160,16 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-[#102A43]">Нэр</Label>
-                  <Input value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} className="mt-1 border-[#D6E4FF]" />
+                  <Label htmlFor="profile-name" className="text-xs font-semibold text-[#102A43]">Нэр</Label>
+                  <Input id="profile-name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} className="mt-1 border-[#D6E4FF]" />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-[#102A43]">Утас</Label>
-                  <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} className="mt-1 border-[#D6E4FF]" />
+                  <Label htmlFor="profile-phone" className="text-xs font-semibold text-[#102A43]">Утас</Label>
+                  <Input id="profile-phone" value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} className="mt-1 border-[#D6E4FF]" />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-[#102A43]">Telegram</Label>
-                  <Input value={profile.telegram} onChange={(e) => setProfile({ ...profile, telegram: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="@username" />
+                  <Label htmlFor="profile-telegram" className="text-xs font-semibold text-[#102A43]">Telegram</Label>
+                  <Input id="profile-telegram" value={profile.telegram} onChange={(e) => setProfile({ ...profile, telegram: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="@username" />
                 </div>
                 <Button onClick={saveProfile} disabled={savingProfile} className="rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white gap-2">
                   {savingProfile ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}

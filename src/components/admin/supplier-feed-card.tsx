@@ -46,6 +46,7 @@ export function SupplierFeedCard() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the existing fetch/loading lifecycle; changing effect timing is outside this visual update.
     load().catch(error => toast.error(error instanceof Error ? error.message : 'Feed төлөвийн алдаа'))
   }, [])
 

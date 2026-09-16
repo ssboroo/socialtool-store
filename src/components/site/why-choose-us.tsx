@@ -35,7 +35,7 @@ const CARDS = [
 
 export function WhyChooseUs() {
   return (
-    <section className="relative py-16 lg:py-20">
+    <section className="store-service-section relative py-16 lg:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E4FF] bg-white px-3 py-1 text-xs font-semibold text-[#1677FF]">
@@ -55,7 +55,7 @@ export function WhyChooseUs() {
             return (
               <div
                 key={c.title}
-                className="group relative overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
+                className="store-service-card group relative overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-lg"
               >
                 <div className={`absolute -right-8 -top-8 size-24 rounded-full ${c.bg} opacity-50 group-hover:opacity-80 transition-opacity`} />
                 <div className="relative">

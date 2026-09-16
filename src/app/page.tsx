@@ -69,9 +69,10 @@ export default async function Home() {
     : null
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-background">
+    <div className="storefront-premium relative min-h-screen flex flex-col">
+      <a href="#main-content" className="store-skip-link">Үндсэн агуулга руу очих</a>
       <Header />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <Hero settings={settings} />
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} />
         <PromoBanner promotion={serializedPromo} settings={settings} />

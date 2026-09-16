@@ -39,10 +39,10 @@ export function QuickProductEditor({ product, categories, token, onClose, onSave
   useEffect(()=>{
     try {
       const d=JSON.parse(localStorage.getItem(key)||'null')
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate browser-owned storage or imperative UI state after mount; SSR cannot read this source.
       if(d?.form && typeof d.version==='string' && Date.now()-d.time<30*86400000 && Object.keys(toDraft(product)).every(k=>typeof d.form[k]===typeof toDraft(product)[k as keyof Draft])) setSavedDraft(d)
     } catch { setDraftStatus('Ноорог унших боломжгүй байна.') }
   // This editor is keyed by product id, never reset in-progress edits on list refresh.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[key])
   useEffect(()=>{
     if(!dirty || savedDraft) return

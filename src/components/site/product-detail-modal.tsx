@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Star, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
@@ -46,6 +47,7 @@ export function ProductDetailModal() {
   const add = useCartStore((s) => s.add)
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
+  const [retry, setRetry] = useState(0)
   const [duration, setDuration] = useState('')
   const options = licenseOptions(product?.duration)
   const selectedDuration = options.includes(duration) ? duration : options[0] || ''
@@ -94,7 +96,7 @@ export function ProductDetailModal() {
       })
 
     return () => controller.abort()
-  }, [selectedId])
+  }, [selectedId, retry])
 
   const handleAdd = () => {
     if (!product) return
@@ -127,10 +129,11 @@ export function ProductDetailModal() {
       open={!!selectedId}
       onOpenChange={(o) => !o && setSelectedProduct(null)}
     >
-      <DialogContent className="sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[92vh]">
+      <DialogContent className="customer-surface sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[92vh]">
         <DialogTitle className="sr-only">{product?.name || 'Хэрэгсэл'}</DialogTitle>
+        <DialogDescription className="sr-only">Бүтээгдэхүүний мэдээлэл, үнэ болон сонголтууд</DialogDescription>
         {loading ? (
-          <div className="flex items-center justify-center py-24">
+          <div className="flex items-center justify-center py-24" role="status" aria-label="Бүтээгдэхүүнийг ачаалж байна">
             <Loader2 className="size-8 animate-spin text-[#1677FF]" />
           </div>
         ) : product ? (
@@ -331,7 +334,7 @@ export function ProductDetailModal() {
               </div>
             </div>
           </div>
-        ) : null}
+        ) : <div className="px-6 py-16 text-center" role="alert"><h2 className="text-lg font-semibold">Бүтээгдэхүүнийг ачаалж чадсангүй</h2><p className="mt-2 mb-5 text-sm text-muted-foreground">Холболтоо шалгаад дахин оролдоорой.</p><Button variant="outline" onClick={() => setRetry(value => value + 1)}>Дахин оролдох</Button></div>}
 
         {activeImage && (
           <div

@@ -59,6 +59,7 @@ export function G2GFulfillment() {
     }
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the existing fetch/loading lifecycle; changing effect timing is outside this visual update.
   useEffect(() => { void load() }, [])
 
   const pendingCount = useMemo(() => orders.reduce((sum, order) => sum + order.items.filter(item => !item.fulfilledAt).length, 0), [orders])

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Loader2, User, Mail, Phone, Lock, Send, UserPlus, LogIn, ShieldCheck } from 'lucide-react'
 import {
-  Dialog, DialogContent, DialogTitle,
+  Dialog, DialogContent, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,8 +59,9 @@ export function AuthModal({ open, onClose, onAuthed, initialMode = 'login' }: Pr
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
+      <DialogContent className="customer-surface sm:max-w-md p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[94vh]">
         <DialogTitle className="sr-only">{mode === 'register' ? 'Бүртгүүлэх' : 'Нэвтрэх'}</DialogTitle>
+        <DialogDescription className="sr-only">Захиалга болон бүртгэлээ удирдах</DialogDescription>
         <div className="max-h-[94vh] overflow-y-auto custom-scroll">
           {/* header */}
           <div className="px-6 pt-6 pb-4 bg-gradient-to-br from-[#E8F1FF] to-white border-b border-[#EEF4FF]">
@@ -83,36 +84,36 @@ export function AuthModal({ open, onClose, onAuthed, initialMode = 'login' }: Pr
             {mode === 'register' && (
               <>
                 <div>
-                  <Label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+                  <Label htmlFor="auth-name" className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
                     <User className="size-3.5" /> Нэр
                   </Label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Таны нэр" required />
+                  <Input id="auth-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Таны нэр" required />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+                  <Label htmlFor="auth-phone" className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
                     <Phone className="size-3.5" /> Утас
                   </Label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="99112233" required />
+                  <Input id="auth-phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="99112233" required />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+                  <Label htmlFor="auth-telegram" className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
                     <Send className="size-3.5" /> Telegram (опц)
                   </Label>
-                  <Input value={form.telegram} onChange={(e) => setForm({ ...form, telegram: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="@username" />
+                  <Input id="auth-telegram" value={form.telegram} onChange={(e) => setForm({ ...form, telegram: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="@username" />
                 </div>
               </>
             )}
             <div>
-              <Label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+              <Label htmlFor="auth-email" className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
                 <Mail className="size-3.5" /> И-мэйл
               </Label>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="you@example.com" required />
+              <Input type="email" id="auth-email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="you@example.com" required />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+              <Label htmlFor="auth-password" className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
                 <Lock className="size-3.5" /> Нууц үг
               </Label>
-              <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="••••••" required minLength={mode === 'register' ? 6 : 1} />
+              <Input type="password" id="auth-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="••••••" required minLength={mode === 'register' ? 6 : 1} />
               {mode === 'register' && <p className="mt-1 text-[11px] text-[#5B7290]">Хамгийн багадаа 6 тэмдэгт</p>}
             </div>
 

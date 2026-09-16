@@ -55,6 +55,7 @@ export function AdminOrders({ token }: { token: string }) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the existing fetch/loading lifecycle; changing effect timing is outside this visual update.
     load()
      
   }, [filter, token])

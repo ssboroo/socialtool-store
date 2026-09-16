@@ -7,12 +7,16 @@ import { randomBytes } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { realpathSync } from 'node:fs'
 import sharp from 'sharp'
 import { PrismaClient } from '@prisma/client'
 
 test('local production API: registration, admin, image upload and account-isolated carts', async () => {
   const databaseUrl = process.env.TEST_DATABASE_URL
-  assert.ok(databaseUrl?.startsWith('file:/tmp/'), 'Requires explicit isolated file:/tmp/ TEST_DATABASE_URL')
+  assert.ok(databaseUrl?.startsWith('file:'), 'Requires explicit isolated TEST_DATABASE_URL')
+  const relativeDatabasePath = path.relative(realpathSync.native(tmpdir()), realpathSync.native(fileURLToPath(databaseUrl)))
+  assert.ok(relativeDatabasePath && !relativeDatabasePath.startsWith('..') && !path.isAbsolute(relativeDatabasePath), 'TEST_DATABASE_URL must be inside the OS temporary directory, never production')
   const suffix = randomBytes(6).toString('hex')
   const password = randomBytes(24).toString('hex')
   const uploads = await mkdtemp(path.join(tmpdir(), 'socialtool-uploads-'))

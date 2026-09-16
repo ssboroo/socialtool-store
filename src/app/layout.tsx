@@ -8,6 +8,7 @@ import './store-design.css'
 import './catalog-polish.css'
 import './production-polish.css'
 import './theme.css'
+import './premium-storefront.css'
 
 const baseUrl = siteUrl()
 const brandLogo = `${baseUrl}/socialtool-logo.png`

@@ -95,6 +95,7 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate browser-owned storage or imperative UI state after mount; SSR cannot read this source.
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
