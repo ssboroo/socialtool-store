@@ -1,0 +1,56 @@
+// Run against a local seeded preview only. Requires Playwright, or PLAYWRIGHT_MODULE.
+import { createRequire } from 'node:module'
+import assert from 'node:assert/strict'
+const require = createRequire(import.meta.url)
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
+const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100'
+assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname), 'Local preview only')
+const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_EXECUTABLE ? { executablePath: process.env.CHROME_EXECUTABLE } : {}) })
+const page = await browser.newPage({ viewport: { width: 320, height: 844 } })
+try {
+  await page.goto(base, { waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: 'Цэс', exact: true }).click()
+  await page.getByRole('button', { name: 'Нэвтрэх / Бүртгүүлэх' }).click()
+  await page.getByRole('button', { name: 'Бүртгүүлэх', exact: true }).click()
+  await page.getByLabel('Нэр', { exact: true }).fill('QA Account')
+  await page.getByLabel('Утас', { exact: true }).fill('99112233')
+  await page.getByLabel('И-мэйл', { exact: false }).fill(`qa-${Date.now()}@example.invalid`)
+  await page.getByLabel('Нууц үг', { exact: false }).fill('Local-account-test-42!')
+  await page.getByRole('button', { name: 'Бүртгүүлэх', exact: true }).click()
+  await page.getByRole('dialog').waitFor({ state: 'hidden' })
+  await page.route('**/api/customer/orders', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }))
+  await page.getByRole('button', { name: 'Миний бүртгэл', exact: true }).click()
+  await page.getByRole('button', { name: 'Профайл', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('button', { name: 'Миний захиалга', exact: true }).click()
+  await dialog.getByRole('alert').waitFor({ timeout: 5000 })
+  assert.equal(await dialog.getByText('Захиалга байхгүй байна', { exact: true }).count(), 0, 'An API failure must not look like empty history')
+  await page.unroute('**/api/customer/orders')
+  const unpaidOrder = { id: 'qa-order', orderNumber: 'QA-ONLY', totalAmount: 100, status: 'pending', statusLabel: 'Хүлээгдэж байна', createdAt: new Date().toISOString(), items: [], payment: null }
+  await page.route('**/api/customer/orders', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([unpaidOrder]) }))
+  await dialog.getByRole('button', { name: 'Дахин оролдох', exact: true }).click()
+  await dialog.getByText('#QA-ONLY', { exact: true }).waitFor()
+  await dialog.getByRole('button', { name: 'Төлбөрүүд', exact: true }).click()
+  await dialog.getByText('Төлбөрийн мэдээлэл байхгүй байна', { exact: true }).waitFor()
+  assert.equal(await dialog.evaluate(el => el.scrollWidth > el.clientWidth), false, 'Account navigation must fit a 320px viewport')
+  await dialog.getByRole('button', { name: 'Профайл', exact: true }).click()
+  const identity = await (await page.request.get(`${base}/api/auth/me`)).json()
+  let heldProfile
+  const requested = new Promise(resolve => { heldProfile = resolve })
+  await page.route('**/api/customer/profile', route => heldProfile(route))
+  await dialog.getByRole('button', { name: 'Хадгалах', exact: true }).click()
+  const profileRoute = await requested
+  await page.route('**/api/auth/logout', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }))
+  await dialog.getByRole('button', { name: 'Гарах', exact: true }).click()
+  await page.getByText('Гарч чадсангүй. Холболтоо шалгаад дахин оролдоорой.', { exact: true }).waitFor()
+  assert.equal(await dialog.getByRole('button', { name: 'Хадгалах', exact: true }).isEnabled(), true, 'Failed logout must release the aborted profile save state')
+  await page.unroute('**/api/auth/logout')
+  await dialog.getByRole('button', { name: 'Гарах', exact: true }).click()
+  await dialog.waitFor({ state: 'hidden' })
+  await profileRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ customer: identity.customer }) }).catch(() => {})
+  await page.waitForTimeout(500)
+  assert.equal(await page.getByRole('button', { name: 'Миний бүртгэл', exact: true }).count(), 0, 'A delayed profile response must not restore the logged-out identity')
+  console.log('PASS account API error/retry, unpaid-order payment empty state, 320px layout and logout race')
+} finally {
+  await browser.close()
+}

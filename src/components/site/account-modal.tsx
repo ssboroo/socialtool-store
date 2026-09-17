@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
@@ -50,8 +50,13 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
   const [tab, setTab] = useState<Tab>('profile')
   const [orders, setOrders] = useState<MyOrder[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
+  const [ordersError, setOrdersError] = useState('')
+  const [ordersRetry, setOrdersRetry] = useState(0)
   const [profile, setProfile] = useState({ name: '', phone: '', telegram: '' })
   const [savingProfile, setSavingProfile] = useState(false)
+  const profileRequest = useRef<AbortController | null>(null)
+
+  useEffect(() => () => { profileRequest.current?.abort() }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve existing modal draft hydration and reset timing during the visual update.
@@ -60,39 +65,60 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
 
   useEffect(() => {
     if (!open || !customer) return
+    const controller = new AbortController()
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve existing modal draft hydration and reset timing during the visual update.
     setLoadingOrders(true)
-    fetch('/api/customer/orders')
-      .then((r) => r.json())
-      .then((d) => setOrders(Array.isArray(d) ? d : []))
-      .catch(() => setOrders([]))
-      .finally(() => setLoadingOrders(false))
-  }, [open, customer])
+    setOrdersError('')
+    fetch('/api/customer/orders', { signal: controller.signal, cache: 'no-store' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Захиалгын мэдээллийг ачаалж чадсангүй. Дахин оролдоорой.')
+        const data = await response.json()
+        if (!Array.isArray(data)) throw new Error('Захиалгын мэдээлэл буруу байна. Дахин оролдоорой.')
+        if (!controller.signal.aborted) setOrders(data)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setOrdersError('Захиалгын мэдээллийг ачаалж чадсангүй. Дахин оролдоорой.')
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoadingOrders(false) })
+    return () => controller.abort()
+  }, [open, customer, ordersRetry])
 
   const saveProfile = async () => {
+    profileRequest.current?.abort()
+    const controller = new AbortController()
+    profileRequest.current = controller
     setSavingProfile(true)
     try {
       const res = await fetch('/api/customer/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile),
+        signal: controller.signal,
       })
       const data = await res.json()
+      if (controller.signal.aborted) return
       if (!res.ok) throw new Error(data.error)
       onProfileUpdate(data.customer)
       toast.success('Профайл шинэчлэгдлээ')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Алдаа')
+      if (!controller.signal.aborted) toast.error(e instanceof Error ? e.message : 'Алдаа')
     } finally {
-      setSavingProfile(false)
+      if (!controller.signal.aborted) setSavingProfile(false)
     }
   }
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    onLogout()
-    onClose()
-    toast.success('Гарлаа')
+    profileRequest.current?.abort()
+    setSavingProfile(false)
+    try {
+      const response = await fetch('/api/auth/logout', { method: 'POST' })
+      if (!response.ok) throw new Error('Гарч чадсангүй. Дахин оролдоорой.')
+      onLogout()
+      onClose()
+      toast.success('Гарлаа')
+    } catch {
+      toast.error('Гарч чадсангүй. Холболтоо шалгаад дахин оролдоорой.')
+    }
   }
 
   const copy = (text: string, label: string) => {
@@ -101,6 +127,7 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
   }
 
   if (!customer) return null
+  const visibleOrders = orders.filter(order => tab !== 'payments' || !!order.payment)
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -125,7 +152,7 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
             </div>
           </div>
 
-          <div className="px-6 pt-4 flex gap-2">
+          <div className="px-6 pt-4 flex flex-wrap gap-2" aria-label="Бүртгэлийн хэсгүүд">
             {[
               { id: 'profile', label: 'Профайл', Icon: User },
               { id: 'orders', label: 'Миний захиалга', Icon: ShoppingBag },
@@ -136,6 +163,7 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id as Tab)}
+                  aria-pressed={tab === t.id}
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors',
                     tab === t.id
@@ -181,18 +209,19 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
             {(tab === 'orders' || tab === 'payments') && (
               <div className="space-y-3">
                 {loadingOrders ? (
-                  <div className="grid place-items-center py-12"><Loader2 className="size-7 animate-spin text-[#1677FF]" /></div>
-                ) : orders.length === 0 ? (
+                  <div className="grid place-items-center py-12" role="status" aria-label="Захиалгыг ачаалж байна"><Loader2 className="size-7 animate-spin text-[#1677FF]" /></div>
+                ) : ordersError ? (
+                  <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center text-sm text-amber-900"><p>{ordersError}</p><Button variant="outline" className="mt-4" onClick={() => setOrdersRetry(value => value + 1)}>Дахин оролдох</Button></div>
+                ) : visibleOrders.length === 0 ? (
                   <div className="py-12 text-center">
                     <Package className="mx-auto size-10 text-[#5B7290]/40" />
-                    <p className="mt-3 text-sm text-[#5B7290]">Захиалга байхгүй байна</p>
+                    <p className="mt-3 text-sm text-[#5B7290]">{tab === 'payments' ? 'Төлбөрийн мэдээлэл байхгүй байна' : 'Захиалга байхгүй байна'}</p>
                     <Button onClick={onClose} className="mt-4 rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
                       Хэрэгсэл үзэх
                     </Button>
                   </div>
                 ) : (
-                  orders
-                    .filter((o) => tab !== 'payments' || !!o.payment)
+                  visibleOrders
                     .map((o) => (
                       <div key={o.id} className="rounded-2xl border border-[#D6E4FF] bg-white shadow-premium overflow-hidden">
                         <div className="px-4 py-3 flex items-center justify-between border-b border-[#EEF4FF] bg-[#F5F9FF]/40">

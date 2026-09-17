@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Bell, ArrowUpRight } from 'lucide-react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { useCustomer } from '@/hooks/use-customer'
 import { rememberChat } from '@/lib/chat-history'
 type Notice = { id: string; sessionId: string; content: string; createdAt: string; readAt?: string | null; orderNumber?: string }
@@ -46,7 +46,7 @@ function NotificationList() {
   const unread = items.filter(n => !n.readAt).length
   return <>
     <button type="button" onClick={() => setOpen(true)} aria-label={`Мэдэгдэл${unread ? `, ${unread} уншаагүй` : ''}`} className="relative grid size-10 shrink-0 place-items-center rounded-full text-slate-700 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500"><Bell className="size-5" />{unread > 0 && <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-blue-600 px-1 text-center text-[10px] leading-5 text-white">{unread > 99 ? '99+' : unread}</span>}</button>
-    <Dialog open={open} onOpenChange={setOpen}><DialogContent className="customer-surface max-h-[85dvh] max-w-lg overflow-y-auto rounded-2xl"><DialogTitle>Мэдэгдэл</DialogTitle><p className="text-sm text-slate-500">Төлбөрийн баталгаажуулалт болон захиалгын чатны хариу энд хадгалагдана.</p>
+    <Dialog open={open} onOpenChange={setOpen}><DialogContent className="customer-surface max-h-[85dvh] max-w-lg overflow-y-auto rounded-2xl"><DialogTitle>Мэдэгдэл</DialogTitle><DialogDescription className="text-sm text-slate-500">Төлбөрийн баталгаажуулалт болон захиалгын чатны хариу энд хадгалагдана.</DialogDescription>
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       {unread > 0 && <button type="button" className="text-left text-sm font-semibold text-blue-600" onClick={() => void markRead(items.filter(n=>!n.readAt).map(n=>n.id))}>Бүгдийг уншсан болгох</button>}
       {loading ? <p role="status">Ачаалж байна…</p> : !items.length && !error ? <p className="py-8 text-center text-slate-500">Одоогоор мэдэгдэл алга.</p> : null}

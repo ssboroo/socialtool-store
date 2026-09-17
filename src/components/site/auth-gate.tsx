@@ -21,6 +21,7 @@ export function AuthGate() {
         onAuthed={(c) => setCustomer(c)}
       />
       <AccountModal
+        key={customer?.id || 'guest'}
         open={accountOpen}
         onClose={closeAccount}
         customer={customer}

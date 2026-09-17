@@ -64,19 +64,19 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
     <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
       <ProductImage image={product.image} icon={product.icon} alt={product.name} className="aspect-[4/3] w-full"/>
+      <span className="shop-product-badge">{product.category}</span>
       {product.discount ? <span className="shop-discount">−{product.discount}%</span>:null}
       {product.tutorialVideoUrl&&getYouTubeId(product.tutorialVideoUrl)?<span className="shop-video"><PlayCircle className="size-3.5"/>Заавар видео</span>:null}
     </button>
     <div className="shop-product-body">
-      <span className="shop-product-category">{product.category}</span>
       <h3><button type="button" onClick={openDetail}>{product.name}</button></h3>
       <p className="shop-product-summary">{product.shortDesc}</p>
       <div className="shop-product-meta">
+        <span className="shop-product-category">{product.category}</span>
         {durationLabel&&<span><Clock className="size-4"/>{durationLabel}</span>}
-        {product.reviewCount>0&&<span><Star className="size-4 fill-amber-400 text-amber-400"/>{product.rating.toFixed(1)} ({product.reviewCount})</span>}
         {!product.available&&<span>Түр дууссан</span>}
       </div>
-      <div className="shop-product-price"><strong>{formatTugrik(defaultVariant?.price??product.price)}</strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}</div>
+      <div className="shop-product-price"><strong>{formatTugrik(defaultVariant?.price??product.price)}</strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}{product.reviewCount>0&&<span className="shop-product-rating"><Star className="size-3.5 fill-amber-400 text-amber-400"/>{product.rating.toFixed(1)} ({product.reviewCount})</span>}</div>
       <Button onClick={handleAdd} disabled={!product.available} className="shop-product-buy">
         {product.available?<ShoppingCart className="size-4"/>:<CircleOff className="size-4"/>}
         {product.available?(variants.length>1?'Сонголт хийх':'Сагсанд нэмэх'):'Түр дууссан'}
