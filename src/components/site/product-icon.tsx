@@ -63,33 +63,34 @@ type ProductIconMeta = {
   accent: string
   soft: string
   domain?: string
+  asset?: string
   Icon?: SvgIcon
   monogram?: string
 }
 
 const META: Record<ProductIconKey, ProductIconMeta> = {
   windows: { key: 'windows', label: 'Windows', accent: '#0078D4', soft: '#EAF4FF', domain: 'windows.com' },
-  office: { key: 'office', label: 'Microsoft', accent: '#F25022', soft: '#FFF1EB', domain: 'office.com' },
+  office: { key: 'office', label: 'Microsoft', accent: '#F25022', soft: '#FFF1EB', domain: 'office.com', asset: '/brand-icons/microsoft-office.svg' },
   'visual-studio': { key: 'visual-studio', label: 'Visual Studio', accent: '#7F52FF', soft: '#F2EBFF', domain: 'visualstudio.microsoft.com' },
   server: { key: 'server', label: 'Windows Server', accent: '#0078D4', soft: '#EAF4FF', domain: 'microsoft.com', Icon: Server },
-  adobe: { key: 'adobe', label: 'Adobe', accent: '#FF0000', soft: '#FFF0F0', domain: 'adobe.com' },
+  adobe: { key: 'adobe', label: 'Adobe', accent: '#FF0000', soft: '#FFF0F0', domain: 'adobe.com', asset: '/brand-icons/adobe.svg' },
   canva: { key: 'canva', label: 'Canva', accent: '#7D2AE8', soft: '#F4ECFF', domain: 'canva.com' },
-  capcut: { key: 'capcut', label: 'CapCut', accent: '#111827', soft: '#F1F5F9', domain: 'capcut.com' },
+  capcut: { key: 'capcut', label: 'CapCut', accent: '#111827', soft: '#F1F5F9', domain: 'capcut.com', asset: '/brand-icons/capcut.svg' },
   corel: { key: 'corel', label: 'CorelDRAW', accent: '#00A651', soft: '#EAF8EF', domain: 'coreldraw.com' },
-  autodesk: { key: 'autodesk', label: 'Autodesk', accent: '#0696D7', soft: '#E8F7FE', domain: 'autodesk.com' },
+  autodesk: { key: 'autodesk', label: 'Autodesk', accent: '#0696D7', soft: '#E8F7FE', domain: 'autodesk.com', asset: '/brand-icons/autodesk.svg' },
   facebook: { key: 'facebook', label: 'Facebook', accent: '#1877F2', soft: '#EAF3FF', domain: 'facebook.com' },
   instagram: { key: 'instagram', label: 'Instagram', accent: '#E1306C', soft: '#FDECF4', domain: 'instagram.com' },
-  tiktok: { key: 'tiktok', label: 'TikTok', accent: '#111827', soft: '#F0F3F7', domain: 'tiktok.com' },
+  tiktok: { key: 'tiktok', label: 'TikTok', accent: '#111827', soft: '#F0F3F7', domain: 'tiktok.com', asset: '/brand-icons/tiktok.svg' },
   x: { key: 'x', label: 'X', accent: '#111827', soft: '#F0F3F7', domain: 'x.com' },
   telegram: { key: 'telegram', label: 'Telegram', accent: '#229ED9', soft: '#E8F7FF', domain: 'telegram.org' },
   youtube: { key: 'youtube', label: 'YouTube', accent: '#FF0000', soft: '#FFF0F0', domain: 'youtube.com' },
   openai: { key: 'openai', label: 'OpenAI', accent: '#10A37F', soft: '#E9F8F3', domain: 'openai.com', Icon: Bot },
-  claude: { key: 'claude', label: 'Claude', accent: '#D97757', soft: '#FFF0EA', domain: 'claude.ai', monogram: 'AI' },
+  claude: { key: 'claude', label: 'Claude', accent: '#D97757', soft: '#FFF0EA', domain: 'claude.ai', asset: '/brand-icons/claude.svg', monogram: 'AI' },
   gemini: { key: 'gemini', label: 'Gemini', accent: '#4F46E5', soft: '#EEF0FF', domain: 'gemini.google.com', Icon: Sparkles },
   grok: { key: 'grok', label: 'Grok', accent: '#111827', soft: '#F0F3F7', domain: 'grok.com', monogram: 'G' },
   perplexity: { key: 'perplexity', label: 'Perplexity', accent: '#0F766E', soft: '#E7F7F5', domain: 'perplexity.ai', monogram: 'P' },
   cursor: { key: 'cursor', label: 'Cursor', accent: '#111827', soft: '#F0F3F7', domain: 'cursor.com', Icon: Code2 },
-  spotify: { key: 'spotify', label: 'Spotify', accent: '#1DB954', soft: '#EAF8EF', domain: 'spotify.com', Icon: Music2 },
+  spotify: { key: 'spotify', label: 'Spotify', accent: '#1DB954', soft: '#EAF8EF', domain: 'spotify.com', asset: '/brand-icons/spotify.svg', Icon: Music2 },
   netflix: { key: 'netflix', label: 'Netflix', accent: '#E50914', soft: '#FFEDEF', domain: 'netflix.com', monogram: 'N' },
   rakuten: { key: 'rakuten', label: 'Rakuten', accent: '#BF0000', soft: '#FFF0F0', domain: 'rakuten.com', monogram: 'R' },
   viki: { key: 'viki', label: 'Viki', accent: '#06B6D4', soft: '#E8FAFD', domain: 'viki.com', monogram: 'V' },
@@ -252,9 +253,9 @@ export function ProductIconTile({
           height: frameSize,
         }}
       >
-        {meta.domain && !logoFailed ? (
+        {(meta.asset || meta.domain) && !logoFailed ? (
           <img
-            src={faviconUrl(meta.domain)}
+            src={meta.asset || faviconUrl(meta.domain!)}
             alt={meta.label}
             width={128}
             height={128}
