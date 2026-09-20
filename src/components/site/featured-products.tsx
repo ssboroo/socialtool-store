@@ -114,7 +114,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
       <div className="catalog-results">
         <Hero settings={settings} productCount={initialProducts.filter(p=>p.available).length} categoryCount={filterCategories.length-1}/>
         <nav id="categories" className="catalog-chips" aria-label="Ангиллаар шүүх">
-          {filterCategories.map(c=><button key={c.id} type="button" aria-pressed={activeCat===c.slug} onClick={()=>{setActiveCat(c.slug);document.getElementById('products')?.scrollIntoView({behavior:'smooth',block:'start'})}}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
+          {filterCategories.map(c=><button key={c.id} type="button" aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
         </nav>
         <section id="products" aria-label="Бүтээгдэхүүнүүд">
         <div className="catalog-toolbar">
@@ -126,7 +126,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
         </div>
         {failed && <div className="catalog-error" role="alert"><CircleAlert className="mx-auto size-8"/><h3>Хэрэгслүүдийг ачаалж чадсангүй</h3><p>Холболтоо шалгаад дахин оролдоорой.</p><Button variant="outline" onClick={() => setRetry(value => value + 1)}>Дахин оролдох</Button></div>}
         <div aria-busy={loading}>
-          {loading ? <div className={gridClass} aria-hidden="true">{Array.from({length: 8}, (_, i) => <div key={i} className="catalog-skeleton"><div className="catalog-skeleton-art"/><div className="catalog-skeleton-line"/><div className="catalog-skeleton-line"/></div>)}</div>
+          {loading && products.length===0 ? <div className={gridClass} aria-hidden="true">{Array.from({length: 8}, (_, i) => <div key={i} className="catalog-skeleton"><div className="catalog-skeleton-art"/><div className="catalog-skeleton-line"/><div className="catalog-skeleton-line"/></div>)}</div>
           : failed ? null : products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
           :<><div className={gridClass}>{products.slice(0,visibleCount).map(p=><ProductCard key={p.id} product={p}/>)}</div>{products.length>visibleCount&&<div className="catalog-load-more"><Button variant="outline" onClick={()=>setVisibleCount(count=>count+16)}>Цааш үзэх <ChevronDown size={16}/></Button><span>{Math.min(visibleCount,products.length)} / {products.length} бүтээгдэхүүн</span></div>}</>}
         </div>
