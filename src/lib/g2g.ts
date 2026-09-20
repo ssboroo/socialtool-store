@@ -14,6 +14,7 @@ export type G2GService = {
 }
 
 export type G2GBrand = { brand_id: string; brand_name: string }
+
 export type G2GProduct = {
   service_id?: string
   service_name?: string
@@ -22,6 +23,25 @@ export type G2GProduct = {
   product_id: string
   product_name: string
   region_name?: string
+}
+
+export type G2GOffer = {
+  offer_id: string
+  seller_id?: string
+  product_id?: string
+  service_id?: string
+  brand_id?: string
+  region_id?: string
+  title?: string
+  description?: string
+  status?: string
+  currency?: string
+  unit_price?: number
+  min_qty?: number
+  available_qty?: number | null
+  api_qty?: number | null
+  created_at?: number
+  updated_at?: number
 }
 
 type ApiEnvelope<T> = {
@@ -53,44 +73,70 @@ export function createG2GSignature(path: string, timestamp: string, apiKey: stri
     .digest('hex')
 }
 
-async function g2gGet<T>(path: string, params: Record<string, string | undefined> = {}) {
+function apiCodeSucceeded(code: number | undefined) {
+  return code == null || code === 20000001 || code === 200100
+}
+
+async function g2gRequest<T>(
+  method: 'GET' | 'POST',
+  path: string,
+  options: {
+    params?: Record<string, string | undefined>
+    body?: unknown
+  } = {},
+) {
   const { apiKey, secretKey, userId } = credentials()
   const timestamp = Date.now().toString()
   const signature = createG2GSignature(path, timestamp, apiKey, userId, secretKey)
   const url = new URL(`${G2G_BASE_URL}${path}`)
-  for (const [key, value] of Object.entries(params)) {
+
+  for (const [key, value] of Object.entries(options.params || {})) {
     if (value) url.searchParams.set(key, value)
   }
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20_000)
+
   try {
     const response = await fetch(url, {
-      method: 'GET',
+      method,
       cache: 'no-store',
       signal: controller.signal,
       headers: {
         accept: 'application/json',
+        'Content-Type': 'application/json',
         'g2g-api-key': apiKey,
         'g2g-userid': userId,
         'g2g-signature': signature,
         'g2g-timestamp': timestamp,
       },
+      ...(method === 'POST' ? { body: JSON.stringify(options.body ?? {}) } : {}),
     })
-    const text = await response.text()
+
+    const responseText = await response.text()
     let data: ApiEnvelope<T>
     try {
-      data = JSON.parse(text) as ApiEnvelope<T>
+      data = JSON.parse(responseText) as ApiEnvelope<T>
     } catch {
       throw new Error(`G2G API JSON бус хариу өглөө (HTTP ${response.status})`)
     }
-    if (!response.ok || (typeof data.code === 'number' && data.code !== 20000001)) {
+
+    if (!response.ok || !apiCodeSucceeded(data.code)) {
       throw new Error(data.message || data.warning || `G2G API HTTP ${response.status}`)
     }
+
     return data
   } finally {
     clearTimeout(timeout)
   }
+}
+
+async function g2gGet<T>(path: string, params: Record<string, string | undefined> = {}) {
+  return g2gRequest<T>('GET', path, { params })
+}
+
+async function g2gPost<T>(path: string, body: unknown) {
+  return g2gRequest<T>('POST', path, { body })
 }
 
 export async function getG2GServices() {
@@ -117,4 +163,33 @@ export async function getG2GProducts(serviceId: string, brandId: string, categor
     category_id: categoryId,
   })
   return data.payload.product_list || []
+}
+
+export async function searchG2GLiveOffersByBrand(
+  brandId: string,
+  options: { pageSize?: number; maxPages?: number } = {},
+) {
+  const pageSize = Math.min(100, Math.max(1, options.pageSize || 50))
+  const maxPages = Math.min(100, Math.max(1, options.maxPages || 20))
+  const offers: G2GOffer[] = []
+  let truncated = false
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const data = await g2gPost<{ results?: G2GOffer[] }>('/v2/offers/search', {
+      filter: {
+        brand_id: brandId,
+        status: 'live',
+      },
+      page_size: pageSize,
+      page,
+    })
+
+    const batch = Array.isArray(data.payload.results) ? data.payload.results : []
+    offers.push(...batch)
+
+    if (batch.length < pageSize) return { offers, truncated: false }
+    if (page === maxPages) truncated = true
+  }
+
+  return { offers, truncated }
 }
