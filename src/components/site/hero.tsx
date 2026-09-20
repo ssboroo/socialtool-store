@@ -1,5 +1,6 @@
 'use client'
-import { ArrowRight, Play, Sparkles, LayoutGrid, ShieldCheck, Facebook, Instagram, Music2, BrainCircuit, Youtube } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowRight, Pause, Play, Sparkles, LayoutGrid, ShieldCheck, Facebook, Instagram, Music2, BrainCircuit, Youtube } from 'lucide-react'
 import { heroImages } from '@/lib/hero-images'
 import { HeroVideo } from './hero-video'
 import { validHeroVideo } from '@/lib/hero-video'
@@ -13,7 +14,8 @@ export function StoreIntroduction({settings}:{settings?:Record<string,string>}) 
 }
 
 export function Hero({settings,productCount,categoryCount}:{settings?:Record<string,string>;productCount:number;categoryCount:number}) {
-  return <section id="top" className="shop-hero">
+  const [paused,setPaused]=useState(false)
+  return <section id="top" className={`shop-hero animated-shop-hero ${paused?'hero-motion-paused':''}`}>
     <div className="shop-hero-inner">
       <div className="shop-hero-copy">
         <span className="catalog-eyebrow"><Sparkles size={15}/>Таны дижитал боломжууд — нэг дор</span>
@@ -27,7 +29,7 @@ export function Hero({settings,productCount,categoryCount}:{settings?:Record<str
         </div>
       </div>
       <div className="hero-showcase" aria-hidden="true">
-        <div className="hero-showcase-scene">
+        <div className="hero-showcase-scene"><span className="hero-orbit hero-orbit-one"/><span className="hero-orbit hero-orbit-two"/>
           <img className="hero-glass-art" src="/hero-glass.webp" alt="" width={1100} height={733} fetchPriority="high"/>
           <img className="hero-original-logo" src="/socialtool-logo-s.png" alt="" width={166} height={181}/>
           <span className="hero-app hero-app-instagram"><Instagram/></span>
@@ -39,6 +41,7 @@ export function Hero({settings,productCount,categoryCount}:{settings?:Record<str
         <span className="hero-art-caption">Tools.<br/>People.<br/>Possibilities.</span>
         <div className="hero-glass-note"><ShieldCheck/><span>Таны дижитал<br/>туслагч.</span></div>
       </div>
+      <button type="button" className="hero-motion-control" aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?'Хөдөлгөөн асаах':'Хөдөлгөөн зогсоох'}</span></button>
     </div>
   </section>
 }
