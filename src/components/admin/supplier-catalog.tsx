@@ -146,7 +146,13 @@ export function SupplierCatalog() {
     })
     const body = await res.json()
     if (!res.ok) throw new Error(`${brand.brand_name}: ${body.error || 'sync алдаа'}`)
-    return Number(body.synced || 0)
+    return {
+      synced: Number(body.synced || 0),
+      priced: Number(body.priced || 0),
+      translated: Number(body.translated || 0),
+      linkedStorePricesUpdated: Number(body.linkedStorePricesUpdated || 0),
+      missingRateCurrencies: Array.isArray(body.missingRateCurrencies) ? body.missingRateCurrencies as string[] : [],
+    }
   }
 
   const syncAll = async () => {
@@ -160,6 +166,10 @@ export function SupplierCatalog() {
       const serviceBody = await remoteJson('/api/admin/suppliers/g2g?remote=services') as { services: Service[] }
       let totalBrands = 0
       let totalProducts = 0
+      let totalPriced = 0
+      let totalTranslated = 0
+      let linkedStorePricesUpdated = 0
+      const missingRates = new Set<string>()
       for (const service of serviceBody.services || []) {
         let after = ''
         let page = 0
@@ -169,17 +179,21 @@ export function SupplierCatalog() {
           const brands = brandBody.brands || []
           for (let start = 0; start < brands.length; start += 3) {
             const chunk = brands.slice(start, start + 3)
-            const counts = await Promise.all(chunk.map(brand => syncBrand(service, brand)))
+            const results = await Promise.all(chunk.map(brand => syncBrand(service, brand)))
             totalBrands += chunk.length
-            totalProducts += counts.reduce((sum, count) => sum + count, 0)
-            setProgress(`${service.service_name}: ${totalBrands} брэнд · ${totalProducts} бүтээгдэхүүн синк хийлээ`)
+            totalProducts += results.reduce((sum, result) => sum + result.synced, 0)
+            totalPriced += results.reduce((sum, result) => sum + result.priced, 0)
+            totalTranslated += results.reduce((sum, result) => sum + result.translated, 0)
+            linkedStorePricesUpdated += results.reduce((sum, result) => sum + result.linkedStorePricesUpdated, 0)
+            for (const result of results) for (const currency of result.missingRateCurrencies) missingRates.add(currency)
+            setProgress(`${service.service_name}: ${totalProducts} бараа · ${totalPriced} live үнэтэй · ${totalTranslated} Монголчилсон`)
           }
           after = brandBody.after || ''
           if (page > 100) throw new Error('G2G brand pagination хамгаалалтын хязгаарт хүрлээ')
         } while (after)
       }
-      toast.success(`${totalProducts} G2G catalog бүтээгдэхүүн синк хийгдлээ`)
-      setProgress(`Дууслаа: ${totalBrands} брэнд · ${totalProducts} бүтээгдэхүүн`)
+      toast.success(`${totalProducts} G2G бараа татлаа · ${totalPriced} live үнэ · ${totalTranslated} Монголчилсон`)
+      setProgress(`Дууслаа: ${totalBrands} брэнд · ${totalProducts} бараа · ${totalPriced} үнэтэй · Store дээр ${linkedStorePricesUpdated} үнэ шинэчлэв${missingRates.size ? ` · Ханш дутуу: ${[...missingRates].join(', ')}` : ''}`)
       await loadLocal()
     } catch (error) {
       const message = error instanceof Error ? error.message : 'G2G sync алдаа'
@@ -286,7 +300,7 @@ export function SupplierCatalog() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" className="rounded-full" onClick={() => void loadLocal()} disabled={busy}><RefreshCw className="size-4" /> Шинэчлэх</Button>
-          {data.configured ? <Button className="rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA]" onClick={syncAll} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" /> : <Cloud className="size-4" />} G2G catalog sync</Button> : null}
+          {data.configured ? <Button className="rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA]" onClick={syncAll} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" /> : <Cloud className="size-4" />} G2G бараа + live үнэ татах</Button> : null}
         </div>
       </div>
 
@@ -296,7 +310,7 @@ export function SupplierCatalog() {
           <div className="text-sm text-emerald-900">
             <b>CSV Supplier горим идэвхтэй</b>
             <p className="mt-1 opacity-80">G2G API key шаардлагагүй. CSV-ээр supplier бүтээгдэхүүн, өртөг оруулаад markup-аар зарах үнийг автоматаар бодож нийтэлнэ.</p>
-            {data.configured ? <p className="mt-1 font-semibold">G2G API мөн холбогдсон тул catalog sync давхар ашиглаж болно.</p> : null}
+            {data.configured ? <p className="mt-1 font-semibold">G2G OpenAPI холбогдсон. Catalog бараа, live offer үнэ татаж, бүтээгдэхүүний нэр/бүсийг Монголчилж хадгална.</p> : null}
           </div>
         </div>
       </div>
