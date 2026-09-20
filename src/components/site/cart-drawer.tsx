@@ -71,13 +71,13 @@ export function CartDrawer() {
                 return (
                   <div
                     key={key}
-                    className="flex gap-3 rounded-2xl border border-[#D6E4FF] bg-white p-3 shadow-premium"
+                    className="flex min-h-[98px] items-center gap-3 rounded-2xl border border-[#D6E4FF] bg-white p-3 shadow-premium"
                   >
-                    <ProductIllustration icon={it.icon} name={it.name} category={it.category} compact className="size-16 shrink-0" />
+                    <ProductIllustration icon={it.icon} name={it.name} category={it.category} compact className="size-[72px] shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h4 className="line-clamp-1 text-sm font-bold text-[#102A43]">{it.name}</h4>
+                          <h4 className="line-clamp-2 min-h-[40px] text-sm font-bold leading-5 text-[#102A43]">{it.name}</h4>
                           <p className="text-xs text-[#5B7290]">{it.category}</p>
                           {it.duration ? (
                             <p className="mt-0.5 text-[11px] font-semibold text-[#0B4DBA]">{it.duration}</p>
@@ -93,7 +93,7 @@ export function CartDrawer() {
                           <Trash2 className="size-4" />
                         </button>
                       </div>
-                      <div className="mt-2 flex items-center justify-between gap-2">
+                      <div className="mt-2 flex min-h-8 items-center justify-between gap-2">
                         <div className="inline-flex items-center rounded-lg border border-[#D6E4FF] bg-white">
                           <button
                             type="button"
