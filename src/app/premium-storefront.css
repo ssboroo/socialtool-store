@@ -340,3 +340,82 @@ html:not(.dark) body:has(.storefront-premium) [data-sonner-toast][data-type="suc
 }
 
 @media(max-width:900px) { .mobile-store-introduction .sidebar-introduction { display:block; } .mobile-store-introduction .sidebar-introduction>section { max-width:400px; margin-inline:auto; } }
+
+
+/* Final icon-first catalogue sizing: one real brand mark, compact balanced cards. */
+.storefront-premium .shop-product {
+  padding:7px;
+  border-radius:16px;
+}
+.storefront-premium .shop-product-art {
+  border-radius:13px;
+  overflow:hidden;
+}
+.storefront-premium .shop-product-art > div {
+  aspect-ratio:1.6 !important;
+  min-height:0;
+}
+.storefront-premium .product-icon-tile {
+  min-height:0 !important;
+}
+.storefront-premium .shop-product-body {
+  padding:10px 6px 3px;
+}
+.storefront-premium .shop-product h3 {
+  font-size:13px;
+  line-height:1.38;
+  min-height:36px;
+}
+.storefront-premium .shop-product h3 button {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  white-space:normal;
+  overflow:hidden;
+}
+.storefront-premium .shop-product-summary {
+  margin:4px 0 8px;
+  min-height:32px;
+  font-size:10.5px;
+  line-height:1.5;
+  -webkit-line-clamp:2;
+}
+.storefront-premium .shop-product-meta {
+  min-height:19px;
+}
+.storefront-premium .shop-product-price {
+  margin:8px 0 7px;
+}
+.storefront-premium .shop-product-price strong {
+  font-size:18px;
+}
+.storefront-premium .shop-product-buy[data-slot="button"] {
+  min-height:40px;
+}
+@media (min-width:1500px) {
+  .storefront-premium .shop-product-art > div {
+    aspect-ratio:1.62 !important;
+  }
+}
+@media (max-width:600px) {
+  .storefront-premium .shop-product {
+    padding:5px;
+  }
+  .storefront-premium .shop-product-art > div {
+    aspect-ratio:1.45 !important;
+  }
+  .storefront-premium .shop-product-body {
+    padding:8px 4px 3px;
+  }
+  .storefront-premium .shop-product h3 {
+    min-height:38px;
+    font-size:12px;
+  }
+  .storefront-premium .shop-product-summary {
+    min-height:34px;
+    font-size:10px;
+  }
+  .storefront-premium .shop-product-price strong {
+    font-size:16px;
+  }
+}
