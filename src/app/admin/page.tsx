@@ -6,6 +6,7 @@ import { AdminOverview } from '@/components/admin/overview'
 import { AdminOrders } from '@/components/admin/orders'
 import { AdminProducts } from '@/components/admin/products'
 import { ProductAdminTools } from '@/components/admin/product-admin-tools'
+import { BulkPriceManager } from '@/components/admin/bulk-price-manager'
 import { SupplierCatalog } from '@/components/admin/supplier-catalog'
 import { SupplierFeedCard } from '@/components/admin/supplier-feed-card'
 import { G2ASyncCard } from '@/components/admin/g2a-sync-card'
@@ -145,7 +146,7 @@ export default function AdminPage() {
         <div className="flex-1">
           {tab === 'overview' && <AdminOverview token={token} />}
           {tab === 'orders' && <AdminOrders token={token} />}
-          {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><AdminProducts token={token} categories={categories} /></>}
+          {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><BulkPriceManager categories={categories} /><AdminProducts token={token} categories={categories} /></>}
           {tab === 'suppliers' && <><G2GBulkDraftImport /><G2GManualProductCard /><G2GRepriceCard /><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
           {tab === 'fulfillment' && <G2GFulfillment />}
           {tab === 'categories' && <AdminCategories token={token} />}
