@@ -1,6 +1,6 @@
 'use client'
 
-import type { ComponentType, SVGProps } from 'react'
+import { useState, type ComponentType, type SVGProps } from 'react'
 import {
   Bot,
   Cloud,
@@ -212,49 +212,55 @@ export function ProductIconTile({
   compact?: boolean
 }) {
   const meta = detectProductIcon({ name, category, icon })
-  const logoSize = compact ? 48 : 'clamp(54px, 4vw, 66px)'
+  const [logoFailed, setLogoFailed] = useState(false)
 
   return (
     <div
       className={cn(
-        'product-icon-tile relative grid place-items-center overflow-hidden rounded-xl',
-        compact ? 'size-16 shrink-0' : 'h-full w-full min-h-24',
+        'product-icon-tile relative grid place-items-center overflow-hidden rounded-[18px]',
+        compact ? 'size-16 shrink-0' : 'h-full w-full min-h-[116px]',
         className,
       )}
       style={{
-        background: `radial-gradient(circle at 50% 42%, #ffffff 0%, ${meta.soft} 58%, ${meta.soft} 100%)`,
+        background: `linear-gradient(135deg, #ffffff 0%, ${meta.soft} 100%)`,
       }}
       data-product-icon={meta.key}
       aria-label={`${meta.label} icon`}
     >
       <span
-        className={cn('absolute rounded-full opacity-20 blur-2xl', compact ? 'size-12' : 'size-24')}
+        className={cn(
+          'absolute rounded-full opacity-[0.16] blur-2xl',
+          compact ? 'size-10' : 'size-20',
+        )}
         style={{ background: meta.accent }}
         aria-hidden="true"
       />
+
       <span
-        className="relative grid place-items-center overflow-hidden rounded-[18px] border border-white/90 bg-white shadow-[0_12px_28px_-14px_rgba(15,23,42,.30),inset_0_1px_0_rgba(255,255,255,.9)]"
-        style={{ width: logoSize, height: logoSize, color: meta.accent }}
+        className={cn(
+          'relative z-10 grid place-items-center overflow-hidden rounded-2xl border border-white/90 bg-white shadow-[0_10px_24px_-14px_rgba(15,23,42,.22)]',
+          compact ? 'size-11' : 'size-[4.5rem]',
+        )}
+        style={{ color: meta.accent }}
       >
-        <FallbackGlyph meta={meta} compact={compact} />
-        {meta.domain ? (
+        {meta.domain && !logoFailed ? (
           <img
             src={faviconUrl(meta.domain)}
-            alt=""
+            alt={meta.label}
             width={128}
             height={128}
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"
             className={cn(
-              'absolute object-contain',
-              compact ? 'size-7' : 'size-[58%]',
+              'block object-contain',
+              compact ? 'size-6' : 'size-10',
             )}
-            onError={event => {
-              event.currentTarget.style.display = 'none'
-            }}
+            onError={() => setLogoFailed(true)}
           />
-        ) : null}
+        ) : (
+          <FallbackGlyph meta={meta} compact={compact} />
+        )}
       </span>
     </div>
   )
