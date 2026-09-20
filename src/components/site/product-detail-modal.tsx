@@ -154,7 +154,7 @@ export function ProductDetailModal() {
                   </span>
                 ) : null}
               </div>
-              <ProductImage image={product.image} icon={product.icon} alt={product.name} className={`aspect-square w-full mt-6 ${!product.available ? 'grayscale-[20%]' : ''}`} />
+              <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode="auto" className={`aspect-square w-full mt-6 ${!product.available ? 'grayscale-[20%]' : ''}`} />
             </div>
 
             <div className="p-6 sm:p-8 flex flex-col">
