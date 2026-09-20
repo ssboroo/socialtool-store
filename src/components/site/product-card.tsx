@@ -63,7 +63,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
   return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
     <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
-      <ProductImage image={product.image} icon={product.icon} alt={product.name} className="aspect-[4/3] w-full"/>
+      <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode="icon" className="aspect-[4/3] w-full"/>
       <span className="shop-product-badge">{product.category}</span>
       {product.discount ? <span className="shop-discount">−{product.discount}%</span>:null}
       {product.tutorialVideoUrl&&getYouTubeId(product.tutorialVideoUrl)?<span className="shop-video"><PlayCircle className="size-3.5"/>Заавар видео</span>:null}
