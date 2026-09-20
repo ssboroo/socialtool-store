@@ -193,9 +193,9 @@ function faviconUrl(domain: string) {
 
 function FallbackGlyph({ meta, compact }: { meta: ProductIconMeta; compact: boolean }) {
   const Glyph = meta.Icon
-  if (Glyph) return <Glyph className={compact ? 'size-6' : 'size-8'} strokeWidth={1.9} />
+  if (Glyph) return <Glyph className={compact ? 'size-7' : 'size-12'} strokeWidth={1.8} />
   return (
-    <span className={cn('font-black tracking-[-0.08em]', compact ? 'text-xl' : 'text-2xl')}>
+    <span className={cn('font-black tracking-[-0.08em]', compact ? 'text-xl' : 'text-4xl')}>
       {meta.monogram || meta.label.slice(0, 1)}
     </span>
   )
@@ -213,6 +213,8 @@ export function ProductIconTile({
 }) {
   const meta = detectProductIcon({ name, category, icon })
   const [logoFailed, setLogoFailed] = useState(false)
+  const frameSize = compact ? 48 : 'clamp(92px, 7.2vw, 118px)'
+  const markSize = compact ? 30 : 'clamp(58px, 4.8vw, 76px)'
 
   return (
     <div
@@ -230,7 +232,7 @@ export function ProductIconTile({
       <span
         className={cn(
           'absolute rounded-full opacity-[0.16] blur-2xl',
-          compact ? 'size-10' : 'size-20',
+          compact ? 'size-12' : 'size-32',
         )}
         style={{ background: meta.accent }}
         aria-hidden="true"
@@ -239,9 +241,13 @@ export function ProductIconTile({
       <span
         className={cn(
           'relative z-10 grid place-items-center overflow-hidden rounded-2xl border border-white/90 bg-white shadow-[0_10px_24px_-14px_rgba(15,23,42,.22)]',
-          compact ? 'size-11' : 'size-[4.5rem]',
+          compact ? 'size-12' : '',
         )}
-        style={{ color: meta.accent }}
+        style={{
+          color: meta.accent,
+          width: frameSize,
+          height: frameSize,
+        }}
       >
         {meta.domain && !logoFailed ? (
           <img
@@ -252,10 +258,11 @@ export function ProductIconTile({
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"
-            className={cn(
-              'block object-contain',
-              compact ? 'size-6' : 'size-10',
-            )}
+            className="block object-contain"
+            style={{
+              width: markSize,
+              height: markSize,
+            }}
             onError={() => setLogoFailed(true)}
           />
         ) : (
