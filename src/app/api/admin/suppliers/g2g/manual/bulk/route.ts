@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
+import { translateG2GProductNameMn, translateG2GRegionMn, translateG2GTextMn } from '@/lib/g2g-mn'
 
 const PRICE_CONFIG_KEY = 'supplier:g2g:config'
 const MAX_ROWS = 500
@@ -35,11 +36,16 @@ function parseG2GUrl(value: unknown) {
     throw new Error('Зөвхөн https://g2g.com холбоос ашиглана уу')
   }
   url.hash = ''
+  for (const key of [...url.searchParams.keys()]) {
+    if (key.toLowerCase().startsWith('utm_') || ['ref', 'source', 'campaign'].includes(key.toLowerCase())) {
+      url.searchParams.delete(key)
+    }
+  }
   return url
 }
 
 async function readPriceConfig() {
-  let markupPercent = 15
+  let markupPercent = 100
   const currencyRates: Record<string, number> = { MNT: 1 }
   const setting = await db.siteSetting.findUnique({ where: { key: PRICE_CONFIG_KEY } })
   if (setting) {
@@ -60,22 +66,41 @@ export async function POST(req: NextRequest) {
   if (!getAdminFromRequest(req)) return NextResponse.json({ error: 'Зөвшөөрөлгүй' }, { status: 401 })
 
   try {
-    const body = await req.json() as { rows?: BulkRow[] }
+    const body = await req.json() as { rows?: BulkRow[]; markupPercent?: unknown }
     const rows = Array.isArray(body.rows) ? body.rows.slice(0, MAX_ROWS) : []
     if (!rows.length) return NextResponse.json({ error: 'Импортлох мөр олдсонгүй' }, { status: 400 })
 
     const config = await readPriceConfig()
-    const summary = { created: 0, updated: 0, priced: 0, drafts: 0, errors: 0 }
-    const results: Array<{ row: number; status: 'created' | 'updated' | 'error'; error?: string }> = []
+    const requestedMarkup = body.markupPercent == null ? config.markupPercent : Number(body.markupPercent)
+    if (!Number.isFinite(requestedMarkup) || requestedMarkup < 0 || requestedMarkup > 300) {
+      return NextResponse.json({ error: 'Markup 0–300% хооронд байна' }, { status: 400 })
+    }
+    const markupPercent = requestedMarkup
+
+    const summary = { created: 0, updated: 0, priced: 0, drafts: 0, translated: 0, errors: 0 }
+    const results: Array<{
+      row: number
+      status: 'created' | 'updated' | 'error'
+      itemId?: string
+      name?: string
+      salePrice?: number | null
+      sourcePrice?: number | null
+      sourceCurrency?: string
+      error?: string
+    }> = []
 
     for (let index = 0; index < rows.length; index += 1) {
       try {
         const row = rows[index]
-        const name = cleanText(row.name, 180)
-        if (!name) throw new Error('Бүтээгдэхүүний нэр дутуу')
-        const serviceName = cleanText(row.serviceName, 100, 'G2G Marketplace') || 'G2G Marketplace'
-        const brandName = cleanText(row.brandName, 100) || serviceName
-        const regionName = cleanText(row.regionName, 80) || null
+        const originalName = cleanText(row.name, 240)
+        if (!originalName) throw new Error('Бүтээгдэхүүний нэр дутуу')
+
+        const originalServiceName = cleanText(row.serviceName, 120, 'Дижитал хэрэгсэл') || 'Дижитал хэрэгсэл'
+        const originalRegionName = cleanText(row.regionName, 80)
+        const name = translateG2GProductNameMn(originalName) || originalName
+        const serviceName = translateG2GTextMn(originalServiceName) || originalServiceName
+        const regionName = originalRegionName ? (translateG2GRegionMn(originalRegionName) || originalRegionName) : null
+        const brandName = cleanText(row.brandName, 100) || null
         const url = parseG2GUrl(row.sourceUrl)
         const sourceCurrency = (cleanText(row.sourceCurrency, 8, 'USD') || 'USD').toUpperCase().replace(/[^A-Z0-9]/g, '') || 'USD'
 
@@ -84,22 +109,51 @@ export async function POST(req: NextRequest) {
         const rawSalePrice = row.salePrice == null || row.salePrice === '' ? null : Number(row.salePrice)
         let salePrice = rawSalePrice !== null && Number.isSafeInteger(rawSalePrice) && rawSalePrice > 0 ? rawSalePrice : null
         if (salePrice == null && sourcePrice != null && config.currencyRates[sourceCurrency]) {
-          salePrice = roundSalePrice(sourcePrice * config.currencyRates[sourceCurrency] * (1 + config.markupPercent / 100))
+          salePrice = roundSalePrice(sourcePrice * config.currencyRates[sourceCurrency] * (1 + markupPercent / 100))
         }
 
         const normalizedUrl = url.toString()
-        const stableKey = `${normalizedUrl}|${name.toLowerCase()}`
+        const stableKey = `${normalizedUrl}|${originalName.toLowerCase()}`
         const externalId = `manual-bulk-${createHash('sha256').update(stableKey).digest('hex').slice(0, 24)}`
         const existing = await db.supplierCatalogItem.findUnique({
           where: { supplier_externalId: { supplier: 'G2G', externalId } },
         })
 
         const finalSourcePrice = sourcePrice ?? existing?.sourcePrice ?? null
-        const finalSalePrice = salePrice ?? existing?.salePrice ?? null
+        let finalSalePrice = salePrice
         const finalCurrency = sourcePrice != null ? sourceCurrency : (existing?.sourceCurrency || sourceCurrency)
-        const now = new Date()
 
-        await db.supplierCatalogItem.upsert({
+        if (finalSalePrice == null && finalSourcePrice != null && config.currencyRates[finalCurrency]) {
+          finalSalePrice = roundSalePrice(finalSourcePrice * config.currencyRates[finalCurrency] * (1 + markupPercent / 100))
+        }
+        finalSalePrice = finalSalePrice ?? existing?.salePrice ?? null
+
+        const now = new Date()
+        const translated = name !== originalName || serviceName !== originalServiceName || (regionName || '') !== originalRegionName
+        const metadata = JSON.stringify({
+          mode: 'manual-paste',
+          source: 'G2G',
+          stableKey,
+          original: {
+            name: originalName,
+            serviceName: originalServiceName,
+            regionName: originalRegionName || null,
+          },
+          mongolian: {
+            name,
+            serviceName,
+            regionName,
+          },
+          pricing: {
+            markupPercent,
+            sourcePrice: finalSourcePrice,
+            sourceCurrency: finalCurrency,
+            salePrice: finalSalePrice,
+          },
+          importedAt: now.toISOString(),
+        })
+
+        const item = await db.supplierCatalogItem.upsert({
           where: { supplier_externalId: { supplier: 'G2G', externalId } },
           update: {
             name,
@@ -109,10 +163,10 @@ export async function POST(req: NextRequest) {
             sourceUrl: normalizedUrl,
             sourceCurrency: finalCurrency,
             sourcePrice: finalSourcePrice,
-            markupPercent: config.markupPercent,
+            markupPercent,
             salePrice: finalSalePrice,
             available: true,
-            metadata: JSON.stringify({ mode: 'manual-bulk', source: 'G2G', stableKey }),
+            metadata,
             lastSyncedAt: now,
           },
           create: {
@@ -125,11 +179,11 @@ export async function POST(req: NextRequest) {
             sourceUrl: normalizedUrl,
             sourceCurrency: finalCurrency,
             sourcePrice: finalSourcePrice,
-            markupPercent: config.markupPercent,
+            markupPercent,
             salePrice: finalSalePrice,
             available: true,
             published: false,
-            metadata: JSON.stringify({ mode: 'manual-bulk', source: 'G2G', stableKey }),
+            metadata,
             lastSyncedAt: now,
           },
         })
@@ -138,14 +192,24 @@ export async function POST(req: NextRequest) {
         else summary.created += 1
         if (finalSalePrice != null) summary.priced += 1
         else summary.drafts += 1
-        results.push({ row: index + 1, status: existing ? 'updated' : 'created' })
+        if (translated) summary.translated += 1
+
+        results.push({
+          row: index + 1,
+          status: existing ? 'updated' : 'created',
+          itemId: item.id,
+          name: item.name,
+          salePrice: item.salePrice,
+          sourcePrice: item.sourcePrice,
+          sourceCurrency: item.sourceCurrency || finalCurrency,
+        })
       } catch (error) {
         summary.errors += 1
         results.push({ row: index + 1, status: 'error', error: error instanceof Error ? error.message : 'Импорт алдаа' })
       }
     }
 
-    return NextResponse.json({ ok: true, summary, results })
+    return NextResponse.json({ ok: true, markupPercent, summary, results })
   } catch (error) {
     if (error instanceof SyntaxError) return NextResponse.json({ error: 'Хүсэлтийн бүтэц буруу байна' }, { status: 400 })
     console.error('G2G bulk draft import error:', error)
