@@ -419,3 +419,51 @@ html:not(.dark) body:has(.storefront-premium) [data-sonner-toast][data-type="suc
     font-size:16px;
   }
 }
+
+
+/* Unified product icon + card rhythm: every card uses the same optical units. */
+.storefront-premium .shop-product {
+  display:flex;
+  height:100%;
+  flex-direction:column;
+}
+.storefront-premium .shop-product-art {
+  flex:0 0 auto;
+}
+.storefront-premium .shop-product-art > div {
+  display:grid;
+  place-items:center;
+}
+.storefront-premium .product-icon-tile > span:last-child {
+  flex:0 0 auto;
+}
+.storefront-premium .shop-product-body {
+  display:flex;
+  flex:1;
+  flex-direction:column;
+}
+.storefront-premium .shop-product h3 {
+  min-height:38px;
+}
+.storefront-premium .shop-product-summary {
+  min-height:34px;
+}
+.storefront-premium .shop-product-meta {
+  min-height:22px;
+}
+.storefront-premium .shop-product-price {
+  margin-top:auto;
+  min-height:31px;
+}
+.storefront-premium .shop-product-buy[data-slot="button"] {
+  width:100%;
+  min-height:42px;
+}
+@media (max-width:600px) {
+  .storefront-premium .shop-product h3 {
+    min-height:40px;
+  }
+  .storefront-premium .shop-product-summary {
+    min-height:36px;
+  }
+}
