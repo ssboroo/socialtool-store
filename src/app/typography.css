@@ -1,12 +1,14 @@
 /* Loaded last: one Cyrillic-capable type system across shop, admin and dialogs. */
 :root {
-  --store-body-font: 'Noto Sans Store', 'Segoe UI', Arial, sans-serif;
+  --store-body-font: 'Manrope Store', 'Noto Sans Store', 'Segoe UI', Arial, sans-serif;
   --store-heading-font: 'Manrope Store', 'Noto Sans Store', sans-serif;
   --font-sans: var(--store-body-font);
 }
 body, .storefront, .storefront-premium, .store-admin, [role='dialog'] {
   font-family: var(--store-body-font);
   font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
   line-height: 1.6;
 }
 button, input, select, textarea { font-family: inherit; }
@@ -20,7 +22,7 @@ h1, h2, h3, .storefront h1, .storefront h2, .storefront h3 {
   width: 100%;
   font-family: var(--store-heading-font);
   font-size: clamp(32px, 3.5vw, 52px);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -.03em;
   line-height: 1.18;
   overflow-wrap: break-word;
@@ -42,7 +44,7 @@ h1, h2, h3, .storefront h1, .storefront h2, .storefront h3 {
 .storefront-premium .catalog-chips button { font-size: 12px; line-height: 1.45; font-weight: 600; }
 .storefront-premium .catalog-search input,
 .storefront-premium .catalog-search select { font-size: 16px; min-height: 44px; height: auto; }
-.storefront-premium .shop-product h3 { font-size: 16px; line-height: 1.45; font-weight: 800; letter-spacing: -.015em; overflow-wrap: anywhere; }
+.storefront-premium .shop-product h3 { font-size: 16px; line-height: 1.45; font-weight: 700; letter-spacing: -.015em; overflow-wrap: anywhere; }
 .storefront-premium .shop-product-summary { font-size: 13px; line-height: 1.65; -webkit-line-clamp: 2; }
 .storefront-premium .shop-product-meta,
 .storefront-premium .shop-product-meta > span,
@@ -52,7 +54,7 @@ h1, h2, h3, .storefront h1, .storefront h2, .storefront h3 {
 .storefront-premium .shop-product-price { flex-wrap: wrap; gap: 6px; }
 .storefront-premium .shop-product-price strong {
   font-family: var(--store-heading-font); font-size: 22px;
-  line-height: 1.35; font-weight: 800; letter-spacing: -.02em;
+  line-height: 1.35; font-weight: 700; letter-spacing: -.02em;
   font-variant-numeric: tabular-nums;
 }
 .storefront-premium .shop-product-price del { font-size: 12px; }
