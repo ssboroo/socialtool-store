@@ -1,27 +1,19 @@
+'use client'
+
 import type { ComponentType, SVGProps } from 'react'
 import {
   Bot,
-  Box,
-  BriefcaseBusiness,
   Cloud,
   Code2,
-  Facebook,
-  Film,
   Gamepad2,
   HardDrive,
-  Instagram,
   KeyRound,
   Mail,
-  MessageCircle,
-  Monitor,
   Music2,
   Package,
-  Send,
   Server,
   ShieldCheck,
   Sparkles,
-  Twitter,
-  Youtube,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -70,46 +62,46 @@ type ProductIconMeta = {
   label: string
   accent: string
   soft: string
+  domain?: string
   Icon?: SvgIcon
   monogram?: string
-  windows?: boolean
 }
 
 const META: Record<ProductIconKey, ProductIconMeta> = {
-  windows: { key: 'windows', label: 'Windows', accent: '#1677FF', soft: '#EAF3FF', windows: true },
-  office: { key: 'office', label: 'Microsoft', accent: '#F97316', soft: '#FFF1E8', monogram: 'M' },
-  'visual-studio': { key: 'visual-studio', label: 'Visual Studio', accent: '#7C3AED', soft: '#F2EBFF', Icon: Code2 },
-  server: { key: 'server', label: 'Server', accent: '#2563EB', soft: '#EAF2FF', Icon: Server },
-  adobe: { key: 'adobe', label: 'Adobe', accent: '#EF233C', soft: '#FFEDEF', monogram: 'A' },
-  canva: { key: 'canva', label: 'Canva', accent: '#7C3AED', soft: '#F0EAFF', monogram: 'C' },
-  capcut: { key: 'capcut', label: 'CapCut', accent: '#111827', soft: '#F1F5F9', Icon: Film },
-  corel: { key: 'corel', label: 'Corel', accent: '#16A34A', soft: '#EAF8EF', monogram: 'C' },
-  autodesk: { key: 'autodesk', label: 'Autodesk', accent: '#0EA5E9', soft: '#E8F7FE', monogram: 'A' },
-  facebook: { key: 'facebook', label: 'Facebook', accent: '#1877F2', soft: '#EAF3FF', Icon: Facebook },
-  instagram: { key: 'instagram', label: 'Instagram', accent: '#D946EF', soft: '#FCEBFF', Icon: Instagram },
-  tiktok: { key: 'tiktok', label: 'TikTok', accent: '#111827', soft: '#EEF2F7', Icon: Music2 },
-  x: { key: 'x', label: 'X', accent: '#111827', soft: '#EEF2F7', Icon: Twitter },
-  telegram: { key: 'telegram', label: 'Telegram', accent: '#229ED9', soft: '#E8F7FF', Icon: Send },
-  youtube: { key: 'youtube', label: 'YouTube', accent: '#FF0033', soft: '#FFECEF', Icon: Youtube },
-  openai: { key: 'openai', label: 'OpenAI', accent: '#10A37F', soft: '#E9F8F3', Icon: Bot },
-  claude: { key: 'claude', label: 'Claude', accent: '#D97757', soft: '#FFF0EA', monogram: 'AI' },
-  gemini: { key: 'gemini', label: 'Google AI', accent: '#4F46E5', soft: '#EEF0FF', Icon: Sparkles },
-  grok: { key: 'grok', label: 'Grok', accent: '#111827', soft: '#EEF2F7', monogram: 'G' },
-  perplexity: { key: 'perplexity', label: 'Perplexity', accent: '#0F766E', soft: '#E7F7F5', monogram: 'P' },
-  cursor: { key: 'cursor', label: 'Cursor', accent: '#111827', soft: '#EEF2F7', Icon: Code2 },
-  spotify: { key: 'spotify', label: 'Spotify', accent: '#1DB954', soft: '#EAF8EF', Icon: Music2 },
-  netflix: { key: 'netflix', label: 'Netflix', accent: '#E50914', soft: '#FFEDEF', monogram: 'N' },
-  rakuten: { key: 'rakuten', label: 'Rakuten', accent: '#BF0000', soft: '#FFF0F0', monogram: 'R' },
-  viki: { key: 'viki', label: 'Viki', accent: '#06B6D4', soft: '#E8FAFD', monogram: 'V' },
-  'fl-studio': { key: 'fl-studio', label: 'FL Studio', accent: '#F59E0B', soft: '#FFF7DF', Icon: Music2 },
-  ableton: { key: 'ableton', label: 'Ableton', accent: '#111827', soft: '#EEF2F7', Icon: Music2 },
-  steam: { key: 'steam', label: 'Steam', accent: '#1B2838', soft: '#EAF0F7', Icon: Gamepad2 },
+  windows: { key: 'windows', label: 'Windows', accent: '#0078D4', soft: '#EAF4FF', domain: 'windows.com' },
+  office: { key: 'office', label: 'Microsoft', accent: '#F25022', soft: '#FFF1EB', domain: 'office.com' },
+  'visual-studio': { key: 'visual-studio', label: 'Visual Studio', accent: '#7F52FF', soft: '#F2EBFF', domain: 'visualstudio.microsoft.com' },
+  server: { key: 'server', label: 'Windows Server', accent: '#0078D4', soft: '#EAF4FF', domain: 'microsoft.com', Icon: Server },
+  adobe: { key: 'adobe', label: 'Adobe', accent: '#FF0000', soft: '#FFF0F0', domain: 'adobe.com' },
+  canva: { key: 'canva', label: 'Canva', accent: '#7D2AE8', soft: '#F4ECFF', domain: 'canva.com' },
+  capcut: { key: 'capcut', label: 'CapCut', accent: '#111827', soft: '#F1F5F9', domain: 'capcut.com' },
+  corel: { key: 'corel', label: 'CorelDRAW', accent: '#00A651', soft: '#EAF8EF', domain: 'coreldraw.com' },
+  autodesk: { key: 'autodesk', label: 'Autodesk', accent: '#0696D7', soft: '#E8F7FE', domain: 'autodesk.com' },
+  facebook: { key: 'facebook', label: 'Facebook', accent: '#1877F2', soft: '#EAF3FF', domain: 'facebook.com' },
+  instagram: { key: 'instagram', label: 'Instagram', accent: '#E1306C', soft: '#FDECF4', domain: 'instagram.com' },
+  tiktok: { key: 'tiktok', label: 'TikTok', accent: '#111827', soft: '#F0F3F7', domain: 'tiktok.com' },
+  x: { key: 'x', label: 'X', accent: '#111827', soft: '#F0F3F7', domain: 'x.com' },
+  telegram: { key: 'telegram', label: 'Telegram', accent: '#229ED9', soft: '#E8F7FF', domain: 'telegram.org' },
+  youtube: { key: 'youtube', label: 'YouTube', accent: '#FF0000', soft: '#FFF0F0', domain: 'youtube.com' },
+  openai: { key: 'openai', label: 'OpenAI', accent: '#10A37F', soft: '#E9F8F3', domain: 'openai.com', Icon: Bot },
+  claude: { key: 'claude', label: 'Claude', accent: '#D97757', soft: '#FFF0EA', domain: 'claude.ai', monogram: 'AI' },
+  gemini: { key: 'gemini', label: 'Gemini', accent: '#4F46E5', soft: '#EEF0FF', domain: 'gemini.google.com', Icon: Sparkles },
+  grok: { key: 'grok', label: 'Grok', accent: '#111827', soft: '#F0F3F7', domain: 'grok.com', monogram: 'G' },
+  perplexity: { key: 'perplexity', label: 'Perplexity', accent: '#0F766E', soft: '#E7F7F5', domain: 'perplexity.ai', monogram: 'P' },
+  cursor: { key: 'cursor', label: 'Cursor', accent: '#111827', soft: '#F0F3F7', domain: 'cursor.com', Icon: Code2 },
+  spotify: { key: 'spotify', label: 'Spotify', accent: '#1DB954', soft: '#EAF8EF', domain: 'spotify.com', Icon: Music2 },
+  netflix: { key: 'netflix', label: 'Netflix', accent: '#E50914', soft: '#FFEDEF', domain: 'netflix.com', monogram: 'N' },
+  rakuten: { key: 'rakuten', label: 'Rakuten', accent: '#BF0000', soft: '#FFF0F0', domain: 'rakuten.com', monogram: 'R' },
+  viki: { key: 'viki', label: 'Viki', accent: '#06B6D4', soft: '#E8FAFD', domain: 'viki.com', monogram: 'V' },
+  'fl-studio': { key: 'fl-studio', label: 'FL Studio', accent: '#F59E0B', soft: '#FFF7DF', domain: 'image-line.com', Icon: Music2 },
+  ableton: { key: 'ableton', label: 'Ableton', accent: '#111827', soft: '#F0F3F7', domain: 'ableton.com', Icon: Music2 },
+  steam: { key: 'steam', label: 'Steam', accent: '#1B2838', soft: '#EAF0F7', domain: 'steampowered.com', Icon: Gamepad2 },
   gaming: { key: 'gaming', label: 'Gaming', accent: '#6366F1', soft: '#EEF0FF', Icon: Gamepad2 },
-  drive: { key: 'drive', label: 'Storage', accent: '#2563EB', soft: '#EAF3FF', Icon: HardDrive },
+  drive: { key: 'drive', label: 'Google Drive', accent: '#2563EB', soft: '#EAF3FF', domain: 'drive.google.com', Icon: HardDrive },
   cloud: { key: 'cloud', label: 'Cloud', accent: '#0EA5E9', soft: '#E8F7FE', Icon: Cloud },
-  vpn: { key: 'vpn', label: 'VPN', accent: '#2563EB', soft: '#EAF3FF', Icon: ShieldCheck },
-  email: { key: 'email', label: 'E-mail', accent: '#0F766E', soft: '#E7F7F5', Icon: Mail },
-  code: { key: 'code', label: 'Developer', accent: '#7C3AED', soft: '#F0EAFF', Icon: Code2 },
+  vpn: { key: 'vpn', label: 'VPN', accent: '#2563EB', soft: '#EAF3FF', domain: 'nordvpn.com', Icon: ShieldCheck },
+  email: { key: 'email', label: 'E-mail', accent: '#0F766E', soft: '#E7F7F5', domain: 'mail.google.com', Icon: Mail },
+  code: { key: 'code', label: 'Developer', accent: '#7C3AED', soft: '#F0EAFF', domain: 'github.com', Icon: Code2 },
   license: { key: 'license', label: 'License', accent: '#2563EB', soft: '#EAF3FF', Icon: KeyRound },
   generic: { key: 'generic', label: 'Digital', accent: '#1677FF', soft: '#EAF3FF', Icon: Package },
 }
@@ -195,13 +187,16 @@ export function detectProductIcon(input: DetectionInput): ProductIconMeta {
   return META[iconFallback || 'generic']
 }
 
-function WindowsGlyph() {
+function faviconUrl(domain: string) {
+  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`
+}
+
+function FallbackGlyph({ meta, compact }: { meta: ProductIconMeta; compact: boolean }) {
+  const Glyph = meta.Icon
+  if (Glyph) return <Glyph className={compact ? 'size-6' : 'size-8'} strokeWidth={1.9} />
   return (
-    <span className="grid size-9 grid-cols-2 gap-0.5" aria-hidden="true">
-      <span className="rounded-[2px] bg-current" />
-      <span className="rounded-[2px] bg-current" />
-      <span className="rounded-[2px] bg-current" />
-      <span className="rounded-[2px] bg-current" />
+    <span className={cn('font-black tracking-[-0.08em]', compact ? 'text-xl' : 'text-2xl')}>
+      {meta.monogram || meta.label.slice(0, 1)}
     </span>
   )
 }
@@ -217,7 +212,7 @@ export function ProductIconTile({
   compact?: boolean
 }) {
   const meta = detectProductIcon({ name, category, icon })
-  const Glyph = meta.Icon
+  const logoSize = compact ? 48 : 'clamp(54px, 4vw, 66px)'
 
   return (
     <div
@@ -227,43 +222,40 @@ export function ProductIconTile({
         className,
       )}
       style={{
-        background: `radial-gradient(circle at 50% 42%, white 0%, ${meta.soft} 54%, ${meta.soft} 100%)`,
+        background: `radial-gradient(circle at 50% 42%, #ffffff 0%, ${meta.soft} 58%, ${meta.soft} 100%)`,
       }}
       data-product-icon={meta.key}
+      aria-label={`${meta.label} icon`}
     >
       <span
-        className={cn(
-          'absolute rounded-full opacity-35 blur-2xl',
-          compact ? 'size-12' : 'size-24',
-        )}
+        className={cn('absolute rounded-full opacity-20 blur-2xl', compact ? 'size-12' : 'size-24')}
         style={{ background: meta.accent }}
         aria-hidden="true"
       />
       <span
-        className={cn(
-          'relative grid place-items-center rounded-2xl border border-white/80 bg-white/88 shadow-[0_10px_30px_-16px_rgba(15,23,42,.35)]',
-          compact ? 'size-12 rounded-xl' : 'size-[4.35rem]',
-        )}
-        style={{ color: meta.accent }}
+        className="relative grid place-items-center overflow-hidden rounded-[18px] border border-white/90 bg-white shadow-[0_12px_28px_-14px_rgba(15,23,42,.30),inset_0_1px_0_rgba(255,255,255,.9)]"
+        style={{ width: logoSize, height: logoSize, color: meta.accent }}
       >
-        {meta.windows ? (
-          <WindowsGlyph />
-        ) : Glyph ? (
-          <Glyph className={compact ? 'size-6' : 'size-8'} strokeWidth={1.9} />
-        ) : (
-          <span className={cn('font-black tracking-[-0.08em]', compact ? 'text-xl' : 'text-2xl')}>
-            {meta.monogram || '?'}
-          </span>
-        )}
+        <FallbackGlyph meta={meta} compact={compact} />
+        {meta.domain ? (
+          <img
+            src={faviconUrl(meta.domain)}
+            alt=""
+            width={128}
+            height={128}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className={cn(
+              'absolute object-contain',
+              compact ? 'size-7' : 'size-[58%]',
+            )}
+            onError={event => {
+              event.currentTarget.style.display = 'none'
+            }}
+          />
+        ) : null}
       </span>
-      {!compact ? (
-        <span
-          className="absolute bottom-2 rounded-full border border-white/80 bg-white/75 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] backdrop-blur"
-          style={{ color: meta.accent }}
-        >
-          {meta.label}
-        </span>
-      ) : null}
     </div>
   )
 }
