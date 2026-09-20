@@ -193,9 +193,9 @@ function faviconUrl(domain: string) {
 
 function FallbackGlyph({ meta, compact }: { meta: ProductIconMeta; compact: boolean }) {
   const Glyph = meta.Icon
-  if (Glyph) return <Glyph className={compact ? 'size-7' : 'size-12'} strokeWidth={1.8} />
+  if (Glyph) return <Glyph className={compact ? 'size-8' : 'size-14'} strokeWidth={1.75} />
   return (
-    <span className={cn('font-black tracking-[-0.08em]', compact ? 'text-xl' : 'text-4xl')}>
+    <span className={cn('font-black tracking-[-0.08em]', compact ? 'text-2xl' : 'text-[42px]')}>
       {meta.monogram || meta.label.slice(0, 1)}
     </span>
   )
@@ -213,14 +213,17 @@ export function ProductIconTile({
 }) {
   const meta = detectProductIcon({ name, category, icon })
   const [logoFailed, setLogoFailed] = useState(false)
-  const frameSize = compact ? 48 : 'clamp(92px, 7.2vw, 118px)'
-  const markSize = compact ? 30 : 'clamp(58px, 4.8vw, 76px)'
+
+  // One optical sizing system across every product:
+  // catalog frame 112/68, cart frame 56/34. All brand marks sit in the same box.
+  const frameSize = compact ? 56 : 112
+  const markSize = compact ? 34 : 68
 
   return (
     <div
       className={cn(
         'product-icon-tile relative grid place-items-center overflow-hidden rounded-[18px]',
-        compact ? 'size-16 shrink-0' : 'h-full w-full min-h-[116px]',
+        compact ? 'size-[72px] shrink-0' : 'h-full w-full min-h-[116px]',
         className,
       )}
       style={{
@@ -232,7 +235,7 @@ export function ProductIconTile({
       <span
         className={cn(
           'absolute rounded-full opacity-[0.16] blur-2xl',
-          compact ? 'size-12' : 'size-32',
+          compact ? 'size-14' : 'size-36',
         )}
         style={{ background: meta.accent }}
         aria-hidden="true"
@@ -240,8 +243,8 @@ export function ProductIconTile({
 
       <span
         className={cn(
-          'relative z-10 grid place-items-center overflow-hidden rounded-2xl border border-white/90 bg-white shadow-[0_10px_24px_-14px_rgba(15,23,42,.22)]',
-          compact ? 'size-12' : '',
+          'relative z-10 grid place-items-center overflow-hidden rounded-[22px] border border-white/95 bg-white shadow-[0_12px_28px_-14px_rgba(15,23,42,.24),inset_0_1px_0_rgba(255,255,255,.95)]',
+          compact ? 'rounded-[16px]' : '',
         )}
         style={{
           color: meta.accent,
@@ -262,6 +265,8 @@ export function ProductIconTile({
             style={{
               width: markSize,
               height: markSize,
+              maxWidth: markSize,
+              maxHeight: markSize,
             }}
             onError={() => setLogoFailed(true)}
           />
