@@ -73,7 +73,7 @@ export function CartDrawer() {
                     key={key}
                     className="flex gap-3 rounded-2xl border border-[#D6E4FF] bg-white p-3 shadow-premium"
                   >
-                    <ProductIllustration icon={it.icon} className="size-16 shrink-0" />
+                    <ProductIllustration icon={it.icon} name={it.name} category={it.category} compact className="size-16 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
