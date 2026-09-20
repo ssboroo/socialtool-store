@@ -1,16 +1,23 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Pause, Play, Sparkles, LayoutGrid, ShieldCheck, Facebook, Instagram, Music2, BrainCircuit, Youtube } from 'lucide-react'
 import { heroImages } from '@/lib/hero-images'
 import { HeroVideo } from './hero-video'
 import { validHeroVideo } from '@/lib/hero-video'
 import { HeroSlideshow } from './hero-slideshow'
-export function StoreIntroduction({settings}:{settings?:Record<string,string>}) {
+export function StoreIntroduction({settings,mobile=false}:{settings?:Record<string,string>;mobile?:boolean}) {
+  const [isMobile,setIsMobile]=useState<boolean|null>(null)
+  useEffect(()=>{const query=window.matchMedia('(max-width:900px)');const update=()=>setIsMobile(query.matches);update();query.addEventListener('change',update);return()=>query.removeEventListener('change',update)},[])
   const slides=heroImages(settings)
   const video=settings?.heroVideoUrl
   const useVideo=settings?.heroMediaType==='video' && !!video && validHeroVideo(video)
-  if (!useVideo && slides.length === 0 && !settings?.heroHeadline) return null
-  return <details className="store-introduction"><summary><Play size={16}/>Дэлгүүрийн танилцуулга</summary>{settings?.heroHeadline&&<p className="store-introduction-headline">{settings.heroHeadline}</p>}{useVideo?<HeroVideo key={video} src={video!} poster={slides[0]}/>:slides.length>0?<HeroSlideshow images={slides}/>:null}</details>
+  if(isMobile===null || isMobile!==mobile) return null
+  return <section className="store-introduction sidebar-introduction" aria-label="Дэлгүүрийн танилцуулга">
+    <h2><Play size={16}/>Дэлгүүрийн танилцуулга</h2>
+    {useVideo?<HeroVideo key={video} src={video!} poster={slides[0]}/>:slides.length>0?<HeroSlideshow images={slides}/>:<div className="intro-placeholder"><img src="/socialtool-logo-s.png" alt="Socialtool" width={66} height={72}/><strong>Хэрэгтэй бүхнээ<br/>нэг дороос.</strong></div>}
+    {settings?.heroHeadline&&<p className="store-introduction-headline">{settings.heroHeadline}</p>}
+    <a href="#how" className="intro-guide-link">Хэрхэн захиалах вэ?<ArrowRight size={15}/></a>
+  </section>
 }
 
 export function Hero({settings,productCount,categoryCount}:{settings?:Record<string,string>;productCount:number;categoryCount:number}) {
@@ -30,7 +37,7 @@ export function Hero({settings,productCount,categoryCount}:{settings?:Record<str
       </div>
       <div className="hero-showcase" aria-hidden="true">
         <div className="hero-showcase-scene"><span className="hero-orbit hero-orbit-one"/><span className="hero-orbit hero-orbit-two"/>
-          <img className="hero-glass-art" src="/hero-glass.webp" alt="" width={1100} height={733} fetchPriority="high"/>
+          <span className="hero-center-glass"/>
           <img className="hero-original-logo" src="/socialtool-logo-s.png" alt="" width={166} height={181}/>
           <span className="hero-app hero-app-instagram"><Instagram/></span>
           <span className="hero-app hero-app-facebook"><Facebook fill="currentColor"/></span>
@@ -38,8 +45,7 @@ export function Hero({settings,productCount,categoryCount}:{settings?:Record<str
           <span className="hero-app hero-app-video"><Youtube fill="currentColor"/></span>
           <span className="hero-app hero-app-music"><Music2/></span>
         </div>
-        <span className="hero-art-caption">Tools.<br/>People.<br/>Possibilities.</span>
-        <div className="hero-glass-note"><ShieldCheck/><span>Таны дижитал<br/>туслагч.</span></div>
+
       </div>
       <button type="button" className="hero-motion-control" aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?'Хөдөлгөөн асаах':'Хөдөлгөөн зогсоох'}</span></button>
     </div>

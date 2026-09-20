@@ -108,7 +108,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
           </nav>
         </div>
         <a href="#products" className="catalog-premium-note"><Crown/><span><strong>Premium хэрэгслүүд</strong><small>Илүү их боломж</small></span></a>
-        <a href="#products" className="catalog-side-note"><img src="/hero-glass.webp" alt="" width={1100} height={733} loading="lazy"/><p>Дижитал ертөнцийг<br/>хамтдаа бүтээе.</p><ArrowRight size={18}/></a>
+        <StoreIntroduction settings={settings}/>
         <a href="#faq" className="catalog-support-note"><Headphones/><span><strong>Танд тусалъя</strong><small>Асуултынхаа хариуг<br/>эндээс олоорой.</small></span><span className="catalog-support-link">Тусламж авах <ArrowRight size={13}/></span></a>
       </aside>
       <div className="catalog-results">
@@ -131,13 +131,14 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
           :<><div className={gridClass}>{products.slice(0,visibleCount).map(p=><ProductCard key={p.id} product={p}/>)}</div>{products.length>visibleCount&&<div className="catalog-load-more"><Button variant="outline" onClick={()=>setVisibleCount(count=>count+16)}>Цааш үзэх <ChevronDown size={16}/></Button><span>{Math.min(visibleCount,products.length)} / {products.length} бүтээгдэхүүн</span></div>}</>}
         </div>
         </section>
+        <div className="mobile-store-introduction"><StoreIntroduction settings={settings} mobile/></div>
         <div className="catalog-service-strip">
           <a href="#how"><Truck/><span><strong>Шуурхай хүргэлт</strong><small>Дижитал захиалга</small></span></a>
           <a href="#how"><Wallet/><span><strong>Аюулгүй төлбөр</strong><small>QPay-аар төлөх</small></span></a>
           <a href="#faq"><ShieldCheck/><span><strong>Бүтээгдэхүүний баталгаа</strong><small>Нөхцөлийг дэлгэрэнгүй үзэх</small></span></a>
           <a href="#categories" className="catalog-service-promo"><strong>Илүү их хэрэгсэл.<br/>Илүү их боломж.</strong><ArrowRight/></a>
         </div>
-        <StoreIntroduction settings={settings}/>
+
       </div>
     </div>
   </div>
