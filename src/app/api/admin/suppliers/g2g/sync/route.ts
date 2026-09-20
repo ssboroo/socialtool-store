@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
           : null
         const available = productOffers.length
           ? productOffers.some(offer => offer.available_qty == null || Number(offer.available_qty) > 0)
-          : true
+          : offerResult.truncated
 
         if (best && salePrice) priced += 1
         if (mongolianName !== originalName || mongolianRegion !== originalRegion) translated += 1
