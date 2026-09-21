@@ -12,6 +12,7 @@ import './production-polish.css'
 import './theme.css'
 import './premium-storefront.css'
 import './typography.css'
+import './card-system.css'
 
 const baseUrl = siteUrl()
 const brandLogo = `${baseUrl}/socialtool-logo.png`
