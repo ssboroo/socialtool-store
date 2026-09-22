@@ -90,3 +90,12 @@
 @media(max-width:379px) {
   .storefront-premium .catalog-grid { grid-template-columns:minmax(0,1fr); }
 }
+
+/* Bounded numbered pagination replaces progressive loading. */
+.catalog-pagination-wrap { display:grid; justify-items:center; gap:12px; padding:24px 0; }
+.catalog-pagination-wrap > p { font-size:13px; color:var(--shop-muted); }
+.catalog-pagination { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; max-width:100%; }
+.catalog-page-item { display:inline-flex; align-items:center; gap:6px; }
+.catalog-pagination [data-slot="button"] { min-width:44px; min-height:44px; padding:8px; border-radius:12px; font-variant-numeric:tabular-nums; }
+.catalog-pagination [aria-current="page"] { background:var(--shop-blue,#1764ec); color:white; border-color:var(--shop-blue,#1764ec); }
+.catalog-page-gap { padding-inline:2px; color:var(--shop-muted); }
