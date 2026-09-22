@@ -1,7 +1,7 @@
 /* Loaded last: one Cyrillic-capable type system across shop, admin and dialogs. */
 :root {
-  --store-body-font: 'Manrope Store', 'Noto Sans Store', 'Segoe UI', Arial, sans-serif;
-  --store-heading-font: 'Manrope Store', 'Noto Sans Store', sans-serif;
+  --store-body-font: 'Rubik Store', 'Segoe UI', Arial, sans-serif;
+  --store-heading-font: 'Rubik Store', sans-serif;
   --font-sans: var(--store-body-font);
 }
 body, .storefront, .storefront-premium, .store-admin, [role='dialog'] {
@@ -84,3 +84,6 @@ h1, h2, h3, .storefront h1, .storefront h2, .storefront h3 {
   .storefront-premium .shop-product-price strong { font-size: 19px; }
   .storefront-premium .shop-product-buy[data-slot='button'] { font-size: 12px; }
 }
+
+/* Legacy feature sections use the shared heading font too. */
+.store-spotlight strong, .store-detail-price { font-family: var(--store-heading-font); }
