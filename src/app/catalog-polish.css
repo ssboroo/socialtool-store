@@ -1,9 +1,9 @@
 /* Shared readable typography and a stable, evenly spaced catalog. */
-:root { --store-body-font: 'Noto Sans Store', 'Manrope Store', 'Segoe UI', sans-serif; }
+:root { --store-body-font: 'Rubik Store', 'Segoe UI', sans-serif; }
 html { scroll-behavior: auto; scrollbar-gutter: stable; }
 body, .storefront, .store-admin, [role='dialog'] { font-family: var(--store-body-font); }
 .storefront { --muted: #526b90; padding-bottom: 64px; }
-.storefront h1, .storefront h2, .storefront h3, .store-detail-price { font-family: 'Manrope Store', var(--store-body-font); }
+.storefront h1, .storefront h2, .storefront h3, .store-detail-price { font-family: 'Rubik Store', var(--store-body-font); }
 .store-container { width: calc(100% - 48px); }
 .store-nav-surface { gap: 20px; padding: 14px 20px; }
 .store-search { height: 44px; }
