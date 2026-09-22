@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, ChevronDown, PackageOpen, CircleAlert, House, Crown, Headphones, ArrowRight, Truck, ShieldCheck, Wallet } from 'lucide-react'
+import { Search, ChevronDown, PackageOpen, CircleAlert, House, Headphones, ArrowRight, Truck, ShieldCheck, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ProductCard, type Product } from './product-card'
@@ -21,7 +21,8 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
   const [loading, setLoading] = useState(false)
   const [failed, setFailed] = useState(false)
   const [retry, setRetry] = useState(0)
-  const [visibleCount, setVisibleCount] = useState(8)
+  const [page, setPage] = useState(1)
+  const pageSize = 8
   const [activeCat, setActiveCat] = useState<string>('all')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured')
@@ -71,7 +72,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
         })
         if (!res.ok) throw new Error('Unable to load products')
         const data = (await res.json()) as Product[]
-        if (!controller.signal.aborted) { setProducts(data); setVisibleCount(8) }
+        if (!controller.signal.aborted) { setProducts(data); setPage(1) }
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return
         if (!controller.signal.aborted) setFailed(true)
@@ -90,6 +91,10 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
   const categoryName = activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
   const filterCategories = [{ id: 'all', slug: 'all', name: 'Бүх хэрэгсэл' }, ...categories.filter(c => c.slug !== 'all')]
   const gridClass = 'catalog-grid'
+  const pageCount = Math.max(1, Math.ceil(products.length / pageSize))
+  const currentPage = Math.min(page, pageCount)
+  const start = (currentPage - 1) * pageSize
+  const pageNumbers = Array.from({ length: pageCount }, (_, i) => i + 1).filter(n => n === 1 || n === pageCount || Math.abs(n - currentPage) <= 1)
   return <div className="catalog-section">
     <div className="catalog-layout">
       <aside className="catalog-sidebar" aria-label="Бүтээгдэхүүний ангилал">
@@ -107,7 +112,6 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
             </button>)}
           </nav>
         </div>
-        <a href="#products" className="catalog-premium-note"><Crown/><span><strong>Premium хэрэгслүүд</strong><small>Илүү их боломж</small></span></a>
         <StoreIntroduction settings={settings}/>
         <a href="#faq" className="catalog-support-note"><Headphones/><span><strong>Танд тусалъя</strong><small>Асуултынхаа хариуг<br/>эндээс олоорой.</small></span><span className="catalog-support-link">Тусламж авах <ArrowRight size={13}/></span></a>
       </aside>
@@ -128,7 +132,17 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
         <div aria-busy={loading}>
           {loading && products.length===0 ? <div className={gridClass} aria-hidden="true">{Array.from({length: 8}, (_, i) => <div key={i} className="catalog-skeleton"><div className="catalog-skeleton-art"/><div className="catalog-skeleton-line"/><div className="catalog-skeleton-line"/></div>)}</div>
           : failed ? null : products.length===0?<div className="catalog-empty"><PackageOpen className="mx-auto size-10"/><h3>Хэрэгсэл олдсонгүй</h3><p>Өөр үгээр хайх эсвэл ангиллаа солиорой.</p><Button variant="outline" onClick={()=>{setQuery('');setActiveCat('all')}}>Шүүлтүүр цэвэрлэх</Button></div>
-          :<><div className={gridClass}>{products.slice(0,visibleCount).map(p=><ProductCard key={p.id} product={p}/>)}</div>{products.length>visibleCount&&<div className="catalog-load-more"><Button variant="outline" onClick={()=>setVisibleCount(count=>count+16)}>Цааш үзэх <ChevronDown size={16}/></Button><span>{Math.min(visibleCount,products.length)} / {products.length} бүтээгдэхүүн</span></div>}</>}
+          :<><div className={gridClass}>{products.slice(start,start + pageSize).map(p=><ProductCard key={p.id} product={p}/>)}</div><div className="catalog-pagination-wrap">
+            <p role="status">{start + 1}–{Math.min(start + pageSize, products.length)} / {products.length} бүтээгдэхүүн</p>
+            {pageCount > 1 && <nav className="catalog-pagination" aria-label="Бүтээгдэхүүний хуудас">
+              <Button variant="outline" disabled={loading || currentPage === 1} onClick={() => setPage(currentPage - 1)} aria-label="Өмнөх хуудас">‹</Button>
+              {pageNumbers.map((n, i) => <span className="catalog-page-item" key={n}>
+                {i > 0 && n - pageNumbers[i - 1] > 1 && <span className="catalog-page-gap" aria-hidden="true">…</span>}
+                <Button variant={n === currentPage ? 'default' : 'outline'} disabled={loading} aria-label={n + '-р хуудас'} aria-current={n === currentPage ? 'page' : undefined} onClick={() => setPage(n)}>{n}</Button>
+              </span>)}
+              <Button variant="outline" disabled={loading || currentPage === pageCount} onClick={() => setPage(currentPage + 1)} aria-label="Дараах хуудас">›</Button>
+            </nav>}
+          </div></>}
         </div>
         </section>
         <div className="mobile-store-introduction"><StoreIntroduction settings={settings} mobile/></div>
