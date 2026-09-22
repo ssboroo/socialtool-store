@@ -116,7 +116,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
         <a href="#faq" className="catalog-support-note"><Headphones/><span><strong>Танд тусалъя</strong><small>Асуултынхаа хариуг<br/>эндээс олоорой.</small></span><span className="catalog-support-link">Тусламж авах <ArrowRight size={13}/></span></a>
       </aside>
       <div className="catalog-results">
-        <Hero settings={settings} productCount={initialProducts.filter(p=>p.available).length} categoryCount={filterCategories.length-1}/>
+        <Hero products={initialProducts} settings={settings} productCount={initialProducts.filter(p=>p.available).length} categoryCount={filterCategories.length-1}/>
         <nav id="categories" className="catalog-chips" aria-label="Ангиллаар шүүх">
           {filterCategories.map(c=><button key={c.id} type="button" aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
         </nav>

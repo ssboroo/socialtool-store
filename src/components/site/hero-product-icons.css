@@ -1,0 +1,14 @@
+/* Six separated positions; product brands rotate without moving the layout. */
+.hero-showcase-scene .hero-product-orbit { width:15%; max-width:68px; aspect-ratio:1; border-radius:22%; background:transparent; color:inherit; transform:none; }
+.hero-product-orbit-0 { left:16%; top:9%; }
+.hero-product-orbit-1 { left:63%; top:4%; }
+.hero-product-orbit-2 { left:82%; top:42%; }
+.hero-product-orbit-3 { left:66%; top:77%; }
+.hero-product-orbit-4 { left:22%; top:79%; }
+.hero-product-orbit-5 { left:1%; top:43%; }
+.hero-product-orbit .product-icon-tile { width:100%; height:100%; min-height:0!important; border-radius:inherit; }
+.hero-product-orbit .product-icon-tile>span:last-child { width:100%!important; height:100%!important; border-radius:inherit; padding:12%; box-shadow:none; }
+.hero-product-orbit .product-icon-tile>span:last-child>:is(img,svg) { width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; object-fit:contain; }
+.hero-product-orbit .product-icon-tile>span:last-child>span { font-size:clamp(14px,2.5vw,24px); }
+.animated-shop-hero .hero-product-orbit:nth-last-child(2n) { animation-delay:-2s; }
+.animated-shop-hero .hero-product-orbit:nth-last-child(3n) { animation-delay:-4s; }

@@ -1,6 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { ArrowRight, Pause, Play, Sparkles, LayoutGrid, ShieldCheck, Facebook, Instagram, Music2, BrainCircuit, Youtube } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowRight, Pause, Play, Sparkles, LayoutGrid, ShieldCheck } from 'lucide-react'
+import { ProductIconTile, detectProductIcon } from './product-icon'
+import type { Product } from './product-card'
+import './hero-product-icons.css'
 import { heroImages } from '@/lib/hero-images'
 import { HeroVideo } from './hero-video'
 import { validHeroVideo } from '@/lib/hero-video'
@@ -20,8 +23,37 @@ export function StoreIntroduction({settings,mobile=false}:{settings?:Record<stri
   </section>
 }
 
-export function Hero({settings,productCount,categoryCount}:{settings?:Record<string,string>;productCount:number;categoryCount:number}) {
+export function Hero({settings,productCount,categoryCount,products}:{settings?:Record<string,string>;productCount:number;categoryCount:number;products:Product[]}) {
   const [paused,setPaused]=useState(false)
+  const [reducedMotion,setReducedMotion]=useState(true)
+  const [group,setGroup]=useState(0)
+  const brands=useMemo(()=>{
+    const seen=new Set<string>()
+    return products.filter(product=>{
+      if(!product.available) return false
+      const key=detectProductIcon(product).key
+      if(seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  },[products])
+  const groupCount=Math.ceil(brands.length/6)
+  useEffect(()=>{
+    const query=window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update=()=>setReducedMotion(query.matches)
+    update()
+    query.addEventListener('change',update)
+    return()=>query.removeEventListener('change',update)
+  },[])
+  useEffect(()=>{
+    if(paused||reducedMotion||groupCount<2) return
+    const timer=window.setInterval(()=>{
+      if(!document.hidden) setGroup(value=>(value+1)%groupCount)
+    },5000)
+    return()=>window.clearInterval(timer)
+  },[paused,reducedMotion,groupCount])
+  const activeGroup=groupCount?group%groupCount:0
+  const visibleBrands=brands.slice(activeGroup*6,activeGroup*6+6)
   return <section id="top" className={`shop-hero animated-shop-hero ${paused?'hero-motion-paused':''}`}>
     <div className="shop-hero-inner">
       <div className="shop-hero-copy">
@@ -39,11 +71,9 @@ export function Hero({settings,productCount,categoryCount}:{settings?:Record<str
         <div className="hero-showcase-scene"><span className="hero-orbit hero-orbit-one"/><span className="hero-orbit hero-orbit-two"/>
           <span className="hero-center-glass"/>
           <img className="hero-original-logo" src="/socialtool-logo-s.png" alt="" width={166} height={181}/>
-          <span className="hero-app hero-app-instagram"><Instagram/></span>
-          <span className="hero-app hero-app-facebook"><Facebook fill="currentColor"/></span>
-          <span className="hero-app hero-app-ai"><BrainCircuit/></span>
-          <span className="hero-app hero-app-video"><Youtube fill="currentColor"/></span>
-          <span className="hero-app hero-app-music"><Music2/></span>
+          {visibleBrands.map((product,index)=><span key={product.id} className={`hero-app hero-product-orbit hero-product-orbit-${index}`}>
+            <ProductIconTile name={product.name} category={product.category} icon={product.icon} compact/>
+          </span>)}
         </div>
 
       </div>
