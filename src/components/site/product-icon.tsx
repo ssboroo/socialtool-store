@@ -48,6 +48,10 @@ export type ProductIconKey =
   | 'fl-studio'
   | 'ableton'
   | 'steam'
+  | 'dota2'
+  | 'valorant'
+  | 'minecraft'
+  | 'counter-strike'
   | 'gaming'
   | 'drive'
   | 'cloud'
@@ -97,6 +101,10 @@ const META: Record<ProductIconKey, ProductIconMeta> = {
   'fl-studio': { key: 'fl-studio', label: 'FL Studio', accent: '#F59E0B', soft: '#FFF7DF', domain: 'image-line.com', Icon: Music2 },
   ableton: { key: 'ableton', label: 'Ableton', accent: '#111827', soft: '#F0F3F7', domain: 'ableton.com', Icon: Music2 },
   steam: { key: 'steam', label: 'Steam', accent: '#1B2838', soft: '#EAF0F7', domain: 'steampowered.com', Icon: Gamepad2 },
+  dota2: { key: 'dota2', label: 'Dota 2', accent: '#B73529', soft: '#FFF0EC', domain: 'dota2.com', monogram: 'D2' },
+  valorant: { key: 'valorant', label: 'Valorant', accent: '#FF4655', soft: '#FFF0F2', domain: 'playvalorant.com', monogram: 'V' },
+  minecraft: { key: 'minecraft', label: 'Minecraft', accent: '#3C8527', soft: '#EFF8EA', domain: 'minecraft.net', monogram: 'MC' },
+  'counter-strike': { key: 'counter-strike', label: 'Counter-Strike', accent: '#C87912', soft: '#FFF6E6', domain: 'counter-strike.net', monogram: 'CS' },
   gaming: { key: 'gaming', label: 'Gaming', accent: '#6366F1', soft: '#EEF0FF', Icon: Gamepad2 },
   drive: { key: 'drive', label: 'Google Drive', accent: '#2563EB', soft: '#EAF3FF', domain: 'drive.google.com', Icon: HardDrive },
   cloud: { key: 'cloud', label: 'Cloud', accent: '#0EA5E9', soft: '#E8F7FE', Icon: Cloud },
@@ -114,6 +122,10 @@ type DetectionInput = {
 }
 
 const RULES: Array<{ key: ProductIconKey; test: RegExp }> = [
+  { key: 'dota2', test: /\bdota\s*2?\b|дота\s*2?/i },
+  { key: 'valorant', test: /\bvalorant\b|валорант/i },
+  { key: 'minecraft', test: /\bminecraft\b|майнкрафт/i },
+  { key: 'counter-strike', test: /\bcounter[\s-]*strike\b|\bcs(?:\s*2|[\s:]*go|\s*1\.6)?\b|кантер\s*страйк/i },
   { key: 'server', test: /windows\s+server|server\s*20\d{2}/i },
   { key: 'visual-studio', test: /visual\s*studio/i },
   { key: 'office', test: /microsoft\s*365|office\s*(365|20\d{2}|lt[sc])|ms\s*office|microsoft\s*project|\bproject\s*(pro|professional|standard)?\s*20\d{2}/i },
@@ -163,10 +175,11 @@ const ICON_FALLBACKS: Record<string, ProductIconKey> = {
 export function detectProductIcon(input: DetectionInput): ProductIconMeta {
   const name = (input.name || '').trim()
   const category = (input.category || '').trim()
-  const haystack = `${name} ${category}`
-
-  for (const rule of RULES) {
-    if (rule.test.test(haystack)) return META[rule.key]
+  // A specific product name takes priority over its broad category.
+  for (const target of [name, category]) {
+    for (const rule of RULES) {
+      if (rule.test.test(target)) return META[rule.key]
+    }
   }
 
   const categoryLower = category.toLowerCase()
