@@ -59,6 +59,40 @@ export type ProductIconKey =
   | 'email'
   | 'code'
   | 'license'
+  | 'notion'
+  | 'midjourney'
+  | 'maxcare'
+  | 'mkt'
+  | 'photoshop'
+  | 'illustrator'
+  | 'premiere'
+  | 'after-effects'
+  | 'lightroom'
+  | 'acrobat'
+  | 'onedrive'
+  | 'dropbox'
+  | 'icloud'
+  | 'gmail'
+  | 'outlook'
+  | 'github'
+  | 'gitlab'
+  | 'windsurf'
+  | 'lovable'
+  | 'nordvpn'
+  | 'surfshark'
+  | 'expressvpn'
+  | 'protonvpn'
+  | 'roblox'
+  | 'xbox'
+  | 'playstation'
+  | 'nintendo'
+  | 'figma'
+  | 'suno'
+  | 'elevenlabs'
+  | 'grammarly'
+  | 'zoom'
+  | 'ai'
+  | 'music'
   | 'generic'
 
 type ProductIconMeta = {
@@ -73,6 +107,40 @@ type ProductIconMeta = {
 }
 
 const META: Record<ProductIconKey, ProductIconMeta> = {
+  'notion': { key: 'notion', label: 'Notion', accent: '#111827', soft: '#F1F5F9', domain: 'notion.so', monogram: 'N' },
+  'midjourney': { key: 'midjourney', label: 'Midjourney', accent: '#334155', soft: '#F1F5F9', domain: 'midjourney.com', monogram: 'M' },
+  'maxcare': { key: 'maxcare', label: 'MaxCare', accent: '#7C3AED', soft: '#F1F5F9', monogram: 'MC' },
+  'mkt': { key: 'mkt', label: 'MKT', accent: '#2563EB', soft: '#F1F5F9', monogram: 'MKT' },
+  'photoshop': { key: 'photoshop', label: 'Photoshop', accent: '#1265B5', soft: '#F1F5F9', monogram: 'Ps' },
+  'illustrator': { key: 'illustrator', label: 'Illustrator', accent: '#B85A00', soft: '#F1F5F9', monogram: 'Ai' },
+  'premiere': { key: 'premiere', label: 'Premiere Pro', accent: '#6D28D9', soft: '#F1F5F9', monogram: 'Pr' },
+  'after-effects': { key: 'after-effects', label: 'After Effects', accent: '#6D28D9', soft: '#F1F5F9', monogram: 'Ae' },
+  'lightroom': { key: 'lightroom', label: 'Lightroom', accent: '#1265B5', soft: '#F1F5F9', monogram: 'Lr' },
+  'acrobat': { key: 'acrobat', label: 'Acrobat', accent: '#DC2626', soft: '#F1F5F9', monogram: 'Ac' },
+  'onedrive': { key: 'onedrive', label: 'OneDrive', accent: '#0078D4', soft: '#F1F5F9', domain: 'onedrive.live.com', monogram: 'OD' },
+  'dropbox': { key: 'dropbox', label: 'Dropbox', accent: '#0061FF', soft: '#F1F5F9', domain: 'dropbox.com', monogram: 'D' },
+  'icloud': { key: 'icloud', label: 'iCloud', accent: '#0284C7', soft: '#F1F5F9', domain: 'icloud.com', monogram: 'C' },
+  'gmail': { key: 'gmail', label: 'Gmail', accent: '#B91C1C', soft: '#F1F5F9', domain: 'mail.google.com', monogram: 'G' },
+  'outlook': { key: 'outlook', label: 'Outlook', accent: '#0078D4', soft: '#F1F5F9', domain: 'outlook.com', monogram: 'O' },
+  'github': { key: 'github', label: 'GitHub', accent: '#111827', soft: '#F1F5F9', domain: 'github.com', monogram: 'GH' },
+  'gitlab': { key: 'gitlab', label: 'GitLab', accent: '#C2410C', soft: '#F1F5F9', domain: 'gitlab.com', monogram: 'GL' },
+  'windsurf': { key: 'windsurf', label: 'Windsurf', accent: '#0F766E', soft: '#F1F5F9', domain: 'windsurf.com', monogram: 'W' },
+  'lovable': { key: 'lovable', label: 'Lovable', accent: '#BE185D', soft: '#F1F5F9', domain: 'lovable.dev', monogram: 'L' },
+  'nordvpn': { key: 'nordvpn', label: 'NordVPN', accent: '#2563EB', soft: '#F1F5F9', domain: 'nordvpn.com', monogram: 'NVP' },
+  'surfshark': { key: 'surfshark', label: 'Surfshark', accent: '#0F766E', soft: '#F1F5F9', domain: 'surfshark.com', monogram: 'S' },
+  'expressvpn': { key: 'expressvpn', label: 'ExpressVPN', accent: '#B91C1C', soft: '#F1F5F9', domain: 'expressvpn.com', monogram: 'EVP' },
+  'protonvpn': { key: 'protonvpn', label: 'Proton VPN', accent: '#6D28D9', soft: '#F1F5F9', domain: 'protonvpn.com', monogram: 'PVP' },
+  'roblox': { key: 'roblox', label: 'Roblox', accent: '#111827', soft: '#F1F5F9', domain: 'roblox.com', monogram: 'R' },
+  'xbox': { key: 'xbox', label: 'Xbox', accent: '#107C10', soft: '#F1F5F9', domain: 'xbox.com', monogram: 'X' },
+  'playstation': { key: 'playstation', label: 'PlayStation', accent: '#003791', soft: '#F1F5F9', domain: 'playstation.com', monogram: 'PS' },
+  'nintendo': { key: 'nintendo', label: 'Nintendo', accent: '#E60012', soft: '#F1F5F9', domain: 'nintendo.com', monogram: 'N' },
+  'figma': { key: 'figma', label: 'Figma', accent: '#7C3AED', soft: '#F1F5F9', domain: 'figma.com', monogram: 'F' },
+  'suno': { key: 'suno', label: 'Suno', accent: '#C2410C', soft: '#F1F5F9', domain: 'suno.com', monogram: 'S' },
+  'elevenlabs': { key: 'elevenlabs', label: 'ElevenLabs', accent: '#111827', soft: '#F1F5F9', domain: 'elevenlabs.io', monogram: 'EL' },
+  'grammarly': { key: 'grammarly', label: 'Grammarly', accent: '#15803D', soft: '#F1F5F9', domain: 'grammarly.com', monogram: 'G' },
+  'zoom': { key: 'zoom', label: 'Zoom', accent: '#2563EB', soft: '#F1F5F9', domain: 'zoom.us', monogram: 'Z' },
+  'ai': { key: 'ai', label: 'AI', accent: '#7C3AED', soft: '#F1F5F9', monogram: 'AI' },
+  'music': { key: 'music', label: 'Music', accent: '#BE185D', soft: '#F1F5F9', monogram: 'M' },
   windows: { key: 'windows', label: 'Windows', accent: '#0078D4', soft: '#EAF4FF', domain: 'windows.com' },
   office: { key: 'office', label: 'Microsoft', accent: '#F25022', soft: '#FFF1EB', domain: 'office.com', asset: '/brand-icons/microsoft-office.svg' },
   'visual-studio': { key: 'visual-studio', label: 'Visual Studio', accent: '#7F52FF', soft: '#F2EBFF', domain: 'visualstudio.microsoft.com' },
@@ -108,9 +176,9 @@ const META: Record<ProductIconKey, ProductIconMeta> = {
   gaming: { key: 'gaming', label: 'Gaming', accent: '#6366F1', soft: '#EEF0FF', Icon: Gamepad2 },
   drive: { key: 'drive', label: 'Google Drive', accent: '#2563EB', soft: '#EAF3FF', domain: 'drive.google.com', Icon: HardDrive },
   cloud: { key: 'cloud', label: 'Cloud', accent: '#0EA5E9', soft: '#E8F7FE', Icon: Cloud },
-  vpn: { key: 'vpn', label: 'VPN', accent: '#2563EB', soft: '#EAF3FF', domain: 'nordvpn.com', Icon: ShieldCheck },
-  email: { key: 'email', label: 'E-mail', accent: '#0F766E', soft: '#E7F7F5', domain: 'mail.google.com', Icon: Mail },
-  code: { key: 'code', label: 'Developer', accent: '#7C3AED', soft: '#F0EAFF', domain: 'github.com', Icon: Code2 },
+  vpn: { key: 'vpn', label: 'VPN', accent: '#2563EB', soft: '#EAF3FF', Icon: ShieldCheck },
+  email: { key: 'email', label: 'E-mail', accent: '#0F766E', soft: '#E7F7F5', Icon: Mail },
+  code: { key: 'code', label: 'Developer', accent: '#7C3AED', soft: '#F0EAFF', Icon: Code2 },
   license: { key: 'license', label: 'License', accent: '#2563EB', soft: '#EAF3FF', Icon: KeyRound },
   generic: { key: 'generic', label: 'Digital', accent: '#1677FF', soft: '#EAF3FF', Icon: Package },
 }
@@ -122,6 +190,39 @@ type DetectionInput = {
 }
 
 const RULES: Array<{ key: ProductIconKey; test: RegExp }> = [
+  { key: 'gemini', test: /gemini|google\s*ai|notebook\s*lm|notebooklm/i },
+  { key: 'notion', test: /notion/i },
+  { key: 'midjourney', test: /mid\s*journey/i },
+  { key: 'maxcare', test: /max\s*care/i },
+  { key: 'mkt', test: /\bmkt\b/i },
+  { key: 'photoshop', test: /photoshop/i },
+  { key: 'illustrator', test: /illustrator/i },
+  { key: 'premiere', test: /premiere/i },
+  { key: 'after-effects', test: /after\s*effects/i },
+  { key: 'lightroom', test: /lightroom/i },
+  { key: 'acrobat', test: /acrobat/i },
+  { key: 'onedrive', test: /one\s*drive/i },
+  { key: 'dropbox', test: /dropbox/i },
+  { key: 'icloud', test: /icloud/i },
+  { key: 'gmail', test: /gmail/i },
+  { key: 'outlook', test: /outlook|hotmail/i },
+  { key: 'github', test: /github/i },
+  { key: 'gitlab', test: /gitlab/i },
+  { key: 'windsurf', test: /windsurf/i },
+  { key: 'lovable', test: /love?able/i },
+  { key: 'nordvpn', test: /nord\s*vpn/i },
+  { key: 'surfshark', test: /surf\s*shark/i },
+  { key: 'expressvpn', test: /express\s*vpn/i },
+  { key: 'protonvpn', test: /proton\s*vpn/i },
+  { key: 'roblox', test: /roblox/i },
+  { key: 'xbox', test: /xbox|game\s*pass/i },
+  { key: 'playstation', test: /play\s*station/i },
+  { key: 'nintendo', test: /nintendo/i },
+  { key: 'figma', test: /figma/i },
+  { key: 'suno', test: /\bsuno\b/i },
+  { key: 'elevenlabs', test: /eleven\s*labs/i },
+  { key: 'grammarly', test: /grammarly/i },
+  { key: 'zoom', test: /\bzoom\b/i },
   { key: 'dota2', test: /\bdota\s*2?\b|дота\s*2?/i },
   { key: 'valorant', test: /\bvalorant\b|валорант/i },
   { key: 'minecraft', test: /\bminecraft\b|майнкрафт/i },
@@ -143,7 +244,6 @@ const RULES: Array<{ key: ProductIconKey; test: RegExp }> = [
   { key: 'x', test: /twitter|(^|\s)x\s*(account|followers|premium|blue|tool|хэрэгсэл)/i },
   { key: 'openai', test: /chat\s*gpt|chatgpt|openai|sora/i },
   { key: 'claude', test: /claude/i },
-  { key: 'gemini', test: /gemini|google\s*ai|notebook\s*lm|notebooklm/i },
   { key: 'grok', test: /\bgrok\b/i },
   { key: 'perplexity', test: /perplexity/i },
   { key: 'cursor', test: /cursor\s*(ai|pro|business|account)?/i },
@@ -156,7 +256,7 @@ const RULES: Array<{ key: ProductIconKey; test: RegExp }> = [
   { key: 'steam', test: /steam/i },
   { key: 'vpn', test: /vpn|nordvpn|surfshark|expressvpn|protonvpn|exitlag|proxy/i },
   { key: 'email', test: /e-?mail|gmail|outlook\s*(account|mail)?|hotmail/i },
-  { key: 'drive', test: /google\s*drive|onedrive|dropbox|storage|5\s*tb|2\s*tb/i },
+  { key: 'drive', test: /google\s*drive/i },
   { key: 'cloud', test: /cloud|icloud/i },
   { key: 'code', test: /github|gitlab|developer|coding|code\s*tool|windsurf|lovable|loveable/i },
   { key: 'gaming', test: /gaming|playstation|xbox|nintendo|game\s*(pass|key|code)|valorant|roblox/i },
@@ -167,35 +267,44 @@ const ICON_FALLBACKS: Record<string, ProductIconKey> = {
   Instagram: 'instagram',
   Twitter: 'x',
   Send: 'telegram',
-  Music2: 'spotify',
+  Music2: 'music',
   Mail: 'email',
-  Sparkles: 'openai',
+  Sparkles: 'ai',
 }
 
 export function detectProductIcon(input: DetectionInput): ProductIconMeta {
-  const name = (input.name || '').trim()
+  const name = (input.name || '').normalize('NFKC').replace(/[‐‑–—_]/g, ' ').replace(/\s+/g, ' ').trim()
   const category = (input.category || '').trim()
-  // A specific product name takes priority over its broad category.
-  for (const target of [name, category]) {
-    for (const rule of RULES) {
-      if (rule.test.test(target)) return META[rule.key]
-    }
+  // Match names first. Categories must never assign an unrelated brand.
+  for (const rule of RULES) {
+    if (rule.test.test(name)) return META[rule.key]
   }
 
+  // Unknown products receive a stable, name-specific mark instead of a
+  // competitor's logo inferred from their category or legacy Lucide icon.
+  if (name) {
+    const words = name.match(/[\p{L}\p{N}]+/gu) || []
+    const monogram = (words.length > 1
+      ? words.slice(0, 2).map(word => Array.from(word)[0]).join('')
+      : Array.from(words[0] || '?').slice(0, 2).join('')).toUpperCase()
+    let hash = 0
+    for (const char of name.toLowerCase()) hash = (Math.imul(hash, 31) + char.charCodeAt(0)) >>> 0
+    const colors = ['#2563EB', '#7C3AED', '#0F766E', '#BE185D', '#B45309', '#4338CA']
+    return { key: 'generic', label: name, accent: colors[hash % colors.length], soft: '#F1F5F9', monogram }
+  }
+
+  for (const rule of RULES) {
+    if (rule.test.test(category)) return META[rule.key]
+  }
   const categoryLower = category.toLowerCase()
-  if (categoryLower.includes('windows')) return META.windows
-  if (categoryLower.includes('facebook')) return META.facebook
-  if (categoryLower.includes('instagram')) return META.instagram
-  if (categoryLower.includes('tiktok')) return META.tiktok
-  if (categoryLower === 'x хэрэгсэл' || categoryLower.startsWith('x ')) return META.x
-  if (categoryLower.includes('ai')) return META.openai
-  if (categoryLower.includes('хөгжим') || categoryLower.includes('audio')) return META.spotify
-  if (categoryLower.includes('vpn') || categoryLower.includes('аюулгүй')) return META.vpn
-  if (categoryLower.includes('cloud') || categoryLower.includes('storage')) return META.cloud
-  if (categoryLower.includes('gaming') || categoryLower.includes('network')) return META.gaming
-  if (categoryLower.includes('код') || categoryLower.includes('хөгжүүлэлт')) return META.code
-  if (categoryLower.includes('и-мэйл') || categoryLower.includes('account')) return META.email
-  if (categoryLower.includes('программ') || categoryLower.includes('лиценз') || categoryLower.includes('office')) return META.license
+  if (categoryLower.includes('ai')) return META.ai
+  if (/хөгжим|audio/.test(categoryLower)) return META.music
+  if (/vpn|аюулгүй/.test(categoryLower)) return META.vpn
+  if (/cloud|storage/.test(categoryLower)) return META.cloud
+  if (/gaming|network/.test(categoryLower)) return META.gaming
+  if (/код|хөгжүүлэлт/.test(categoryLower)) return META.code
+  if (/и-мэйл|account/.test(categoryLower)) return META.email
+  if (/программ|лиценз|office/.test(categoryLower)) return META.license
 
   const iconFallback = input.icon ? ICON_FALLBACKS[input.icon] : undefined
   return META[iconFallback || 'generic']
@@ -226,7 +335,8 @@ export function ProductIconTile({
   compact?: boolean
 }) {
   const meta = detectProductIcon({ name, category, icon })
-  const [logoFailed, setLogoFailed] = useState(false)
+  const source = meta.asset || (meta.domain ? faviconUrl(meta.domain) : '')
+  const [failedSource, setFailedSource] = useState<string | null>(null)
 
   // One optical sizing system across every product:
   // catalog frame 112/68, cart frame 56/34. All brand marks sit in the same box.
@@ -266,9 +376,10 @@ export function ProductIconTile({
           height: frameSize,
         }}
       >
-        {(meta.asset || meta.domain) && !logoFailed ? (
+        {source && failedSource !== source ? (
           <img
-            src={meta.asset || faviconUrl(meta.domain!)}
+            key={source}
+            src={source}
             alt={meta.label}
             width={128}
             height={128}
@@ -282,7 +393,7 @@ export function ProductIconTile({
               maxWidth: markSize,
               maxHeight: markSize,
             }}
-            onError={() => setLogoFailed(true)}
+            onError={() => setFailedSource(source)}
           />
         ) : (
           <FallbackGlyph meta={meta} compact={compact} />
