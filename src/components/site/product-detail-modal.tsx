@@ -28,6 +28,7 @@ interface Product {
   description: string
   price: number
   downloadUrl?: string | null
+  requiresOrderLink?: boolean
   oldPrice: number | null
   discount: number | null
   icon: string
@@ -115,6 +116,7 @@ export function ProductDetailModal() {
         duration: selectedDuration,
         icon: product.icon,
         category: product.category,
+        requiresOrderLink: product.requiresOrderLink,
       },
       qty
     )
