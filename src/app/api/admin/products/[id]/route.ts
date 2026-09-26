@@ -41,10 +41,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const data: Record<string, unknown> = {}
     const downloadUrl = parseDownloadUrl('downloadUrl' in body ? body.downloadUrl : current.downloadUrl)
     const duration = 'duration' in body ? body.duration : current.duration
-    if (downloadUrl === undefined || !validProductOffer(effectivePrice, downloadUrl, duration, effectiveOldPrice)) {
+    if ('requiresOrderLink' in body && typeof body.requiresOrderLink !== 'boolean') {
+      return NextResponse.json({ error: 'Захиалгын линк шаардлагатай эсэхийг зөв сонгоно уу' }, { status: 400 })
+    }
+    const requiresOrderLink = 'requiresOrderLink' in body ? body.requiresOrderLink : current.requiresOrderLink
+    if (downloadUrl === undefined || (downloadUrl && requiresOrderLink) || !validProductOffer(effectivePrice, downloadUrl, duration, effectiveOldPrice)) {
       return NextResponse.json({ error: 'Үнэгүй программд HTTPS татах URL, 0₮ үнэ шаардлагатай. Хугацааны болон хуучин үнийн сонголтыг арилгана уу.' }, { status: 400 })
     }
     if ('downloadUrl' in body) data.downloadUrl = downloadUrl
+    if ('requiresOrderLink' in body) data.requiresOrderLink = requiresOrderLink
     if ('name' in body) {
       if (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 160) return NextResponse.json({ error: 'Бүтээгдэхүүний нэр буруу байна' }, { status: 400 })
       data.name = body.name.trim()
