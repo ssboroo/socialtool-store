@@ -74,7 +74,7 @@ test('local production API: registration, admin, image upload and account-isolat
     const freeBody = { name:'Free program '+suffix, category:category.name, categoryId:category.id, price:0, downloadUrl:'https://example.org/free.zip' }
     const createFree = data => request('/api/admin/products', {...json(data),headers:{...adminHeaders,'Content-Type':'application/json'}})
     assert.equal((await request('/api/admin/products',json(freeBody))).status,401)
-    for (const invalid of [{downloadUrl:'javascript:alert(1)'},{downloadUrl:null},{price:10},{duration:'1 жил'},{oldPrice:100},{requiresOrderLink:true}] assert.equal((await createFree({...freeBody,...invalid})).status,400)
+    for (const invalid of [{downloadUrl:'javascript:alert(1)'},{downloadUrl:null},{price:10},{duration:'1 жил'},{oldPrice:100},{requiresOrderLink:true}]) assert.equal((await createFree({...freeBody,...invalid})).status,400)
     const freeCreated=await createFree(freeBody)
     assert.equal(freeCreated.status,200)
     const free=await freeCreated.json()
