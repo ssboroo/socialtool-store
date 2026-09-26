@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { FacebookShare } from '@/components/admin/facebook-share'
 import { TelegramPublisher } from '@/components/admin/telegram-publisher'
 import { AdminLogin } from '@/components/admin/login'
 import { AdminOverview } from '@/components/admin/overview'
@@ -41,7 +42,7 @@ interface Category {
 type TabId =
   | 'overview' | 'orders' | 'products' | 'suppliers' | 'fulfillment' | 'categories'
   | 'reviews' | 'faqs' | 'promotions' | 'customers'
-  | 'chat' | 'settings' | 'telegram'
+  | 'chat' | 'settings' | 'telegram' | 'facebook'
 
 const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'overview', label: 'Тойм', Icon: LayoutDashboard },
@@ -54,6 +55,7 @@ const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: 
   { id: 'reviews', label: 'Сэтгэгдэл', Icon: Star },
   { id: 'faqs', label: 'Асуулт', Icon: HelpCircle },
   { id: 'customers', label: 'Хэрэглэгчид', Icon: Users },
+  { id: 'facebook', label: 'Facebook', Icon: ExternalLink },
   { id: 'telegram', label: 'Telegram', Icon: MessageCircle },
   { id: 'chat', label: 'Чат', Icon: MessageCircle },
   { id: 'settings', label: 'Тохиргоо', Icon: Settings },
@@ -158,6 +160,7 @@ export default function AdminPage() {
           {tab === 'customers' && <AdminCustomers token={token} />}
           {tab === 'chat' && <AdminChat token={token} />}
           {tab === 'telegram' && <TelegramPublisher />}
+          {tab === 'facebook' && <FacebookShare />}
           {tab === 'settings' && <AdminSettings token={token} />}
         </div>
       </div>
