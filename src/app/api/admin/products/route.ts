@@ -55,12 +55,16 @@ export async function POST(req: NextRequest) {
     const instructionImages = text(body.instructionImages, 10000) ?? null
     const price = Number(body.price)
     const downloadUrl = parseDownloadUrl(body.downloadUrl)
+    if (body.requiresOrderLink != null && typeof body.requiresOrderLink !== 'boolean') {
+      return NextResponse.json({ error: 'Захиалгын линк шаардлагатай эсэхийн тохиргоо буруу байна' }, { status: 400 })
+    }
+    const requiresOrderLink = body.requiresOrderLink === true
     const oldPrice = body.oldPrice == null || body.oldPrice === '' ? null : Number(body.oldPrice)
 
     if (!name || !category || !categoryId || shortDesc === null || description === null || icon === null || image === null || features === null || tutorialVideoUrl === null || instructionImages === null) {
       return NextResponse.json({ error: 'Бүтээгдэхүүний мэдээлэл буруу эсвэл хэт урт байна' }, { status: 400 })
     }
-    if (downloadUrl === undefined || !validLicenseConfig(duration) || !validProductOffer(price, downloadUrl, duration, oldPrice)) {
+    if (downloadUrl === undefined || (downloadUrl && requiresOrderLink) || !validLicenseConfig(duration) || !validProductOffer(price, downloadUrl, duration, oldPrice)) {
       return NextResponse.json({ error: 'Хугацаа болон үнийг зөв оруулна уу.' }, { status: 400 })
     }
     if (oldPrice !== null && (!Number.isSafeInteger(oldPrice) || oldPrice <= price)) {
@@ -80,6 +84,7 @@ export async function POST(req: NextRequest) {
         description,
         price,
         downloadUrl,
+        requiresOrderLink,
         oldPrice,
         discount: oldPrice ? Math.round(((oldPrice - price) / oldPrice) * 100) : null,
         icon: icon || 'Package',
