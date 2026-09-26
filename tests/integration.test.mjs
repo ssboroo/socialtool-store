@@ -155,6 +155,8 @@ test('local production API: registration, admin, image upload and account-isolat
     })
     assert.equal(requireLinks.status, 200)
     assert.equal((await (await request('/api/products/' + product.id)).json()).requiresOrderLink, true)
+    const requirements = await (await request('/api/products/order-link-requirements?ids='+product.id)).json()
+    assert.equal(requirements.requirements[product.id], true)
     assert.equal((await (await request('/api/customer/cart', {headers:{cookie:cookieA}})).json()).items.every(i => i.requiresOrderLink), true)
     assert.equal((await request('/api/orders', json(orderPayload, cookieA))).status, 400)
     const socialLink = 'https://www.facebook.com/example/posts/123'
