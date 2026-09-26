@@ -44,6 +44,8 @@ test('Dota 2 aliases including Cyrillic names', () => {
 test('category and legacy icon fallback support explicitly named game', () => {
   assert.equal(detectGameBrand({ name: 'Full Access account', category: 'Valorant accounts' }), 'valorant')
   assert.equal(detectGameBrand({ name: 'Ranked ID', category: 'Gaming', icon: 'CS2' }), 'counter-strike')
+  assert.equal(detectGameBrand({ name: 'Ranked ID', category: 'Gaming', icon: 'Valorant' }), 'valorant')
+  assert.equal(detectGameBrand({ name: 'Ranked ID', category: 'Gaming', icon: 'Dota2' }), 'dota2')
   assert.equal(detectGameBrand({ name: 'Dota 2 account', category: 'Valorant' }), 'dota2')
 })
 
