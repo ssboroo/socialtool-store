@@ -18,9 +18,13 @@ export function FacebookShare() {
   const [notice, setNotice] = useState('')
   const [reload, setReload] = useState(0)
   useEffect(() => {
-    setOrigin(window.location.origin)
     const controller = new AbortController()
-    setLoading(true); setError(''); setSelected(null); setDraft('')
+    // Defer effect-owned state resets so React can complete the render first.
+    queueMicrotask(() => {
+      if (controller.signal.aborted) return
+      setOrigin(window.location.origin)
+      setLoading(true); setError(''); setSelected(null); setDraft('')
+    })
     fetch('/api/admin/products', { cache: 'no-store', signal: controller.signal })
       .then(async r => { if (!r.ok) throw new Error('Бүтээгдэхүүн уншиж чадсангүй. Нэвтрэлтээ шалгаарай.'); return r.json() })
       .then(data => { if (!Array.isArray(data)) throw new Error('Бүтээгдэхүүний мэдээлэл буруу байна.'); setProducts(data) })
