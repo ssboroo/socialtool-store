@@ -16,9 +16,10 @@ export interface QuickProduct {
   available: boolean; featured: boolean; image: string | null; icon: string;
   duration: string | null; updatedAt: string;
   downloadUrl?: string | null;
+  requiresOrderLink?: boolean;
 }
-type Draft = Pick<QuickProduct, 'name'|'shortDesc'|'description'|'categoryId'|'available'|'featured'> & { price: string; oldPrice: string; features: string }
-const toDraft = (p: QuickProduct): Draft => ({ name:p.name, shortDesc:p.shortDesc, description:p.description, categoryId:p.categoryId, available:p.available, featured:p.featured, price:String(p.price), oldPrice:p.oldPrice == null ? '' : String(p.oldPrice), features:p.features || '' })
+type Draft = Pick<QuickProduct, 'name'|'shortDesc'|'description'|'categoryId'|'available'|'featured'|'requiresOrderLink'> & { price: string; oldPrice: string; features: string }
+const toDraft = (p: QuickProduct): Draft => ({ name:p.name, shortDesc:p.shortDesc, description:p.description, categoryId:p.categoryId, available:p.available, featured:p.featured, requiresOrderLink:!!p.requiresOrderLink, price:String(p.price), oldPrice:p.oldPrice == null ? '' : String(p.oldPrice), features:p.features || '' })
 
 export function QuickProductEditor({ product, categories, token, onClose, onSaved, onAdvanced }: {
   product: QuickProduct; categories: {id:string;name:string}[]; token:string;
@@ -97,7 +98,7 @@ export function QuickProductEditor({ product, categories, token, onClose, onSave
             <p className="text-xs text-muted-foreground">AI нь нэр, тайлбар, онцлогийг OpenAI руу илгээнэ. Үр дүнг шалгаж «Ашиглах» дарсны дараа ноорогт орно.</p>
             <div><p className="text-sm font-medium">Дэлгэрэнгүй тайлбар</p><DescriptionEditor value={form.description} onChange={description=>setForm(f=>({...f,description}))}/></div>
             <label className="block text-sm">Онцлог («;»-аар тусгаарлана)<textarea maxLength={5000} className="mt-1 min-h-24 w-full rounded-md border bg-background p-3" value={form.features} onChange={e=>setForm({...form,features:e.target.value})}/></label>
-            <div className="flex gap-5"><label><input type="checkbox" checked={form.available} onChange={e=>setForm({...form,available:e.target.checked})}/> Бэлэн</label><label><input type="checkbox" checked={form.featured} onChange={e=>setForm({...form,featured:e.target.checked})}/> Онцлох</label></div>
+            <div className="flex gap-5"><label><input type="checkbox" checked={form.available} onChange={e=>setForm({...form,available:e.target.checked})}/> Бэлэн</label><label><input type="checkbox" checked={form.featured} onChange={e=>setForm({...form,featured:e.target.checked})}/> Онцлох</label><label><input type="checkbox" disabled={!!product.downloadUrl} checked={!!form.requiresOrderLink} onChange={e=>setForm({...form,requiresOrderLink:e.target.checked})}/> Захиалгын линк шаардах</label></div>
             <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={async()=>{try{await navigator.clipboard.writeText(form.description);toast.success('Тайлбар хууллаа')}catch{toast.error('Хуулах боломжгүй')}}}>Тайлбар хуулах</Button><Button type="button" variant="outline" onClick={()=>{if(dirty){toast.error('Эхлээд өөрчлөлтөө хадгална уу.');return}onAdvanced()}}>Нэмэлт тохиргоо</Button></div>
             <p className="text-xs text-muted-foreground">Зураг, хугацааны үнэ, видео, зааврын зургуудыг нэмэлт тохиргооноос засна.</p>
           </fieldset>
