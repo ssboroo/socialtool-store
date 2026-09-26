@@ -9,6 +9,7 @@ export interface CartItem {
   icon: string
   category: string
   duration?: LicenseTerm
+  requiresOrderLink?: boolean
   quantity: number
 }
 
