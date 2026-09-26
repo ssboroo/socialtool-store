@@ -145,13 +145,14 @@ export function detectProductBrandName(name?: string | null): RecognizedBrand | 
   if (matches.some(m => SPECIFIC_MICROSOFT.has(m.key))) matches = matches.filter(m => m.key !== 'office')
   if (matches.some(m => SPECIFIC_GAMES.has(m.key))) matches = matches.filter(m => m.key !== 'riot-games')
   if (matches.some(m => m.key === 'viki')) matches = matches.filter(m => m.key !== 'rakuten')
-  if (matches.some(m => m.key === 'maxcare' || m.key === 'mkt' || m.key === 'manychat' || m.key === 'metricool')) {
+  if (matches.some(m => ['maxcare','mkt','manychat','metricool','gpm-login','sendpulse','adspower','multilogin'].includes(m.key))) {
     matches = matches.filter(m => !SOCIAL_KEYS.has(m.key))
   }
 
   // Ads offering two distinct platforms/games should not wear a single logo.
   const distinct = new Set(matches.map(m => m.key))
-  if (distinct.size >= 2 && /(?:\+|&|,|\s\/\s|\sболон\s|\sand\s|\bcombo\b|\bbundle\b)/i.test(name)) {
+  const socialCount = matches.filter(m => SOCIAL_KEYS.has(m.key)).length
+  if (distinct.size >= 2 && (socialCount >= 2 || /(?:\+|&|,|\s\/\s|\sболон\s|\sand\s|\bcombo\b|\bbundle\b)/i.test(name))) {
     return 'generic'
   }
 
