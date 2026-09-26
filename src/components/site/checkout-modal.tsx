@@ -42,6 +42,7 @@ export function CheckoutModal() {
   const [step, setStep] = useState<Step>('form')
   const [form, setForm] = useState({ name: '', phone: '', email: '', telegram: '' })
   const [orderLinks, setOrderLinks] = useState<Record<string, string>>({})
+  const [serverRequirements, setServerRequirements] = useState<Record<string, boolean>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [order, setOrder] = useState<{ orderNumber: string; orderId: string; amount: number } | null>(null)
@@ -71,6 +72,21 @@ export function CheckoutModal() {
       else if (previousCustomer) setForm({ name: '', phone: '', email: '', telegram: '' })
     }
   }
+
+  // Existing/stale carts also reflect the product's current admin setting.
+  useEffect(() => {
+    if (!open || !items.length) return
+    const controller = new AbortController()
+    const ids = [...new Set(items.map(item => item.id))]
+    void fetch(`/api/products/order-link-requirements?ids=${encodeURIComponent(ids.join(','))}`, { signal: controller.signal, cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) throw new Error('Барааны тохиргоо ачаалж чадсангүй')
+        return response.json() as Promise<{ requirements: Record<string, boolean> }>
+      })
+      .then(data => { if (!controller.signal.aborted) setServerRequirements(data.requirements) })
+      .catch(() => { /* Order API enforces requirements if this optional refresh fails. */ })
+    return () => controller.abort()
+  }, [open, items])
 
   // Bounded, cancellable polling; a timeout always leaves a working retry button.
   useEffect(() => {
@@ -126,7 +142,7 @@ export function CheckoutModal() {
     for (const item of items) {
       const key = cartKey(item)
       const link = (orderLinks[key] || '').trim()
-      if (item.requiresOrderLink && !link) e[`link:${key}`] = 'Энэ бараанд захиалгын линк заавал оруулна уу'
+      if ((serverRequirements[item.id] ?? item.requiresOrderLink) && !link) e[`link:${key}`] = 'Энэ бараанд захиалгын линк заавал оруулна уу'
       else if (link && !isValidOrderLink(link)) e[`link:${key}`] = 'https://-ээр эхэлсэн зөв холбоос оруулна уу'
     }
     setErrors(e)
@@ -311,14 +327,14 @@ export function CheckoutModal() {
                           return (
                             <div key={key}>
                               <Label htmlFor={`co-link-${index}`} className="text-xs font-semibold text-[#102A43]">
-                                {item.name}{item.duration ? ` · ${item.duration}` : ''} {item.requiresOrderLink ? '*' : '(заавал биш)'}
+                                {item.name}{item.duration ? ` · ${item.duration}` : ''} {(serverRequirements[item.id] ?? item.requiresOrderLink) ? '*' : '(заавал биш)'}
                               </Label>
                               <Input
                                 id={`co-link-${index}`}
                                 type="url"
                                 maxLength={2048}
                                 autoComplete="off"
-                                required={!!item.requiresOrderLink}
+                                required={!!(serverRequirements[item.id] ?? item.requiresOrderLink)}
                                 aria-invalid={!!errors[`link:${key}`]}
                                 value={orderLinks[key] || ''}
                                 onChange={event => { setOrderLinks(current => ({ ...current, [key]: event.target.value })); setErrors(current => { const next = { ...current }; delete next[`link:${key}`]; return next }) }}
