@@ -17,6 +17,7 @@ interface OrderItem {
   id: string
   productId: string
   productName: string
+  orderLink?: string | null
   price: number
   quantity: number
 }
@@ -248,6 +249,12 @@ export function AdminOrders({ token }: { token: string }) {
                       <div>
                         <p className="text-sm font-semibold text-[#102A43]">{it.productName}</p>
                         <p className="text-xs text-[#5B7290]">{formatTugrik(it.price)} × {it.quantity}</p>
+                        {it.orderLink && (
+                          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+                            <a href={it.orderLink} target="_blank" rel="noopener noreferrer" className="max-w-[230px] truncate text-xs text-[#1677FF] underline" title={it.orderLink}>Захиалгын линк ↗</a>
+                            <button type="button" onClick={() => copy(it.orderLink!, 'Захиалгын линк')} className="rounded-lg border border-[#D6E4FF] px-2 py-1 text-xs text-[#0B4DBA]" aria-label="Захиалгын линк хуулах"><Copy className="size-3.5" /></button>
+                          </div>
+                        )}
                       </div>
                       <span className="text-sm font-bold text-[#102A43]">{formatTugrik(it.price * it.quantity)}</span>
                     </div>
