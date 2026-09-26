@@ -22,7 +22,7 @@ const ALIASES = [
   ['icloud', 'iCloud', ['icloud', 'айклауд']],
   ['dropbox', 'Dropbox', ['dropbox']],
   ['visual-studio', 'Visual Studio', ['visual studio', 'визуал студио']],
-  ['office', 'Microsoft Office', ['microsoft 365', 'microsoft office', 'office 365', 'office 2027', 'office 2026', 'office 2025', 'office 2024', 'office 2023', 'office 2022', 'office 2021', 'office 2019', 'office 2016', 'ms office', 'оффис 365', 'майкрософт оффис']],
+  ['office', 'Microsoft Office', ['microsoft 365', 'microsoft office', 'office 365', 'office 2027', 'office 2026', 'office 2025', 'office 2024', 'office 2023', 'office 2022', 'office 2021', 'office 2019', 'office 2016', 'ms office', 'microsoft excel', 'microsoft word', 'microsoft powerpoint', 'ms excel', 'ms word', 'powerpoint', 'power point', 'excel 2027', 'excel 2026', 'word 2027', 'word 2026', 'оффис 365', 'майкрософт оффис']],
   ['server', 'Windows Server', ['windows server', 'виндовс сервер']],
   ['windows', 'Windows', ['windows 7', 'windows 8', 'windows 10', 'windows 11', 'windows pro', 'windows home', 'windows enterprise', 'windows key', 'windows license', 'windows activation', 'виндовс', 'виндоус']],
   ['autodesk', 'Autodesk', ['autodesk', 'autocad', 'auto cad', 'revit', '3ds max', 'fusion 360', 'inventor', 'navisworks', 'maya', 'cad 2027', 'autodesk 46']],
@@ -43,17 +43,17 @@ const ALIASES = [
   ['midjourney', 'Midjourney', ['midjourney', 'mid journey', 'миджорни']],
   ['suno', 'Suno', ['suno', 'суно']],
   ['elevenlabs', 'ElevenLabs', ['elevenlabs', 'eleven labs', 'элевен лабс']],
-  ['runway', 'Runway', ['runway ml', 'runway ai', 'runway gen', 'runway']],
+  ['runway', 'Runway', ['runway ml', 'runway ai', 'runway gen', 'runwayml', 'runway']],
   ['pika', 'Pika', ['pika labs', 'pika ai', 'pika art']],
   ['notion', 'Notion', ['notion', 'ноушн']],
   ['grammarly', 'Grammarly', ['grammarly', 'граммарли']],
   ['zoom', 'Zoom', ['zoom meetings', 'zoom pro', 'zoom meeting', 'zoom']],
   // Social networks, first-party platforms and their Mongolian names.
-  ['instagram', 'Instagram', ['instagram', 'insta gram', 'инстаграм', 'инста']],
+  ['instagram', 'Instagram', ['instagram', 'insta gram', 'инстаграм', 'инста', 'ig followers', 'ig likes', 'ig views', 'ig accounts']],
   ['facebook', 'Facebook', ['facebook', 'фэйсбүүк', 'фейсбүүк', 'фейсбук', 'фэйсбук', 'fb followers', 'fb likes', 'fb accounts', 'fb views', 'meta business suite', 'meta verified', 'meta ads manager']],
   ['tiktok', 'TikTok', ['tiktok', 'tik tok', 'тик ток', 'тикток']],
   ['telegram', 'Telegram', ['telegram', 'телеграм', 'тэлэграм']],
-  ['youtube', 'YouTube', ['youtube', 'you tube', 'ютуб', 'юүтүб']],
+  ['youtube', 'YouTube', ['youtube', 'you tube', 'ютуб', 'юүтүб', 'yt subscribers', 'yt views', 'yt channel']],
   ['whatsapp', 'WhatsApp', ['whatsapp', 'whats app', 'ватсап', 'ватсапп']],
   ['linkedin', 'LinkedIn', ['linkedin', 'линкедин']],
   ['pinterest', 'Pinterest', ['pinterest', 'пинтерест']],
@@ -79,7 +79,7 @@ const ALIASES = [
   ['roblox', 'Roblox', ['roblox', 'роблокс']],
   ['pubg', 'PUBG', ['pubg', 'пабжи']],
   ['xbox', 'Xbox', ['xbox', 'game pass', 'иксбокс']],
-  ['playstation', 'PlayStation', ['playstation', 'play station', 'psn account', 'ps plus', 'плейстэйшн']],
+  ['playstation', 'PlayStation', ['playstation', 'play station', 'psn account', 'ps plus', 'ps5', 'ps4', 'плейстэйшн']],
   ['nintendo', 'Nintendo', ['nintendo', 'нинтендо']],
   ['g2g', 'G2G', ['g2g accounts', 'g2g marketplace', 'g2g']],
   // Work, security and entertainment.
@@ -145,6 +145,7 @@ export function detectProductBrandName(name?: string | null): RecognizedBrand | 
   if (matches.some(m => SPECIFIC_MICROSOFT.has(m.key))) matches = matches.filter(m => m.key !== 'office')
   if (matches.some(m => SPECIFIC_GAMES.has(m.key))) matches = matches.filter(m => m.key !== 'riot-games')
   if (matches.some(m => m.key === 'viki')) matches = matches.filter(m => m.key !== 'rakuten')
+  if (matches.length > 1) matches = matches.filter(m => m.key !== 'g2g')
   if (matches.some(m => ['maxcare','mkt','manychat','metricool','gpm-login','sendpulse','adspower','multilogin'].includes(m.key))) {
     matches = matches.filter(m => !SOCIAL_KEYS.has(m.key))
   }
