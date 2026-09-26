@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { detectGameBrand } from '@/lib/game-brand'
 
 type SvgIcon = ComponentType<SVGProps<SVGSVGElement>>
 
@@ -169,10 +170,10 @@ const META: Record<ProductIconKey, ProductIconMeta> = {
   'fl-studio': { key: 'fl-studio', label: 'FL Studio', accent: '#F59E0B', soft: '#FFF7DF', domain: 'image-line.com', Icon: Music2 },
   ableton: { key: 'ableton', label: 'Ableton', accent: '#111827', soft: '#F0F3F7', domain: 'ableton.com', Icon: Music2 },
   steam: { key: 'steam', label: 'Steam', accent: '#1B2838', soft: '#EAF0F7', domain: 'steampowered.com', Icon: Gamepad2 },
-  dota2: { key: 'dota2', label: 'Dota 2', accent: '#B73529', soft: '#FFF0EC', domain: 'dota2.com', monogram: 'D2' },
-  valorant: { key: 'valorant', label: 'Valorant', accent: '#FF4655', soft: '#FFF0F2', domain: 'playvalorant.com', monogram: 'V' },
+  dota2: { key: 'dota2', label: 'Dota 2', accent: '#B73529', soft: '#FFF0EC', asset: '/brand-icons/dota2.svg', monogram: 'D2' },
+  valorant: { key: 'valorant', label: 'Valorant', accent: '#FF4655', soft: '#FFF0F2', asset: '/brand-icons/valorant.svg', monogram: 'V' },
   minecraft: { key: 'minecraft', label: 'Minecraft', accent: '#3C8527', soft: '#EFF8EA', domain: 'minecraft.net', monogram: 'MC' },
-  'counter-strike': { key: 'counter-strike', label: 'Counter-Strike', accent: '#C87912', soft: '#FFF6E6', domain: 'counter-strike.net', monogram: 'CS' },
+  'counter-strike': { key: 'counter-strike', label: 'Counter-Strike', accent: '#C87912', soft: '#FFF6E6', asset: '/brand-icons/counter-strike.svg', monogram: 'CS' },
   gaming: { key: 'gaming', label: 'Gaming', accent: '#6366F1', soft: '#EEF0FF', Icon: Gamepad2 },
   drive: { key: 'drive', label: 'Google Drive', accent: '#2563EB', soft: '#EAF3FF', domain: 'drive.google.com', Icon: HardDrive },
   cloud: { key: 'cloud', label: 'Cloud', accent: '#0EA5E9', soft: '#E8F7FE', Icon: Cloud },
@@ -275,6 +276,10 @@ const ICON_FALLBACKS: Record<string, ProductIconKey> = {
 export function detectProductIcon(input: DetectionInput): ProductIconMeta {
   const name = (input.name || '').normalize('NFKC').replace(/[‐‑–—_]/g, ' ').replace(/\s+/g, ' ').trim()
   const category = (input.category || '').trim()
+  // Explicit multilingual game matches take precedence over broad generic rules.
+  // Game assets are self-hosted, never unreliable site favicons.
+  const game = detectGameBrand({ name, category, icon: input.icon })
+  if (game) return META[game]
   // Match names first. Categories must never assign an unrelated brand.
   for (const rule of RULES) {
     if (rule.test.test(name)) return META[rule.key]
@@ -341,7 +346,7 @@ export function ProductIconTile({
   // One optical sizing system across every product:
   // catalog frame 112/68, cart frame 56/34. All brand marks sit in the same box.
   const frameSize = compact ? 56 : 112
-  const markSize = compact ? 34 : 68
+  const markSize = meta.key === 'counter-strike' ? (compact ? 40 : 78) : compact ? 34 : 68
 
   return (
     <div

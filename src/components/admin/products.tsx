@@ -56,7 +56,7 @@ interface Product {
   instructionImages: string | null
 }
 
-const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package']
+const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package', 'CS2', 'Valorant', 'Dota2']
 
 export function AdminProducts({ token, categories }: { token: string; categories: Category[] }) {
   const [selected, setSelected] = useState<string[]>([])
