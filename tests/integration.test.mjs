@@ -74,7 +74,7 @@ test('local production API: registration, admin, image upload and account-isolat
     const freeBody = { name:'Free program '+suffix, category:category.name, categoryId:category.id, price:0, downloadUrl:'https://example.org/free.zip' }
     const createFree = data => request('/api/admin/products', {...json(data),headers:{...adminHeaders,'Content-Type':'application/json'}})
     assert.equal((await request('/api/admin/products',json(freeBody))).status,401)
-    for (const invalid of [{downloadUrl:'javascript:alert(1)'},{downloadUrl:null},{price:10},{duration:'1 жил'},{oldPrice:100}]) assert.equal((await createFree({...freeBody,...invalid})).status,400)
+    for (const invalid of [{downloadUrl:'javascript:alert(1)'},{downloadUrl:null},{price:10},{duration:'1 жил'},{oldPrice:100},{requiresOrderLink:true}]) assert.equal((await createFree({...freeBody,...invalid})).status,400)
     const freeCreated=await createFree(freeBody)
     assert.equal(freeCreated.status,200)
     const free=await freeCreated.json()
@@ -148,6 +148,28 @@ test('local production API: registration, admin, image upload and account-isolat
     const order = await db.order.findUnique({ where: { id: (await ordered.json()).orderId }, include: { items: true } })
     assert.equal(order.totalAmount, 300)
     assert.deepEqual(order.items.map(i => i.productName).sort(), ['Local Test Product — 1 жил', 'Local Test Product — Хугацаагүй'].sort())
+    // A product's admin setting determines whether each ordered item needs its own link.
+    const requireLinks = await request('/api/admin/products/' + product.id, {
+      ...json({ requiresOrderLink: true }), method: 'PUT',
+      headers: { ...adminHeaders, 'Content-Type': 'application/json' },
+    })
+    assert.equal(requireLinks.status, 200)
+    assert.equal((await (await request('/api/products/' + product.id)).json()).requiresOrderLink, true)
+    assert.equal((await (await request('/api/customer/cart', {headers:{cookie:cookieA}})).json()).items.every(i => i.requiresOrderLink), true)
+    assert.equal((await request('/api/orders', json(orderPayload, cookieA))).status, 400)
+    const socialLink = 'https://www.facebook.com/example/posts/123'
+    const linkItems = orderPayload.items.map(i => ({...i, orderLink:socialLink}))
+    const withLinks = await request('/api/orders', json({...orderPayload,items:linkItems}, cookieA))
+    assert.equal(withLinks.status, 200)
+    const linkedOrder = await db.order.findUnique({where:{id:(await withLinks.json()).orderId},include:{items:true}})
+    assert.ok(linkedOrder.items.every(i=>i.orderLink===socialLink))
+    const unsafeLinkItems = linkItems.map(i=>({...i,orderLink:'javascript:alert(1)'}))
+    assert.equal((await request('/api/orders', json({...orderPayload,items:unsafeLinkItems}, cookieA))).status,400)
+    assert.equal((await request('/api/admin/products/' + product.id, {
+      ...json({requiresOrderLink:false}),method:'PUT',headers:{...adminHeaders,'Content-Type':'application/json'},
+    })).status,200)
+    assert.equal((await (await request('/api/products/' + product.id)).json()).requiresOrderLink,false)
+    console.log('Verified required and optional per-product order links and URL safety')
     orderPayload.items[0].duration = 'invalid'
     assert.equal((await request('/api/orders', json(orderPayload, cookieA))).status, 400)
     console.log('Verified: two license variants sync between sessions; order retains authoritative name, term and total; invalid term rejected')

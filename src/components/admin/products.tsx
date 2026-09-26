@@ -39,6 +39,7 @@ interface Product {
   description: string
   price: number
   downloadUrl: string | null
+  requiresOrderLink: boolean
   oldPrice: number | null
   discount: number | null
   icon: string
@@ -266,6 +267,7 @@ function ProductFormDialog({
     price: '',
     isFree: false,
     downloadUrl: '',
+    requiresOrderLink: false,
     oldPrice: '',
     icon: 'Package',
     image: '',
@@ -292,6 +294,7 @@ function ProductFormDialog({
         price: String(product.price),
         isFree: product.price === 0,
         downloadUrl: product.downloadUrl || '',
+        requiresOrderLink: product.requiresOrderLink,
         oldPrice: product.oldPrice ? String(product.oldPrice) : '',
         icon: product.icon,
         image: product.image || '',
@@ -313,6 +316,7 @@ function ProductFormDialog({
         price: '',
         isFree: false,
         downloadUrl: '',
+        requiresOrderLink: false,
         oldPrice: '',
         icon: 'Package',
         image: '',
@@ -368,6 +372,7 @@ function ProductFormDialog({
       description: form.description,
       price: form.isFree ? 0 : Number(form.price),
       downloadUrl: form.isFree ? form.downloadUrl.trim() : null,
+      requiresOrderLink: !form.isFree && form.requiresOrderLink,
       oldPrice: !form.isFree && form.oldPrice ? Number(form.oldPrice) : null,
       icon: form.icon,
       image: form.image.trim() || null,
@@ -393,9 +398,13 @@ function ProductFormDialog({
           </div>
           <div className="p-6 space-y-4">
             <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
-              <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={form.isFree} onChange={e=>setForm({...form,isFree:e.target.checked})}/>Үнэгүй программ</label>
+              <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={form.isFree} onChange={e=>setForm({...form,isFree:e.target.checked,requiresOrderLink:e.target.checked?false:form.requiresOrderLink})}/>Үнэгүй программ</label>
               {form.isFree&&<div><Label htmlFor="product-download-url">Татах URL *</Label><Input id="product-download-url" type="url" required value={form.downloadUrl} onChange={e=>setForm({...form,downloadUrl:e.target.value})} placeholder="https://example.com/download"/><p className="mt-2 text-xs text-slate-600">Үнэ 0₮ болно. Хэрэглэгч энэ холбоосоор төлбөргүй татна. Албан ёсны татах хуудсыг оруулна уу.</p></div>}
             </div>
+            <label className="flex items-start gap-3 rounded-xl border border-[#D6E4FF] bg-[#F5F9FF]/60 p-4 text-sm text-[#102A43]">
+              <input type="checkbox" className="mt-1 accent-[#1677FF]" disabled={form.isFree} checked={form.requiresOrderLink} onChange={e => setForm({ ...form, requiresOrderLink: e.target.checked })} />
+              <span><strong className="block">Энэ бараанд захиалгын линк заавал оруулна</strong><span className="mt-1 block text-xs text-[#5B7290]">Facebook пост, Live, Instagram Reel зэрэгт хэрэглэгч линкээ төлбөрийн хэсэгт оруулна. Бусад бараанд хоосон үлдээж болно.</span></span>
+            </label>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Нэр *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Facebook Account Manager Pro" />

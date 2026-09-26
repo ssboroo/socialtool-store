@@ -45,6 +45,7 @@ model Product {
   tutorialVideoUrl  String?
   instructionImages String?
   downloadUrl       String?
+  requiresOrderLink Boolean     @default(false)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   categoryRef       Category    @relation(fields: [categoryId], references: [id])
@@ -83,6 +84,7 @@ model OrderItem {
   supplierCurrency  String?
   deliveryCode      String?
   deliveryNote      String?
+  orderLink         String?
   fulfilledAt       DateTime?
   order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product           Product  @relation(fields: [productId], references: [id])

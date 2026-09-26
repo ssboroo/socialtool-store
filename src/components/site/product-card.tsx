@@ -18,6 +18,7 @@ export interface Product {
   description: string
   price: number
   downloadUrl?: string | null
+  requiresOrderLink?: boolean
   oldPrice: number | null
   discount: number | null
   icon: string
@@ -54,6 +55,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       price,
       icon: product.icon,
       category: product.category,
+      requiresOrderLink: product.requiresOrderLink,
       duration: defaultVariant?.term,
     })
     toast.success(`${product.name} сагсанд нэмэгдлээ`)

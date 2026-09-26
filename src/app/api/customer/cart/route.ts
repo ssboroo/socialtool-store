@@ -11,13 +11,13 @@ async function readCart(customerId: string) {
   if (!customer) return null
   const saved = JSON.parse(customer.cartItems) as { id: string; duration?: string; quantity: number }[]
   const products = await db.product.findMany({ where: { id: { in: saved.map(i => i.id) }, available: true } })
-  const lines = new Map<string, { id: string; name: string; price: number; icon: string; category: string; duration: string; quantity: number }>()
+  const lines = new Map<string, { id: string; name: string; price: number; icon: string; category: string; duration: string; quantity: number; requiresOrderLink: boolean }>()
   for (const item of saved) {
     const p = products.find(p => p.id === item.id)
     if (!p || p.price === 0 || p.downloadUrl) continue
     const options = licenseOptions(p.duration)
     const duration = options.includes(item.duration || '') ? item.duration! : options[0] || ''
-    const line = { id: p.id, name: p.name, price: licensePrice(p, duration), icon: p.icon, category: p.category, duration, quantity: item.quantity }
+    const line = { id: p.id, name: p.name, price: licensePrice(p, duration), icon: p.icon, category: p.category, duration, quantity: item.quantity, requiresOrderLink: p.requiresOrderLink }
     const key = cartKey(line)
     const existing = lines.get(key)
     if (existing) existing.quantity = Math.min(99, existing.quantity + item.quantity)

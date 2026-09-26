@@ -13,6 +13,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     description: product.description,
     price: product.price,
     downloadUrl: product.downloadUrl,
+    requiresOrderLink: product.requiresOrderLink,
     oldPrice: product.oldPrice,
     discount: product.discount,
     icon: product.icon,

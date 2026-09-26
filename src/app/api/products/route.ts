@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
       description: p.description,
       price: p.price,
       downloadUrl: p.downloadUrl,
+      requiresOrderLink: p.requiresOrderLink,
       oldPrice: p.oldPrice,
       discount: p.discount,
       icon: p.icon,

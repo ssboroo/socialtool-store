@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { generateOrderNumber } from '@/lib/format'
 import { sendTelegramMessage, formatOrderNotification } from '@/lib/telegram'
 import { getCustomerFromRequest } from '@/lib/auth'
+import { isValidOrderLink } from '@/lib/order-link'
 
 interface OrderItemInput {
   duration?: string
@@ -11,6 +12,7 @@ interface OrderItemInput {
   name: string
   price: number
   quantity: number
+  orderLink?: string | null
 }
 
 function validText(value: unknown, max: number, min = 1): value is string {
@@ -44,6 +46,7 @@ export async function POST(req: NextRequest) {
         || !Number.isSafeInteger(i.price) || Number(i.price) <= 0
         || !Number.isSafeInteger(i.quantity) || Number(i.quantity) < 1 || Number(i.quantity) > 99
         || (i.duration != null && !validTerm(i.duration))
+        || (i.orderLink != null && i.orderLink !== '' && (typeof i.orderLink !== 'string' || !isValidOrderLink(i.orderLink)))
     })) {
       return NextResponse.json({ error: 'Захиалгын барааны мэдээлэл буруу байна' }, { status: 400 })
     }
@@ -63,6 +66,9 @@ export async function POST(req: NextRequest) {
       const allowed = licenseOptions(product.duration)
       if ((allowed.length && !allowed.includes(item.duration || '')) || (!allowed.length && item.duration)) {
         return NextResponse.json({ error: 'Барааны хугацааны сонголт өөрчлөгдсөн. Сагсаа шинэчилж дахин сонгоно уу.' }, { status: 400 })
+      }
+      if (product.requiresOrderLink && !item.orderLink?.trim()) {
+        return NextResponse.json({ error: `${product.name} бараанд захиалгын линк заавал оруулна уу` }, { status: 400 })
       }
       if (licensePrice(product, item.duration || '') !== item.price) {
         return NextResponse.json({ error: 'Үнийн зөрүү байна. Сагсаа шинэчилж дахин оролдоно уу.' }, { status: 400 })
@@ -105,6 +111,7 @@ export async function POST(req: NextRequest) {
               productName: `${productMap.get(item.productId)!.name}${item.duration ? ` — ${item.duration}` : ''}`,
               price: item.price,
               quantity: item.quantity,
+              orderLink: item.orderLink?.trim() || null,
               supplierName: supplier?.supplier || null,
               supplierSourceUrl: supplier?.sourceUrl || null,
               supplierCost: supplier?.sourcePrice ?? null,
@@ -125,7 +132,7 @@ export async function POST(req: NextRequest) {
         phone: order.phone,
         email: order.email,
         telegram: order.telegram || undefined,
-        items: order.items.map((item) => ({ name: item.productName, quantity: item.quantity, price: item.price })),
+        items: order.items.map((item) => ({ name: item.productName, quantity: item.quantity, price: item.price, orderLink: item.orderLink })),
         total: order.totalAmount,
         status: 'Төлбөр хүлээгдэж байна',
         adminUrl,
