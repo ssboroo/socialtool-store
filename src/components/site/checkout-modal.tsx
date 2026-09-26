@@ -1,6 +1,7 @@
 'use client'
 import { rememberChat, savedChats } from '@/lib/chat-history'
 import { cartKey } from '@/lib/license'
+import { isValidOrderLink } from '@/lib/order-link'
 
 import { useEffect, useState, useRef } from 'react'
 import {
@@ -22,6 +23,7 @@ import {
   Clock,
   ArrowLeft,
   ExternalLink,
+  Link2,
 } from 'lucide-react'
 import { useUIStore, useCartStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
@@ -39,6 +41,7 @@ export function CheckoutModal() {
 
   const [step, setStep] = useState<Step>('form')
   const [form, setForm] = useState({ name: '', phone: '', email: '', telegram: '' })
+  const [orderLinks, setOrderLinks] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [order, setOrder] = useState<{ orderNumber: string; orderId: string; amount: number } | null>(null)
@@ -59,6 +62,7 @@ export function CheckoutModal() {
       setOrder(null)
       setInvoice(null)
       setPendingOrder(null)
+      setOrderLinks({})
     } else if (open) setStep(invoice && order ? 'pay' : 'form')
     if (open || customer?.id !== previousCustomer) {
       setErrors({})
@@ -119,6 +123,12 @@ export function CheckoutModal() {
     else if (form.phone.replace(/\D/g, '').length < 7) e.phone = 'Утас зөв оруулна уу'
     if (!form.email.trim()) e.email = 'И-мэйл оруулна уу'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'И-мэйл хаягаа зөв оруулна уу.'
+    for (const item of items) {
+      const key = cartKey(item)
+      const link = (orderLinks[key] || '').trim()
+      if (item.requiresOrderLink && !link) e[`link:${key}`] = 'Энэ бараанд захиалгын линк заавал оруулна уу'
+      else if (link && !isValidOrderLink(link)) e[`link:${key}`] = 'https://-ээр эхэлсэн зөв холбоос оруулна уу'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -130,7 +140,7 @@ export function CheckoutModal() {
     setPaymentError('')
     const payload = {
       customerName: form.name, phone: form.phone, email: form.email, telegram: form.telegram || null,
-      items: items.map(i => ({ productId: i.id, duration: i.duration || '', name: i.name, price: i.price, quantity: i.quantity })),
+      items: items.map(i => ({ productId: i.id, duration: i.duration || '', name: i.name, price: i.price, quantity: i.quantity, orderLink: orderLinks[cartKey(i)]?.trim() || null })),
     }
     const fingerprint = JSON.stringify([customer?.id || '', payload])
     try {
@@ -292,6 +302,33 @@ export function CheckoutModal() {
                           className={errors.email ? 'border-red-400' : 'border-[#D6E4FF]'}
                         />
                         {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+                      </div>
+                      <div className="rounded-2xl border border-[#D6E4FF] bg-[#F5F9FF]/60 p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-[#102A43]"><Link2 className="size-4 text-[#1677FF]" /> Захиалгын линк</div>
+                        <p className="text-xs leading-relaxed text-[#5B7290]">Facebook пост, Live, Instagram Reel эсвэл үйлчилгээ авах холбоосоо оруулна уу. Шаардлагагүй бараанд хоосон үлдээж болно.</p>
+                        {items.map((item, index) => {
+                          const key = cartKey(item)
+                          return (
+                            <div key={key}>
+                              <Label htmlFor={`co-link-${index}`} className="text-xs font-semibold text-[#102A43]">
+                                {item.name}{item.duration ? ` · ${item.duration}` : ''} {item.requiresOrderLink ? '*' : '(заавал биш)'}
+                              </Label>
+                              <Input
+                                id={`co-link-${index}`}
+                                type="url"
+                                maxLength={2048}
+                                autoComplete="off"
+                                required={!!item.requiresOrderLink}
+                                aria-invalid={!!errors[`link:${key}`]}
+                                value={orderLinks[key] || ''}
+                                onChange={event => { setOrderLinks(current => ({ ...current, [key]: event.target.value })); setErrors(current => { const next = { ...current }; delete next[`link:${key}`]; return next }) }}
+                                placeholder="https://www.facebook.com/..."
+                                className={`mt-1 border-[#D6E4FF] bg-white ${errors[`link:${key}`] ? 'border-red-400' : ''}`}
+                              />
+                              {errors[`link:${key}`] && <p role="alert" className="mt-1 text-xs text-red-600">{errors[`link:${key}`]}</p>}
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
 
