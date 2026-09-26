@@ -1,7 +1,8 @@
-import { LayoutGrid, Facebook, Instagram, Sparkles, Music2, Monitor, ShieldCheck, Code2, Mail, Gamepad2, Cloud, ChartNoAxesCombined, FileText, PanelsTopLeft, Clapperboard, Hash, Folder } from 'lucide-react'
+import { LayoutGrid, Facebook, Instagram, Sparkles, Music2, Monitor, ShieldCheck, Code2, Mail, Gamepad2, Cloud, ChartNoAxesCombined, FileText, PanelsTopLeft, Clapperboard, Hash, Folder, Download } from 'lucide-react'
 export function CategoryIcon({name,slug=''}:{name:string;slug?:string}) {
   const value=(name+' '+slug).toLowerCase()
   const Icon=slug==='all'?LayoutGrid
+    :slug==='__free'?Download
     :/facebook/.test(value)?Facebook
     :/instagram/.test(value)?Instagram
     :/windows/.test(value)?PanelsTopLeft

@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     const productMap = new Map(products.map((p) => [p.id, p]))
     for (const item of typedItems) {
       const product = productMap.get(item.productId)
-      if (!product || !product.available) {
+      if (!product || !product.available || product.downloadUrl || product.price === 0) {
         return NextResponse.json({ error: 'Сонгосон бүтээгдэхүүн олдсонгүй эсвэл түр дууссан байна' }, { status: 400 })
       }
       const allowed = licenseOptions(product.duration)

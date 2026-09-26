@@ -7,7 +7,7 @@ import { AccountModal } from './account-modal'
 import { CartSync } from './cart-sync'
 
 export function AuthGate() {
-  const { authOpen, authMode, closeAuth, accountOpen, closeAccount } = useUIStore()
+  const { authOpen, authMode, closeAuth, accountOpen, accountTab, closeAccount } = useUIStore()
   const { customer, refresh, logout, setCustomer } = useCustomer()
 
   return (
@@ -21,7 +21,8 @@ export function AuthGate() {
         onAuthed={(c) => setCustomer(c)}
       />
       <AccountModal
-        key={customer?.id || 'guest'}
+        key={`${customer?.id || 'guest'}-${accountTab}-${accountOpen}`}
+        initialTab={accountTab}
         open={accountOpen}
         onClose={closeAccount}
         customer={customer}

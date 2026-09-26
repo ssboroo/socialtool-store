@@ -10,19 +10,21 @@ const page = await browser.newPage({ viewport: { width: 1200, height: 1000 }, re
 const errors = []
 page.on('pageerror', error => errors.push(error.message))
 try {
-  await page.goto(base, { waitUntil: 'networkidle' })
+  await page.goto(base, { waitUntil: 'domcontentloaded' })
+  await page.locator('.hero-original-logo').waitFor()
+  await page.waitForFunction(()=>document.querySelector('.hero-original-logo')?.naturalWidth>0)
   const products = await (await page.request.get(`${base}/api/products?sort=featured`)).json()
   assert.ok(products.length > 8, 'Seed more than eight products for pagination coverage')
   assert.equal(await page.locator('.shop-product').count(), 8)
   const layout = await page.evaluate(() => {
     const hero = document.querySelector('#top').getBoundingClientRect()
     const sidebar = document.querySelector('.catalog-sidebar').getBoundingClientRect()
-    return { sameTop: Math.abs(hero.top - sidebar.top) < 2, beside: hero.left >= sidebar.right, columns: getComputedStyle(document.querySelector('.catalog-grid')).gridTemplateColumns.split(' ').length, artLoaded: document.querySelector('.hero-glass-art').naturalWidth > 0 }
+    return { sameTop: Math.abs(hero.top - sidebar.top) < 2, beside: hero.left >= sidebar.right, columns: getComputedStyle(document.querySelector('.catalog-grid')).gridTemplateColumns.split(' ').length, artLoaded: document.querySelector('.hero-original-logo').naturalWidth > 0 }
   })
   assert.deepEqual(layout, { sameTop: true, beside: true, columns: 4, artLoaded: true })
   assert.match(await page.locator('header img').first().getAttribute('src'), /socialtool-logo\.png/)
-  await page.getByRole('button', { name: 'Цааш үзэх', exact: false }).click()
-  assert.equal(await page.locator('.shop-product').count(), Math.min(24, products.length))
+  await page.getByRole('button', { name: '2-р хуудас', exact: true }).click()
+  assert.equal(await page.locator('.shop-product').count(), Math.min(8, products.length - 8))
   await page.locator('.catalog-search select').selectOption('price-asc')
   await page.waitForResponse(response => response.url().includes('/api/products?sort=price-asc'))
   await page.waitForFunction(() => document.querySelectorAll('.shop-product').length === 8)

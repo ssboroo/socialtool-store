@@ -55,7 +55,7 @@ jobs:
         run: bun run build
 
       - name: Unit tests
-        run: node --experimental-strip-types --test tests/media.test.mjs tests/wire-requests.test.mjs tests/wire-signature.test.mjs
+        run: node --experimental-strip-types --test tests/media.test.mjs tests/wire-requests.test.mjs tests/wire-signature.test.mjs tests/free-download.test.mjs tests/order-progress.test.mjs
 
       - name: Integration test
         run: node --experimental-strip-types --test tests/integration.test.mjs

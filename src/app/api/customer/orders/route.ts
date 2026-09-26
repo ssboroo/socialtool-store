@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       status: o.status,
       statusLabel: ORDER_STATUS_LABEL[o.status] || o.status,
       createdAt: o.createdAt,
+      updatedAt: o.updatedAt,
       itemCount: o.items.length,
       items: o.items.map((i) => ({
         id: i.id,
@@ -35,6 +36,6 @@ export async function GET(req: NextRequest) {
       payment: o.payment
         ? { status: o.payment.status, invoiceNumber: o.payment.invoiceNumber, paidAt: o.payment.paidAt }
         : null,
-    }))
+    })), { headers: { 'Cache-Control': 'private, no-store' } }
   )
 }

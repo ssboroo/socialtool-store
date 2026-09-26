@@ -15,6 +15,7 @@ export interface QuickProduct {
   oldPrice: number | null; categoryId: string; category: string; features: string | null;
   available: boolean; featured: boolean; image: string | null; icon: string;
   duration: string | null; updatedAt: string;
+  downloadUrl?: string | null;
 }
 type Draft = Pick<QuickProduct, 'name'|'shortDesc'|'description'|'categoryId'|'available'|'featured'> & { price: string; oldPrice: string; features: string }
 const toDraft = (p: QuickProduct): Draft => ({ name:p.name, shortDesc:p.shortDesc, description:p.description, categoryId:p.categoryId, available:p.available, featured:p.featured, price:String(p.price), oldPrice:p.oldPrice == null ? '' : String(p.oldPrice), features:p.features || '' })
@@ -60,7 +61,7 @@ export function QuickProductEditor({ product, categories, token, onClose, onSave
   const close=()=>{if(saving||aiBusy)return;if(dirty&&!confirm('Өөрчлөлт серверт хадгалагдаагүй. Ноорог үлдээгээд хаах уу?'))return;onClose()}
   const save=async(e:React.FormEvent)=>{
     e.preventDefault();if(saveLock.current||aiBusy||savedDraft)return
-    if(!Number.isSafeInteger(Number(form.price))||Number(form.price)<=0){toast.error('Үнэ эерэг бүхэл тоо байна');return}
+    if(!Number.isSafeInteger(Number(form.price))||(product.downloadUrl?Number(form.price)!==0:Number(form.price)<=0)){toast.error('Үнийг зөв оруулна уу');return}
     const cat=categories.find(c=>c.id===form.categoryId);if(!cat)return
     saveLock.current=true;setSaving(true)
     try {
@@ -86,8 +87,9 @@ export function QuickProductEditor({ product, categories, token, onClose, onSave
         {savedDraft&&<div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-slate-900"><p>Хадгалаагүй ноорог байна.{savedDraft.version!==version?' Серверийн мэдээлэл өөрчлөгдсөн тул нооргоо сэргээсний дараа хуучин хувилбар гэж анхааруулна.':''}</p><Button type="button" onClick={()=>{setForm(savedDraft.form);setVersion(savedDraft.version);setSavedDraft(null)}}>Ноорог сэргээх</Button><Button type="button" variant="ghost" onClick={()=>{try{localStorage.removeItem(key)}catch{};setSavedDraft(null)}}>Ноорог устгах</Button></div>}
         <div className={preview?'grid gap-6 lg:grid-cols-2':'grid gap-6'}>
           <fieldset disabled={saving||aiBusy||!!savedDraft} className="min-w-0 space-y-4">
+            {product.downloadUrl&&<div className="rounded-xl bg-blue-50 p-3 text-sm">Үнэгүй программ · Татах холбоосыг дэлгэрэнгүй засвараас өөрчилнө.<Button type="button" variant="outline" onClick={onAdvanced}>Татах URL засах</Button></div>}
             <label className="block text-sm font-medium">Нэр<Input required maxLength={160} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-sm">Үндсэн үнэ (₮)<Input required type="number" min="1" step="1" value={form.price} onChange={e=>setForm({...form,price:e.target.value})}/></label><label className="text-sm">Хуучин үнэ (заавал биш)<Input type="number" min="1" step="1" value={form.oldPrice} onChange={e=>setForm({...form,oldPrice:e.target.value})}/></label></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="text-sm">Үндсэн үнэ (₮)<Input required disabled={!!product.downloadUrl} type="number" min={product.downloadUrl ? 0 : 1} step="1" value={form.price} onChange={e=>setForm({...form,price:e.target.value})}/></label><label className="text-sm">Хуучин үнэ (заавал биш)<Input disabled={!!product.downloadUrl} type="number" min="1" step="1" value={form.oldPrice} onChange={e=>setForm({...form,oldPrice:e.target.value})}/></label></div>
             {licenseVariants(product.duration).length>0&&<p className="text-xs text-amber-700">Эрхийн хувилбарын үнэ тусдаа. Доорх «Нэмэлт тохиргоо»-ноос засна.</p>}
             <label className="block text-sm">Ангилал<select className="mt-1 w-full rounded-md border bg-background p-2" value={form.categoryId} onChange={e=>setForm({...form,categoryId:e.target.value})}>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
             <label className="block text-sm">Товч тайлбар<textarea maxLength={500} className="mt-1 min-h-20 w-full rounded-md border bg-background p-3" value={form.shortDesc} onChange={e=>setForm({...form,shortDesc:e.target.value})}/></label>

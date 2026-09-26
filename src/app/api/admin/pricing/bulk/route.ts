@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const where: Prisma.ProductWhereInput = {}
+    const where: Prisma.ProductWhereInput = { downloadUrl: null, price: { gt: 0 } }
     if (!includeUnavailable) where.available = true
     if (scope === 'category') where.categoryId = categoryId
     if (scope === 'supplier' && supplierProductIds) where.id = { in: supplierProductIds }

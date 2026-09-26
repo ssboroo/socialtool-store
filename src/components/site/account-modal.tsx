@@ -14,9 +14,11 @@ import type { Customer } from './auth-modal'
 import { formatTugrik, ORDER_STATUS_LABEL, ORDER_STATUS_COLOR } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { OrderProgress } from './order-progress'
 
 interface Props {
   open: boolean
+  initialTab?: 'profile' | 'orders'
   onClose: () => void
   customer: Customer | null
   onLogout: () => void
@@ -46,8 +48,8 @@ interface MyOrder {
   payment: { status: string; invoiceNumber: string | null; paidAt: string | null } | null
 }
 
-export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdate }: Props) {
-  const [tab, setTab] = useState<Tab>('profile')
+export function AccountModal({ open, initialTab = 'profile', onClose, customer, onLogout, onProfileUpdate }: Props) {
+  const [tab, setTab] = useState<Tab>(initialTab)
   const [orders, setOrders] = useState<MyOrder[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
   const [ordersError, setOrdersError] = useState('')
@@ -57,6 +59,14 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
   const profileRequest = useRef<AbortController | null>(null)
 
   useEffect(() => () => { profileRequest.current?.abort() }, [])
+
+  useEffect(() => {
+    if (!open || (tab !== 'orders' && tab !== 'payments')) return
+    const refresh = () => { if (!document.hidden) setOrdersRetry(value => value + 1) }
+    const timer = window.setInterval(refresh, 30000)
+    window.addEventListener('focus', refresh)
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh) }
+  }, [open, tab])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve existing modal draft hydration and reset timing during the visual update.
@@ -208,6 +218,7 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
 
             {(tab === 'orders' || tab === 'payments') && (
               <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>Төлөв 30 секунд тутам шинэчлэгдэнэ.</span><Button variant="outline" disabled={loadingOrders} onClick={()=>setOrdersRetry(value=>value+1)}>Төлөв шинэчлэх</Button></div>
                 {loadingOrders ? (
                   <div className="grid place-items-center py-12" role="status" aria-label="Захиалгыг ачаалж байна"><Loader2 className="size-7 animate-spin text-[#1677FF]" /></div>
                 ) : ordersError ? (
@@ -224,8 +235,8 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
                   visibleOrders
                     .map((o) => (
                       <div key={o.id} className="rounded-2xl border border-[#D6E4FF] bg-white shadow-premium overflow-hidden">
-                        <div className="px-4 py-3 flex items-center justify-between border-b border-[#EEF4FF] bg-[#F5F9FF]/40">
-                          <div className="flex items-center gap-2">
+                        <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#EEF4FF] bg-[#F5F9FF]/40">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="text-sm font-bold text-[#0B4DBA]">#{o.orderNumber}</span>
                             <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold border', ORDER_STATUS_COLOR[o.status])}>
                               {o.statusLabel}
@@ -234,6 +245,7 @@ export function AccountModal({ open, onClose, customer, onLogout, onProfileUpdat
                           <span className="text-xs text-[#5B7290]">{new Date(o.createdAt).toLocaleString('mn-MN')}</span>
                         </div>
                         <div className="p-4 space-y-2.5">
+                          <OrderProgress status={o.status} paymentStatus={o.payment?.status} paidAt={o.payment?.paidAt}/>
                           {o.items.map((it) => (
                             <div key={it.id} className="rounded-xl border border-[#EEF4FF] p-3">
                               <div className="flex items-center justify-between text-sm">

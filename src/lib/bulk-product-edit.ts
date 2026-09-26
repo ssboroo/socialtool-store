@@ -10,7 +10,7 @@ export const bulkEditSchema=z.object({
   }).strict().refine(p=>Object.keys(p).length>0),
 }).strict().refine(b=>new Set(b.items.map(p=>p.id)).size===b.items.length)
 export type BulkPatch=z.infer<typeof bulkEditSchema>['patch']
-export function bulkProductData(p:{name:string;category:string;price:number;oldPrice:number|null;duration:string|null},patch:BulkPatch,category?:{id:string;name:string}|null){
+export function bulkProductData(p:{name:string;category:string;price:number;oldPrice:number|null;duration:string|null;downloadUrl?:string|null},patch:BulkPatch,category?:{id:string;name:string}|null){
   const data:Record<string,unknown>={}
   if(category){data.categoryId=category.id;data.category=category.name}
   if(patch.available!==undefined)data.available=patch.available
@@ -21,6 +21,7 @@ export function bulkProductData(p:{name:string;category:string;price:number;oldP
     data.shortDesc=text
   }
   if(patch.price){
+    if(p.downloadUrl)throw new Error('Үнэгүй программын үнийг бөөнөөр өөрчлөхгүй. Бүтээгдэхүүний дэлгэрэнгүй засварыг ашиглана уу.')
     const {mode,value,includeVariants}=patch.price
     if(mode==='percent'&&(value<=-100||value>1000))throw new Error('Үнийн өөрчлөлт -100%-аас их, 1000%-аас бага байна')
     const priceOf=(n:number)=>{const v=mode==='set'?value:Math.round(n*(1+value/100));if(!Number.isSafeInteger(v)||v<1||v>2147483647)throw new Error('Үнэ зөв эерэг бүхэл тоо байх ёстой');return v}

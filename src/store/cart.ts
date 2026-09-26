@@ -75,13 +75,14 @@ interface UIState {
   authOpen: boolean
   authMode: 'login' | 'register'
   accountOpen: boolean
+  accountTab: 'profile' | 'orders'
   setSelectedProduct: (id: string | null) => void
   openCheckout: () => void
   closeCheckout: () => void
   setPaymentOrder: (orderNumber: string | null) => void
   openAuth: (mode?: 'login' | 'register') => void
   closeAuth: () => void
-  openAccount: () => void
+  openAccount: (tab?: 'profile' | 'orders') => void
   closeAccount: () => void
 }
 
@@ -92,12 +93,13 @@ export const useUIStore = create<UIState>((set) => ({
   authOpen: false,
   authMode: 'login',
   accountOpen: false,
+  accountTab: 'profile',
   setSelectedProduct: (id) => set({ selectedProductId: id }),
   openCheckout: () => set({ checkoutOpen: true }),
   closeCheckout: () => set({ checkoutOpen: false }),
   setPaymentOrder: (orderNumber) => set({ paymentOrderNumber: orderNumber }),
   openAuth: (mode = 'login') => set({ authOpen: true, authMode: mode }),
   closeAuth: () => set({ authOpen: false }),
-  openAccount: () => set({ accountOpen: true }),
+  openAccount: (tab = 'profile') => set({ accountOpen: true, accountTab: tab }),
   closeAccount: () => set({ accountOpen: false }),
 }))

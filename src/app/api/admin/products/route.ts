@@ -1,4 +1,5 @@
 import { validLicenseConfig } from '@/lib/license'
+import { parseDownloadUrl, validProductOffer } from '@/lib/free-download'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
@@ -53,12 +54,13 @@ export async function POST(req: NextRequest) {
     const tutorialVideoUrl = text(body.tutorialVideoUrl, 1000) ?? null
     const instructionImages = text(body.instructionImages, 10000) ?? null
     const price = Number(body.price)
+    const downloadUrl = parseDownloadUrl(body.downloadUrl)
     const oldPrice = body.oldPrice == null || body.oldPrice === '' ? null : Number(body.oldPrice)
 
     if (!name || !category || !categoryId || shortDesc === null || description === null || icon === null || image === null || features === null || tutorialVideoUrl === null || instructionImages === null) {
       return NextResponse.json({ error: 'Бүтээгдэхүүний мэдээлэл буруу эсвэл хэт урт байна' }, { status: 400 })
     }
-    if (!validLicenseConfig(duration) || !Number.isSafeInteger(price) || price <= 0) {
+    if (downloadUrl === undefined || !validLicenseConfig(duration) || !validProductOffer(price, downloadUrl, duration, oldPrice)) {
       return NextResponse.json({ error: 'Хугацаа болон үнийг зөв оруулна уу.' }, { status: 400 })
     }
     if (oldPrice !== null && (!Number.isSafeInteger(oldPrice) || oldPrice <= price)) {
@@ -77,6 +79,7 @@ export async function POST(req: NextRequest) {
         shortDesc,
         description,
         price,
+        downloadUrl,
         oldPrice,
         discount: oldPrice ? Math.round(((oldPrice - price) / oldPrice) * 100) : null,
         icon: icon || 'Package',

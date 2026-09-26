@@ -10,12 +10,15 @@ export async function GET(req: NextRequest) {
 
   const where: {
     available?: boolean
+    price?: number
+    downloadUrl?: { not: null }
     featured?: boolean
     category?: string
     OR?: { name?: { contains: string }; shortDesc?: { contains: string }; description?: { contains: string } }[]
   } = { available: true }
 
   if (featuredOnly) where.featured = true
+  if (searchParams.get('free') === '1') { where.price = 0; where.downloadUrl = { not: null } }
 
   if (category && category !== 'all') {
     const cat = await db.category.findUnique({ where: { slug: category } })
@@ -45,6 +48,7 @@ export async function GET(req: NextRequest) {
       shortDesc: p.shortDesc,
       description: p.description,
       price: p.price,
+      downloadUrl: p.downloadUrl,
       oldPrice: p.oldPrice,
       discount: p.discount,
       icon: p.icon,

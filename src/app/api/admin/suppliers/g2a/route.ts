@@ -155,8 +155,8 @@ export async function POST(req: NextRequest) {
 
     const productUpdates = syncedItems
       .filter(item => item.published && item.productId && item.salePrice)
-      .map(item => db.product.update({
-        where: { id: item.productId! },
+      .map(item => db.product.updateMany({
+        where: { id: item.productId!, downloadUrl: null, price: { gt: 0 } },
         data: { price: item.salePrice!, available: item.available },
       }))
     for (let start = 0; start < productUpdates.length; start += 50) {

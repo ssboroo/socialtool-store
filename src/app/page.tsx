@@ -39,6 +39,7 @@ export default async function Home() {
     shortDesc: p.shortDesc,
     description: p.description,
     price: p.price,
+    downloadUrl: p.downloadUrl,
     oldPrice: p.oldPrice,
     discount: p.discount,
     icon: p.icon,

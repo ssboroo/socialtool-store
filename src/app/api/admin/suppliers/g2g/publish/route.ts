@@ -105,12 +105,14 @@ export async function POST(req: NextRequest) {
         }
 
         let product = item.productId ? await db.product.findUnique({ where: { id: item.productId } }) : null
+        if (product?.downloadUrl) throw new Error('Үнэгүй программыг нийлүүлэгчийн бараагаар солихгүй.')
         if (product) {
           product = await db.product.update({ where: { id: product.id }, data: productData })
           updated += 1
         } else {
           const slug = productSlugFor(item)
           const bySlug = await db.product.findUnique({ where: { slug } })
+          if (bySlug?.downloadUrl) throw new Error('Үнэгүй программыг нийлүүлэгчийн бараагаар солихгүй.')
           product = bySlug
             ? await db.product.update({ where: { id: bySlug.id }, data: productData })
             : await db.product.create({ data: { ...productData, slug } })

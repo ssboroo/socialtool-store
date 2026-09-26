@@ -18,6 +18,7 @@ import { licenseOptions, licensePrice } from '@/lib/license'
 import { LicenseSelector } from './license-selector'
 import { ProductDescription } from './product-description'
 import { toast } from 'sonner'
+import { freeDownloadUrl } from '@/lib/free-download'
 
 interface Product {
   id: string
@@ -26,6 +27,7 @@ interface Product {
   shortDesc: string
   description: string
   price: number
+  downloadUrl?: string | null
   oldPrice: number | null
   discount: number | null
   icon: string
@@ -50,6 +52,7 @@ export function ProductDetailModal() {
   const [retry, setRetry] = useState(0)
   const [duration, setDuration] = useState('')
   const options = licenseOptions(product?.duration)
+  const downloadUrl = product ? freeDownloadUrl(product) : null
   const selectedDuration = options.includes(duration) ? duration : options[0] || ''
   const [qty, setQty] = useState(1)
   const [videoPlaying, setVideoPlaying] = useState(false)
@@ -100,7 +103,7 @@ export function ProductDetailModal() {
 
   const handleAdd = () => {
     if (!product) return
-    if (!product.available) {
+    if (!product.available || product.price === 0) {
       toast.error('Энэ бүтээгдэхүүн түр дууссан байна')
       return
     }
@@ -179,7 +182,7 @@ export function ProductDetailModal() {
 
               <div className="mt-4 flex items-end gap-3">
                 <span className="text-3xl font-extrabold text-[#102A43]">
-                  {formatTugrik(licensePrice(product, selectedDuration))}
+                  {product.price===0?'Үнэгүй':formatTugrik(licensePrice(product, selectedDuration))}
                 </span>
                 {product.oldPrice ? (
                   <span className="text-sm text-[#5B7290] line-through">
@@ -201,7 +204,7 @@ export function ProductDetailModal() {
 
               </div>
 
-              <LicenseSelector options={options} value={selectedDuration} onChange={setDuration} />
+              {product.price>0&&<LicenseSelector options={options} value={selectedDuration} onChange={setDuration} />}
 
               {features.length > 0 && (
                 <div className="mt-5">
@@ -299,7 +302,7 @@ export function ProductDetailModal() {
                 )
               })()}
 
-              <div className="mt-auto pt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              {product.price===0 ? <div className="mt-auto pt-5 space-y-3">{downloadUrl ? <Button asChild className="w-full"><a href={downloadUrl} target="_blank" rel="noopener noreferrer">Үнэгүй татах <span className="sr-only">(шинэ цонхонд)</span></a></Button> : <Button disabled className="w-full">Татах боломжгүй</Button>}<p className="text-xs text-muted-foreground">Программын татах хуудас шинэ цонхонд нээгдэнэ. Төлбөр, захиалга үүсгэх шаардлагагүй.</p></div> : <div className="mt-auto pt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
                   <button
                     type="button"
@@ -331,7 +334,7 @@ export function ProductDetailModal() {
                   {product.available ? <ShoppingCart className="size-4" /> : <CircleOff className="size-4" />}
                   {product.available ? `Сагсанд нэмэх · ${formatTugrik(licensePrice(product, selectedDuration) * qty)}` : 'Түр дууссан'}
                 </Button>
-              </div>
+              </div>}
             </div>
           </div>
         ) : <div className="px-6 py-16 text-center" role="alert"><h2 className="text-lg font-semibold">Бүтээгдэхүүнийг ачаалж чадсангүй</h2><p className="mt-2 mb-5 text-sm text-muted-foreground">Холболтоо шалгаад дахин оролдоорой.</p><Button variant="outline" onClick={() => setRetry(value => value + 1)}>Дахин оролдох</Button></div>}

@@ -22,6 +22,7 @@ import { ProductImage, ProductIllustration } from '@/components/site/product-ill
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getYouTubeId } from '@/lib/media'
+import { parseDownloadUrl } from '@/lib/free-download'
 
 interface Category {
   id: string
@@ -37,6 +38,7 @@ interface Product {
   shortDesc: string
   description: string
   price: number
+  downloadUrl: string | null
   oldPrice: number | null
   discount: number | null
   icon: string
@@ -262,6 +264,8 @@ function ProductFormDialog({
     shortDesc: '',
     description: '',
     price: '',
+    isFree: false,
+    downloadUrl: '',
     oldPrice: '',
     icon: 'Package',
     image: '',
@@ -286,6 +290,8 @@ function ProductFormDialog({
         shortDesc: product.shortDesc,
         description: product.description,
         price: String(product.price),
+        isFree: product.price === 0,
+        downloadUrl: product.downloadUrl || '',
         oldPrice: product.oldPrice ? String(product.oldPrice) : '',
         icon: product.icon,
         image: product.image || '',
@@ -305,6 +311,8 @@ function ProductFormDialog({
         shortDesc: '',
         description: '',
         price: '',
+        isFree: false,
+        downloadUrl: '',
         oldPrice: '',
         icon: 'Package',
         image: '',
@@ -344,7 +352,7 @@ function ProductFormDialog({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.price || !form.categoryId) {
+    if (!form.name.trim() || (!form.isFree && !form.price) || !form.categoryId) {
       toast.error('Шаардлагатай талбар дутуу байна')
       return
     }
@@ -353,12 +361,14 @@ function ProductFormDialog({
       return
     }
     const cat = categories.find((c) => c.id === form.categoryId)
+    if (form.isFree && !parseDownloadUrl(form.downloadUrl)) { toast.error('Хүчинтэй HTTPS татах URL оруулна уу.'); return }
     onSave({
       name: form.name.trim(),
       shortDesc: form.shortDesc,
       description: form.description,
-      price: Number(form.price),
-      oldPrice: form.oldPrice ? Number(form.oldPrice) : null,
+      price: form.isFree ? 0 : Number(form.price),
+      downloadUrl: form.isFree ? form.downloadUrl.trim() : null,
+      oldPrice: !form.isFree && form.oldPrice ? Number(form.oldPrice) : null,
       icon: form.icon,
       image: form.image.trim() || null,
       categoryId: form.categoryId,
@@ -366,7 +376,7 @@ function ProductFormDialog({
       features: form.features,
       available: form.available,
       featured: form.featured,
-      duration: form.duration ? JSON.stringify(licenseOptions(form.duration).map(term => ({ term, price: Number(form.termPrices[term] || form.price) }))) : null,
+      duration: !form.isFree && form.duration ? JSON.stringify(licenseOptions(form.duration).map(term => ({ term, price: Number(form.termPrices[term] || form.price) }))) : null,
       tutorialVideoUrl: form.tutorialVideoUrl.trim() || null,
       instructionImages: form.instructionImages.trim() || null,
     })
@@ -382,6 +392,10 @@ function ProductFormDialog({
             <button type="button" onClick={onClose} className="grid size-8 place-items-center rounded-full hover:bg-[#E8F1FF]"><X className="size-4" /></button>
           </div>
           <div className="p-6 space-y-4">
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+              <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={form.isFree} onChange={e=>setForm({...form,isFree:e.target.checked})}/>Үнэгүй программ</label>
+              {form.isFree&&<div><Label htmlFor="product-download-url">Татах URL *</Label><Input id="product-download-url" type="url" required value={form.downloadUrl} onChange={e=>setForm({...form,downloadUrl:e.target.value})} placeholder="https://example.com/download"/><p className="mt-2 text-xs text-slate-600">Үнэ 0₮ болно. Хэрэглэгч энэ холбоосоор төлбөргүй татна. Албан ёсны татах хуудсыг оруулна уу.</p></div>}
+            </div>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Нэр *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Facebook Account Manager Pro" />
@@ -397,11 +411,11 @@ function ProductFormDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Үнэ (₮) *</Label>
-                <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="89000" />
+                <Input type="number" disabled={form.isFree} value={form.isFree ? '0' : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="89000" />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Хуучин үнэ (опц)</Label>
-                <Input type="number" value={form.oldPrice} onChange={(e) => setForm({ ...form, oldPrice: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="120000" />
+                <Input type="number" disabled={form.isFree} value={form.isFree ? '' : form.oldPrice} onChange={(e) => setForm({ ...form, oldPrice: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="120000" />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -504,14 +518,14 @@ function ProductFormDialog({
               </h4>
               <div>
                 <Label className="text-xs font-semibold text-[#102A43]">Барааны хугацааны сонголт</Label>
-                <select aria-label="Барааны хугацааны сонголт" value={['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) ? form.duration : 'custom'} onChange={e => { if(e.target.value !== 'custom') setForm({ ...form, duration: e.target.value }) }} className="mt-2 w-full rounded-lg border border-[#D6E4FF] bg-white p-2 text-sm">
+                <select disabled={form.isFree} aria-label="Барааны хугацааны сонголт" value={['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) ? form.duration : 'custom'} onChange={e => { if(e.target.value !== 'custom') setForm({ ...form, duration: e.target.value }) }} className="mt-2 w-full rounded-lg border border-[#D6E4FF] bg-white p-2 text-sm">
                   <option value="">Хугацаа сонгохгүй — ширхгээр борлуулах</option>
                   <option value="1 жил;Хугацаагүй">1 жил / Хугацаагүй — хоёуланг харуулах</option>
                   <option value="1 жил">Зөвхөн 1 жил</option>
                   <option value="Хугацаагүй">Зөвхөн Хугацаагүй эрх</option>
                   {!['', '1 жил', 'Хугацаагүй', '1 жил;Хугацаагүй'].includes(form.duration) && <option value="custom">Одоогийн хугацаа: {form.duration}</option>}
                 </select>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">{licenseOptions(form.duration).map(term => <label key={term} className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-sm font-semibold">{term} · Үнэ (₮)<Input type="number" min="1" step="1" value={form.termPrices[term] ?? ''} placeholder={form.price || 'Үнэ'} onChange={e => setForm(current => ({ ...current, termPrices: { ...current.termPrices, [term]: e.target.value } }))} className="mt-2 bg-white" /><span className="mt-1 block text-xs font-normal text-slate-500">Хоосон бол үндсэн үнэ үйлчилнэ.</span></label>)}</div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">{(!form.isFree ? licenseOptions(form.duration) : []).map(term => <label key={term} className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-sm font-semibold">{term} · Үнэ (₮)<Input type="number" min="1" step="1" value={form.termPrices[term] ?? ''} placeholder={form.price || 'Үнэ'} onChange={e => setForm(current => ({ ...current, termPrices: { ...current.termPrices, [term]: e.target.value } }))} className="mt-2 bg-white" /><span className="mt-1 block text-xs font-normal text-slate-500">Хоосон бол үндсэн үнэ үйлчилнэ.</span></label>)}</div>
                 <p className="mt-2 text-xs text-[#5B7290]">Ширхгээр борлуулахад хугацаа харагдахгүй. Худалдан авагч тоо ширхэгээ сагсанд оруулна. Хугацааны хувилбар бүрд тусдаа үнэ тохируулж болно.</p>
               </div>
               <div>

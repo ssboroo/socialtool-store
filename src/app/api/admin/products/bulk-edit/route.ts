@@ -23,7 +23,7 @@ export async function PUT(req:Request){
   }catch(e){
     if(e instanceof SyntaxError)return NextResponse.json({error:'Хүсэлт буруу байна'},{status:400})
     if(e instanceof Error&&e.message==='CONFLICT')return NextResponse.json({error:'Барааны мэдээлэл өөрчлөгдсөн байна. Жагсаалтаа шинэчилж дахин сонгоно уу. Ямар ч өөрчлөлт хадгалаагүй.'},{status:409})
-    if(e instanceof Error&&['Ангилал олдсонгүй','Товч тайлбар 500 тэмдэгтээс хэтэрлээ','Үнийн өөрчлөлт -100%-аас их, 1000%-аас бага байна','Үнэ зөв эерэг бүхэл тоо байх ёстой'].includes(e.message))return NextResponse.json({error:e.message},{status:400})
+    if(e instanceof Error&&['Үнэгүй программын үнийг бөөнөөр өөрчлөхгүй. Бүтээгдэхүүний дэлгэрэнгүй засварыг ашиглана уу.','Ангилал олдсонгүй','Товч тайлбар 500 тэмдэгтээс хэтэрлээ','Үнийн өөрчлөлт -100%-аас их, 1000%-аас бага байна','Үнэ зөв эерэг бүхэл тоо байх ёстой'].includes(e.message))return NextResponse.json({error:e.message},{status:400})
     return NextResponse.json({error:'Бөөнөөр хадгалах үед алдаа гарлаа. Өөрчлөлт хадгалаагүй.'},{status:500})
   }
 }

@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
 
       const linked = saved.filter(item => item.productId && item.salePrice && item.salePrice > 0)
       await Promise.all(linked.map(item => db.product.updateMany({
-        where: { id: item.productId! },
+        where: { id: item.productId!, downloadUrl: null, price: { gt: 0 } },
         data: {
           price: item.salePrice!,
           available: item.available,

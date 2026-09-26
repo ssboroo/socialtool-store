@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
         continue
       }
 
-      const existing = await db.product.findFirst({ where: { name }, select: { id: true } })
+      const existing = await db.product.findFirst({ where: { name }, select: { id: true, downloadUrl: true } })
       if (existing && mode === 'skip') {
         results.push({ row: index + 2, name, status: 'skipped' })
         continue
@@ -137,6 +137,10 @@ export async function POST(req: NextRequest) {
       }
 
       try {
+        if (existing?.downloadUrl && mode === 'update') {
+          results.push({ row:index + 2, name, status:'error', error:'Үнэгүй программыг дэлгэрэнгүй засвараар өөрчилнө үү.' })
+          continue
+        }
         if (existing && mode === 'update') {
           await db.product.update({ where: { id: existing.id }, data })
           results.push({ row: index + 2, name, status: 'updated' })

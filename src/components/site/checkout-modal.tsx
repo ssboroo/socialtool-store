@@ -33,6 +33,7 @@ type Step = 'form' | 'pay' | 'status' | 'success' | 'failed'
 export function CheckoutModal() {
   const open = useUIStore((s) => s.checkoutOpen)
   const close = useUIStore((s) => s.closeCheckout)
+  const openAccount = useUIStore((s) => s.openAccount)
   const { items, total, clear } = useCartStore()
   const { customer } = useCustomer()
 
@@ -428,6 +429,7 @@ export function CheckoutModal() {
                 <Button onClick={() => { close(); window.dispatchEvent(new Event('st-open-chat')) }} className="w-full h-12 rounded-xl bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
                   Захиалгын чат нээх
                 </Button>
+                {customer&&<Button variant="outline" onClick={()=>{close();openAccount('orders')}} className="w-full">Захиалгын төлөв харах</Button>}
               </div>
             )}
 

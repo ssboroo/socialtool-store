@@ -86,7 +86,7 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-1 sm:gap-3">
           <button type="button" onClick={() => handleNav('#top')} className="shrink-0 rounded-xl" aria-label="Нүүр хуудас">
-            <Logo />
+            <Logo className="site-header-logo" />
           </button>
 
           <nav className="hidden items-center gap-1 xl:flex" aria-label="Үндсэн цэс">
@@ -174,7 +174,7 @@ export function Header() {
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); openAccount() }}
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); openAccount('orders') }}
                       className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[#102A43] hover:bg-[#E8F1FF]"
                     >
                       <ShoppingBag className="size-4 text-[#1677FF]" /> Миний захиалга
@@ -261,6 +261,7 @@ export function Header() {
                 >
                   <UserIcon className="size-4 text-[#1677FF]" /> Миний бүртгэл
                 </button>
+                <button type="button" onClick={() => { setMobileOpen(false); openAccount('orders') }} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#102A43] hover:bg-[#E8F1FF]">Миний захиалга</button>
                 <button
                   type="button"
                   onClick={() => { setMobileOpen(false); logout() }}

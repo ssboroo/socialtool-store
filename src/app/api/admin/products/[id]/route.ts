@@ -1,4 +1,5 @@
 import { validLicenseConfig } from '@/lib/license'
+import { parseDownloadUrl, validProductOffer } from '@/lib/free-download'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
@@ -27,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const effectivePrice = 'price' in body ? Number(body.price) : current.price
-    if (!Number.isSafeInteger(effectivePrice) || effectivePrice <= 0) {
+    if (!Number.isSafeInteger(effectivePrice) || effectivePrice < 0) {
       return NextResponse.json({ error: 'Үнийг зөв бүхэл тоогоор оруулна уу' }, { status: 400 })
     }
     const effectiveOldPrice = 'oldPrice' in body
@@ -38,6 +39,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const data: Record<string, unknown> = {}
+    const downloadUrl = parseDownloadUrl('downloadUrl' in body ? body.downloadUrl : current.downloadUrl)
+    const duration = 'duration' in body ? body.duration : current.duration
+    if (downloadUrl === undefined || !validProductOffer(effectivePrice, downloadUrl, duration, effectiveOldPrice)) {
+      return NextResponse.json({ error: 'Үнэгүй программд HTTPS татах URL, 0₮ үнэ шаардлагатай. Хугацааны болон хуучин үнийн сонголтыг арилгана уу.' }, { status: 400 })
+    }
+    if ('downloadUrl' in body) data.downloadUrl = downloadUrl
     if ('name' in body) {
       if (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 160) return NextResponse.json({ error: 'Бүтээгдэхүүний нэр буруу байна' }, { status: 400 })
       data.name = body.name.trim()

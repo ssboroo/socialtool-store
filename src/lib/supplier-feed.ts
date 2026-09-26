@@ -449,8 +449,8 @@ export async function syncSupplierFeed(input: {
 
   const productUpdates = syncedItems
     .filter(item => item.published && item.productId)
-    .map(item => db.product.update({
-      where: { id: item.productId! },
+    .map(item => db.product.updateMany({
+      where: { id: item.productId!, downloadUrl: null, price: { gt: 0 } },
       data: item.salePrice
         ? { price: item.salePrice, available: item.available }
         : { available: false },

@@ -8,7 +8,7 @@ assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname), 'Local pr
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_EXECUTABLE ? { executablePath: process.env.CHROME_EXECUTABLE } : {}) })
 const page = await browser.newPage({ viewport: { width: 320, height: 844 } })
 try {
-  await page.goto(base, { waitUntil: 'networkidle' })
+  await page.goto(base, { waitUntil: 'domcontentloaded' })
   await page.getByRole('button', { name: 'Цэс', exact: true }).click()
   await page.getByRole('button', { name: 'Нэвтрэх / Бүртгүүлэх' }).click()
   await page.getByRole('button', { name: 'Бүртгүүлэх', exact: true }).click()

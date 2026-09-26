@@ -133,8 +133,8 @@ export async function POST(req: NextRequest) {
           const product = productById.get(item.productId)
           if (!product) return
           const clearDiscount = product.oldPrice != null && product.oldPrice <= item.newSalePrice
-          await db.product.update({
-            where: { id: item.productId },
+          await db.product.updateMany({
+            where: { id: item.productId, downloadUrl: null, price: { gt: 0 } },
             data: {
               price: item.newSalePrice,
               ...(clearDiscount ? { oldPrice: null, discount: null } : {}),

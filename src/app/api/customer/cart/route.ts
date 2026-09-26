@@ -14,7 +14,7 @@ async function readCart(customerId: string) {
   const lines = new Map<string, { id: string; name: string; price: number; icon: string; category: string; duration: string; quantity: number }>()
   for (const item of saved) {
     const p = products.find(p => p.id === item.id)
-    if (!p) continue
+    if (!p || p.price === 0 || p.downloadUrl) continue
     const options = licenseOptions(p.duration)
     const duration = options.includes(item.duration || '') ? item.duration! : options[0] || ''
     const line = { id: p.id, name: p.name, price: licensePrice(p, duration), icon: p.icon, category: p.category, duration, quantity: item.quantity }

@@ -62,7 +62,8 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
       setFailed(false)
       try {
         const params = new URLSearchParams()
-        if (activeCat !== 'all') params.set('category', activeCat)
+        if (activeCat === '__free') params.set('free', '1')
+        else if (activeCat !== 'all') params.set('category', activeCat)
         if (query.trim()) params.set('q', query.trim())
         params.set('sort', sort)
 
@@ -88,8 +89,8 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
   }, [activeCat, query, sort, retry])
 
 
-  const categoryName = activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
-  const filterCategories = [{ id: 'all', slug: 'all', name: 'Бүх хэрэгсэл' }, ...categories.filter(c => c.slug !== 'all')]
+  const categoryName = activeCat === '__free' ? 'Үнэгүй программууд' : activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
+  const filterCategories = [{ id: 'all', slug: 'all', name: 'Бүх хэрэгсэл' }, { id: '__free', slug: '__free', name: 'Үнэгүй программууд' }, ...categories.filter(c => c.slug !== 'all')]
   const gridClass = 'catalog-grid'
   const pageCount = Math.max(1, Math.ceil(products.length / pageSize))
   const currentPage = Math.min(page, pageCount)
@@ -116,7 +117,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
         <a href="#faq" className="catalog-support-note"><Headphones/><span><strong>Танд тусалъя</strong><small>Асуултынхаа хариуг<br/>эндээс олоорой.</small></span><span className="catalog-support-link">Тусламж авах <ArrowRight size={13}/></span></a>
       </aside>
       <div className="catalog-results">
-        <Hero products={initialProducts} settings={settings} productCount={initialProducts.filter(p=>p.available).length} categoryCount={filterCategories.length-1}/>
+        <Hero products={initialProducts} settings={settings} productCount={initialProducts.filter(p=>p.available).length} categoryCount={filterCategories.length-2}/>
         <nav id="categories" className="catalog-chips" aria-label="Ангиллаар шүүх">
           {filterCategories.map(c=><button key={c.id} type="button" aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
         </nav>
