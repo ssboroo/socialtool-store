@@ -1,4 +1,5 @@
 import { db } from '@/lib/db'
+import { TelegramChannel } from '@/components/site/telegram-channel'
 import { Header } from '@/components/site/header'
 import { FeaturedProducts } from '@/components/site/featured-products'
 import { WhyChooseUs } from '@/components/site/why-choose-us'
@@ -22,7 +23,7 @@ export default async function Home() {
     db.product.findMany({ orderBy: [{ featured: 'desc' }, { rating: 'desc' }] }),
     db.review.findMany({ orderBy: { createdAt: 'desc' } }),
     db.faq.findMany({ orderBy: { order: 'asc' } }),
-    db.siteSetting.findMany(),
+    db.siteSetting.findMany({where:{NOT:{key:{startsWith:'private.'}}}}),
     db.promotion.findFirst({
       where: { active: true, startAt: { lte: now }, endAt: { gte: now } },
       orderBy: { createdAt: 'desc' },
@@ -75,6 +76,7 @@ export default async function Home() {
       <main id="main-content" tabIndex={-1} className="flex-1">
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} settings={settings} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
+        <TelegramChannel url={settings.telegramChannelUrl??'https://t.me/socialtoolstore'} />
         <WhyChooseUs />
         <HowItWorks />
         <Reviews reviews={reviews.map((r) => ({ id: r.id, name: r.name, role: r.role, rating: r.rating, content: r.content }))} />

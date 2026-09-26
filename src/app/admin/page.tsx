@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { TelegramPublisher } from '@/components/admin/telegram-publisher'
 import { AdminLogin } from '@/components/admin/login'
 import { AdminOverview } from '@/components/admin/overview'
 import { AdminOrders } from '@/components/admin/orders'
@@ -40,7 +41,7 @@ interface Category {
 type TabId =
   | 'overview' | 'orders' | 'products' | 'suppliers' | 'fulfillment' | 'categories'
   | 'reviews' | 'faqs' | 'promotions' | 'customers'
-  | 'chat' | 'settings'
+  | 'chat' | 'settings' | 'telegram'
 
 const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'overview', label: 'Тойм', Icon: LayoutDashboard },
@@ -53,6 +54,7 @@ const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: 
   { id: 'reviews', label: 'Сэтгэгдэл', Icon: Star },
   { id: 'faqs', label: 'Асуулт', Icon: HelpCircle },
   { id: 'customers', label: 'Хэрэглэгчид', Icon: Users },
+  { id: 'telegram', label: 'Telegram', Icon: MessageCircle },
   { id: 'chat', label: 'Чат', Icon: MessageCircle },
   { id: 'settings', label: 'Тохиргоо', Icon: Settings },
 ]
@@ -155,6 +157,7 @@ export default function AdminPage() {
           {tab === 'faqs' && <AdminFaqs token={token} />}
           {tab === 'customers' && <AdminCustomers token={token} />}
           {tab === 'chat' && <AdminChat token={token} />}
+          {tab === 'telegram' && <TelegramPublisher />}
           {tab === 'settings' && <AdminSettings token={token} />}
         </div>
       </div>
