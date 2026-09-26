@@ -53,13 +53,13 @@ export function formatOrderNotification(opts: {
   phone: string
   email?: string
   telegram?: string
-  items: { name: string; quantity: number; price: number }[]
+  items: { name: string; quantity: number; price: number; orderLink?: string | null }[]
   total: number
   status: string
   adminUrl?: string
 }) {
   const itemsText = opts.items
-    .map((i) => `• ${escapeTelegramHtml(i.name)} ×${i.quantity} — ${formatTugrik(i.price * i.quantity)}`)
+    .map((i) => `• ${escapeTelegramHtml(i.name)} ×${i.quantity} — ${formatTugrik(i.price * i.quantity)}${i.orderLink ? `\n  🔗 Захиалгын линк: ${escapeTelegramHtml(i.orderLink)}` : ''}`)
     .join('\n')
   const lines = [
     '🛒 <b>Шинэ захиалга</b>',
