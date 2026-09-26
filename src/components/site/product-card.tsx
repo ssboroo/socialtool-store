@@ -66,7 +66,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
 
   return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
     <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
-      <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode="icon" className="aspect-[16/10] w-full"/>
+      <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode={product.icon === "Custom" ? "image" : "icon"} className="aspect-[16/10] w-full"/>
     </button>
     <div className="shop-product-body">
       <h3><button type="button" onClick={openDetail}>{product.name}</button></h3>
