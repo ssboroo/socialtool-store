@@ -1,6 +1,7 @@
 'use client'
 import { licenseOptions, licenseVariants } from '@/lib/license'
 import { productImageSuggestions } from '@/lib/product-image-suggestions'
+import { BRAND_ICON_OPTIONS } from '@/lib/product-brand'
 import { QuickProductEditor, type QuickProduct } from './quick-product-editor'
 import { BulkProductEdit } from './bulk-product-edit'
 import { BulkProductImages } from './bulk-product-images'
@@ -56,7 +57,7 @@ interface Product {
   instructionImages: string | null
 }
 
-const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package', 'CS2', 'Valorant', 'Dota2']
+const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package', 'CS2', 'Valorant', 'Dota2', 'Custom']
 
 export function AdminProducts({ token, categories }: { token: string; categories: Category[] }) {
   const [selected, setSelected] = useState<string[]>([])
@@ -442,18 +443,21 @@ function ProductFormDialog({
                 </Select>
               </div>
               <div>
-              <Label className="text-xs font-semibold text-[#102A43]">Дүрслэх дүрс (fallback)</Label>
+              <Label className="text-xs font-semibold text-[#102A43]">Брэндийн лого</Label>
               <Select value={form.icon} onValueChange={(v) => setForm({ ...form, icon: v })}>
                 <SelectTrigger className="mt-1 border-[#D6E4FF]">
                   <SelectValue placeholder="Сонгох" />
                 </SelectTrigger>
-                <SelectContent>
-                  {ICONS.map((i) => (
-                    <SelectItem key={i} value={i}>{i}</SelectItem>
+                <SelectContent className="max-h-[min(70vh,440px)]">
+                  {ICONS.map(i => <SelectItem key={i} value={i}>{i === 'Custom' ? 'Өөрийн зураг ашиглах' : i}</SelectItem>)}
+                  {BRAND_ICON_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={`brand:${option.value}`}>
+                      {option.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="mt-1 text-[11px] text-[#5B7290]">Зураг оруулаагүй үед энэ icon ашиглагдана</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#5B7290]">Бүтээгдэхүүний нэрээс лого автоматаар танина. Буруу танивал эндээс брэндийг гараар сонгоно уу. Өөрийн зураг ашиглах бол доорх хэсэгт зургаа оруулна.</p>
             </div>
           </div>
 
