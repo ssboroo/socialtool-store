@@ -46,6 +46,8 @@ model Product {
   instructionImages String?
   downloadUrl       String?
   requiresOrderLink Boolean     @default(false)
+  searchKeywords    String?     // Optional Mongolian/English search aliases and tags
+  wishlists         Wishlist[]
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   categoryRef       Category    @relation(fields: [categoryId], references: [id])
@@ -160,6 +162,7 @@ model Customer {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   orders       Order[]
+  wishlists    Wishlist[]
 }
 
 model Faq {
@@ -230,4 +233,30 @@ model SupplierCatalogItem {
   @@index([supplier, serviceName])
   @@index([brandName])
   @@index([published])
+}
+
+// Per-account saved products. Deletes cascade with the account or product.
+model Wishlist {
+  id            String   @id @default(cuid())
+  customerId    String
+  productId     String
+  savedPrice    Int
+  createdAt     DateTime @default(now())
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@unique([customerId, productId])
+  @@index([productId])
+}
+
+// Privacy-conscious aggregate behavior; no IP addresses or customer email stored.
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  type      String
+  sessionId String
+  productId String?
+  query     String?
+  createdAt DateTime @default(now())
+  @@index([type, createdAt])
+  @@index([productId, createdAt])
+  @@index([sessionId, type, createdAt])
 }
