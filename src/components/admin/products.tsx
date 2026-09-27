@@ -420,6 +420,11 @@ function ProductFormDialog({
               <Input value={form.shortDesc} onChange={(e) => setForm({ ...form, shortDesc: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Олон аккаунтыг нэг панелаас удирдах" />
             </div>
             <div>
+              <Label className="text-xs font-semibold text-[#102A43]">Хайлтын түлхүүр үг / alias</Label>
+              <Input value={form.searchKeywords} maxLength={1000} onChange={e => setForm({ ...form, searchKeywords: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="FB views; фэйсбүүк үзэлт; лайв boost" />
+              <p className="mt-1 text-xs text-[#5B7290]">Монгол, англи хувилбаруудыг ; тэмдэгтээр тусгаарлана.</p>
+            </div>
+            <div>
               <Label className="text-xs font-semibold text-[#102A43]">Бүрэн тайлбар</Label>
               <DescriptionEditor key={`${product?.id || "new"}-${open}`} value={form.description} onChange={description => setForm(current => ({ ...current, description }))} />
             </div>
