@@ -41,7 +41,7 @@ try {
   const backup = new Database(join(backupDir, backups[0]), { readonly: true })
   try {
     assert.equal(backup.query("SELECT value FROM SiteSetting WHERE key = 'private.startupSentinel'").get().value, 'preserved')
-    assert.equal(backup.query("SELECT name FROM sqlite_master WHERE name = 'Wishlist'").get(), null)
+    assert.ok(!backup.query("SELECT name FROM sqlite_master WHERE name = 'Wishlist'").get())
     assert.equal(backup.query('PRAGMA quick_check').get().quick_check, 'ok')
   } finally { backup.close() }
 

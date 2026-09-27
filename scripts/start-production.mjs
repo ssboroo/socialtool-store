@@ -9,7 +9,7 @@
  */
 import { Database } from 'bun:sqlite'
 import { execFileSync, spawn } from 'node:child_process'
-import { existsSync, mkdirSync, statSync, chmodSync, unlinkSync } from 'node:fs'
+import { existsSync, mkdirSync, statSync, chmodSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
