@@ -55,8 +55,8 @@ export function Header() {
 
   useEffect(() => {
     const value=query.trim()
-    if(value.length<2){setSuggestions([]);setSearching(false);return}
-    const controller=new AbortController();setSearching(true)
+    if(value.length<2){queueMicrotask(()=>{setSuggestions([]);setSearching(false)});return}
+    const controller=new AbortController();queueMicrotask(()=>{if(!controller.signal.aborted)setSearching(true)})
     const timer=setTimeout(()=>{void fetch('/api/search?q='+encodeURIComponent(value),{signal:controller.signal,cache:'no-store'}).then(r=>r.json()).then(data=>{if(!controller.signal.aborted)setSuggestions(Array.isArray(data.results)?data.results.slice(0,6):[])}).catch(()=>{}).finally(()=>{if(!controller.signal.aborted)setSearching(false)})},180)
     return()=>{clearTimeout(timer);controller.abort()}
   },[query])
