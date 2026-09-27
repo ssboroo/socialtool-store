@@ -29,6 +29,7 @@ import { useUIStore, useCartStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 import { formatTugrik } from '@/lib/format'
 import { toast } from 'sonner'
+import { trackEvent } from '@/lib/analytics-client'
 
 type Step = 'form' | 'pay' | 'status' | 'success' | 'failed'
 
@@ -52,6 +53,7 @@ export function CheckoutModal() {
   const [pollAttempt, setPollAttempt] = useState(0)
   const [pendingOrder, setPendingOrder] = useState<{ fingerprint: string; order: { orderNumber: string; orderId: string; amount: number } } | null>(null)
   const submittingRef = useRef(false)
+  const checkoutTrackedRef = useRef(false)
 
   const [previousOpen, setPreviousOpen] = useState(false)
   const [previousCustomer, setPreviousCustomer] = useState(customer?.id)
@@ -72,6 +74,14 @@ export function CheckoutModal() {
       else if (previousCustomer) setForm({ name: '', phone: '', email: '', telegram: '' })
     }
   }
+
+  useEffect(() => {
+    if (open && items.length && !checkoutTrackedRef.current) {
+      checkoutTrackedRef.current = true
+      trackEvent('begin_checkout',{value:total()})
+    }
+    if (!open) checkoutTrackedRef.current = false
+  }, [open, items.length, total])
 
   // Existing/stale carts also reflect the product's current admin setting.
   useEffect(() => {
@@ -107,6 +117,7 @@ export function CheckoutModal() {
         if (data.status === 'PAID') {
           setPolling(false)
           setStep('success')
+          trackEvent('order_paid',{value:order.amount})
           window.dispatchEvent(new Event('st-open-chat'))
           clear()
           setPendingOrder(null)
