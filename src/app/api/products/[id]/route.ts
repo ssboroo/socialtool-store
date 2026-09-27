@@ -11,6 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     slug: product.slug,
     shortDesc: product.shortDesc,
     description: product.description,
+    searchKeywords: product.searchKeywords,
     price: product.price,
     downloadUrl: product.downloadUrl,
     requiresOrderLink: product.requiresOrderLink,
