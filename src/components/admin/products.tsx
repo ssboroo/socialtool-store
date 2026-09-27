@@ -37,6 +37,7 @@ interface Product {
   name: string
   slug: string
   shortDesc: string
+  searchKeywords?: string | null
   description: string
   price: number
   downloadUrl: string | null
@@ -59,12 +60,12 @@ interface Product {
 
 const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package', 'CS2', 'Valorant', 'Dota2', 'Custom']
 
-export function AdminProducts({ token, categories }: { token: string; categories: Category[] }) {
+export function AdminProducts({ token, categories, initialSearch = '' }: { token: string; categories: Category[]; initialSearch?: string }) {
   const [selected, setSelected] = useState<string[]>([])
   const [bulkProducts, setBulkProducts] = useState<Product[] | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(initialSearch)
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
   const [quick, setQuick] = useState<Product | null>(null)
@@ -100,6 +101,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
       toast.success(isEdit ? 'Шинэчлэгдлээ' : 'Үүсгэгдлээ')
+      if (Array.isArray(result.qualityWarnings) && result.qualityWarnings.length) toast.warning(`Бүтээгдэхүүнд ${result.qualityWarnings.length} чанарын анхааруулга байна. Барааны чанар цэсээс шалгана уу.`)
       setEditing(null)
       setCreating(false)
       setCopy(null)
@@ -264,6 +266,7 @@ function ProductFormDialog({
   const [form, setForm] = useState({
     name: '',
     shortDesc: '',
+    searchKeywords: '',
     description: '',
     price: '',
     isFree: false,
@@ -291,6 +294,7 @@ function ProductFormDialog({
       setForm({
         name: product.name,
         shortDesc: product.shortDesc,
+        searchKeywords: product.searchKeywords || '',
         description: product.description,
         price: String(product.price),
         isFree: product.price === 0,
@@ -313,6 +317,7 @@ function ProductFormDialog({
       setForm({
         name: '',
         shortDesc: '',
+        searchKeywords: '',
         description: '',
         price: '',
         isFree: false,
@@ -370,6 +375,7 @@ function ProductFormDialog({
     onSave({
       name: form.name.trim(),
       shortDesc: form.shortDesc,
+      searchKeywords: form.searchKeywords,
       description: form.description,
       price: form.isFree ? 0 : Number(form.price),
       downloadUrl: form.isFree ? form.downloadUrl.trim() : null,
@@ -413,6 +419,11 @@ function ProductFormDialog({
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Товч тайлбар</Label>
               <Input value={form.shortDesc} onChange={(e) => setForm({ ...form, shortDesc: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="Олон аккаунтыг нэг панелаас удирдах" />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-[#102A43]">Хайлтын түлхүүр үг / alias</Label>
+              <Input value={form.searchKeywords} maxLength={1000} onChange={e => setForm({ ...form, searchKeywords: e.target.value })} className="mt-1 border-[#D6E4FF]" placeholder="FB views; фэйсбүүк үзэлт; лайв boost" />
+              <p className="mt-1 text-xs text-[#5B7290]">Монгол, англи хувилбаруудыг ; тэмдэгтээр тусгаарлана.</p>
             </div>
             <div>
               <Label className="text-xs font-semibold text-[#102A43]">Бүрэн тайлбар</Label>

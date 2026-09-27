@@ -1,0 +1,27 @@
+name: Daily Product Health
+
+on:
+  schedule:
+    # 09:00 Asia/Ulaanbaatar (UTC+8)
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Trigger secure catalog audit
+        env:
+          PRODUCT_HEALTH_CRON_SECRET: ${{ secrets.PRODUCT_HEALTH_CRON_SECRET }}
+        run: |
+          if [ -z "$PRODUCT_HEALTH_CRON_SECRET" ]; then
+            echo 'Product health cron secret is not configured; skipping.'
+            exit 0
+          fi
+          curl --silent --show-error --retry 2 --fail-with-body \
+            -H "Authorization: Bearer $PRODUCT_HEALTH_CRON_SECRET" \
+            'https://socialtool.store/api/cron/product-health'

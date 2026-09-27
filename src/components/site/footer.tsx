@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { telegramUsername } from '@/lib/public-contact'
 import { Logo } from './logo'
 import { Mail, Send, ShieldCheck, Zap } from 'lucide-react'
@@ -17,6 +19,9 @@ function scrollTo(href: string) {
 }
 
 export function Footer({ settings }: { settings?: Record<string, string> }) {
+  const [analyticsOff, setAnalyticsOff] = useState(false)
+  useEffect(() => { queueMicrotask(() => { try { setAnalyticsOff(localStorage.getItem('st-analytics-optout') === '1') } catch {} }) }, [])
+  const toggleAnalytics = () => { const next = !analyticsOff; try { localStorage.setItem('st-analytics-optout', next ? '1' : '0') } catch {} setAnalyticsOff(next) }
   const contactEmail = settings?.contactEmail || 'help@socialtool.store'
   const contactTelegram = settings?.contactTelegram || telegramUsername
   const footerDescription = settings?.footerDescription || 'SOCIALTOOL.STORE — Сошиал болон AI хэрэгслүүд нэг дор. Монгол хэрэглэгчдэд зориулсан аюулгүй, шуурхай, баталгаатай дижитал хэрэгсэл.'
@@ -99,6 +104,7 @@ export function Footer({ settings }: { settings?: Record<string, string> }) {
           <p className="text-xs text-[#5B7290]">
             {footerCopyright}
           </p>
+          <button type="button" onClick={toggleAnalytics} aria-pressed={analyticsOff} className="rounded-full border border-[#D6E4FF] px-3 py-1 text-xs text-[#5B7290] hover:text-[#1677FF]">{analyticsOff ? 'Нэргүй статистик: унтарсан' : 'Нэргүй статистик: асаалттай · Унтраах'}</button>
           <p className="text-xs text-[#5B7290]">
             Монголд <span className="text-[#1677FF]">♥</span>-ээр бүтээв
           </p>

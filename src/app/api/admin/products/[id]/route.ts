@@ -50,6 +50,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     if ('downloadUrl' in body) data.downloadUrl = downloadUrl
     if ('requiresOrderLink' in body) data.requiresOrderLink = requiresOrderLink
+    if ('searchKeywords' in body) {
+      const keywords = optionalText(body.searchKeywords, 1000)
+      if (keywords === undefined) return NextResponse.json({ error: 'Хайлтын түлхүүр үг хэт урт байна' }, { status: 400 })
+      data.searchKeywords = keywords
+    }
     if ('name' in body) {
       if (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 160) return NextResponse.json({ error: 'Бүтээгдэхүүний нэр буруу байна' }, { status: 400 })
       data.name = body.name.trim()

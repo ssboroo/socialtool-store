@@ -2,6 +2,7 @@
 import { rememberChat, savedChats } from '@/lib/chat-history'
 import { cartKey } from '@/lib/license'
 import { isValidOrderLink } from '@/lib/order-link'
+import { trackStoreEvent } from '@/lib/store-analytics'
 
 import { useEffect, useState, useRef } from 'react'
 import {
@@ -87,6 +88,8 @@ export function CheckoutModal() {
       .catch(() => { /* Order API enforces requirements if this optional refresh fails. */ })
     return () => controller.abort()
   }, [open, items])
+
+  useEffect(() => { if (open) trackStoreEvent('checkout_start') }, [open])
 
   // Bounded, cancellable polling; a timeout always leaves a working retry button.
   useEffect(() => {

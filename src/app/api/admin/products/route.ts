@@ -3,6 +3,7 @@ import { parseDownloadUrl, validProductOffer } from '@/lib/free-download'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
+import { inspectProducts } from '@/lib/product-health'
 
 function text(value: unknown, max: number, required = false): string | null {
   if (value == null || value === '') return required ? null : ''
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
     const categoryId = text(body.categoryId, 120, true)
     const shortDesc = text(body.shortDesc, 500) ?? null
     const description = text(body.description, 20000) ?? null
+    const searchKeywords = text(body.searchKeywords, 1000)
     const icon = text(body.icon, 80) ?? null
     const image = text(body.image, 1000) ?? null
     const features = text(body.features, 5000) ?? null
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
     const requiresOrderLink = body.requiresOrderLink === true
     const oldPrice = body.oldPrice == null || body.oldPrice === '' ? null : Number(body.oldPrice)
 
-    if (!name || !category || !categoryId || shortDesc === null || description === null || icon === null || image === null || features === null || tutorialVideoUrl === null || instructionImages === null) {
+    if (!name || !category || !categoryId || shortDesc === null || description === null || searchKeywords === null || icon === null || image === null || features === null || tutorialVideoUrl === null || instructionImages === null) {
       return NextResponse.json({ error: 'Бүтээгдэхүүний мэдээлэл буруу эсвэл хэт урт байна' }, { status: 400 })
     }
     if (downloadUrl === undefined || (downloadUrl && requiresOrderLink) || !validLicenseConfig(duration) || !validProductOffer(price, downloadUrl, duration, oldPrice)) {
@@ -82,6 +84,7 @@ export async function POST(req: NextRequest) {
         slug: `${slugBase}-${Date.now().toString(36)}`,
         shortDesc,
         description,
+        searchKeywords: searchKeywords || null,
         price,
         downloadUrl,
         requiresOrderLink,
@@ -101,7 +104,9 @@ export async function POST(req: NextRequest) {
         reviewCount: 0,
       },
     })
-    return NextResponse.json(product)
+    const qualityWarnings = inspectProducts([product], new Set([product.categoryId]), new Set())
+      .filter(issue => issue.severity !== 'info' && issue.code !== 'missing_upload')
+    return NextResponse.json({ ...product, qualityWarnings })
   } catch (e) {
     if (e instanceof SyntaxError) return NextResponse.json({ error: 'Хүсэлтийн бүтэц буруу байна' }, { status: 400 })
     console.error('Admin product create error:', e)
