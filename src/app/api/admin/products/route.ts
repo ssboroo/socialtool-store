@@ -3,6 +3,7 @@ import { parseDownloadUrl, validProductOffer } from '@/lib/free-download'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getAdminFromRequest } from '@/lib/auth'
+import { inspectProducts } from '@/lib/product-health'
 
 function text(value: unknown, max: number, required = false): string | null {
   if (value == null || value === '') return required ? null : ''
@@ -103,7 +104,9 @@ export async function POST(req: NextRequest) {
         reviewCount: 0,
       },
     })
-    return NextResponse.json(product)
+    const qualityWarnings = inspectProducts([product], new Set([product.categoryId]), new Set())
+      .filter(issue => issue.severity !== 'info' && issue.code !== 'missing_upload')
+    return NextResponse.json({ ...product, qualityWarnings })
   } catch (e) {
     if (e instanceof SyntaxError) return NextResponse.json({ error: 'Хүсэлтийн бүтэц буруу байна' }, { status: 400 })
     console.error('Admin product create error:', e)
