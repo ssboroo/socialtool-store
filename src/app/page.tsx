@@ -13,6 +13,9 @@ import { ProductDetailModal } from '@/components/site/product-detail-modal'
 import { CheckoutModal } from '@/components/site/checkout-modal'
 import { LiveChat } from '@/components/site/live-chat'
 import { AuthGate } from '@/components/site/auth-gate'
+import { WishlistProvider } from '@/components/site/wishlist-provider'
+import { WishlistDrawer } from '@/components/site/wishlist-drawer'
+import { AIShoppingAssistant } from '@/components/site/ai-shopping-assistant'
 
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +75,7 @@ export default async function Home() {
     : null
 
   return (
-    <div className="storefront-premium relative min-h-screen flex flex-col">
+    <WishlistProvider><div className="storefront-premium relative min-h-screen flex flex-col">
       <a href="#main-content" className="store-skip-link">Үндсэн агуулга руу очих</a>
       <Header />
       <main id="main-content" tabIndex={-1} className="flex-1">
@@ -91,7 +94,9 @@ export default async function Home() {
       <ProductDetailModal />
       <CheckoutModal />
       <LiveChat />
+      <AIShoppingAssistant />
+      <WishlistDrawer />
       <AuthGate />
-    </div>
+    </div></WishlistProvider>
   )
 }
