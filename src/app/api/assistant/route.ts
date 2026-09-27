@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { smartSearch, normalizeSearchText } from '@/lib/smart-search'
-import { formatTugrik } from '@/lib/format'
 
 function safe(value:unknown,max:number){return typeof value==='string'?value.trim().slice(0,max):''}
 export async function POST(req:NextRequest){
