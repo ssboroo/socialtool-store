@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     const categoryId = text(body.categoryId, 120, true)
     const shortDesc = text(body.shortDesc, 500) ?? null
     const description = text(body.description, 20000) ?? null
+    const searchKeywords = text(body.searchKeywords, 1000)
     const icon = text(body.icon, 80) ?? null
     const image = text(body.image, 1000) ?? null
     const features = text(body.features, 5000) ?? null
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
     const requiresOrderLink = body.requiresOrderLink === true
     const oldPrice = body.oldPrice == null || body.oldPrice === '' ? null : Number(body.oldPrice)
 
-    if (!name || !category || !categoryId || shortDesc === null || description === null || icon === null || image === null || features === null || tutorialVideoUrl === null || instructionImages === null) {
+    if (!name || !category || !categoryId || shortDesc === null || description === null || searchKeywords === null || icon === null || image === null || features === null || tutorialVideoUrl === null || instructionImages === null) {
       return NextResponse.json({ error: 'Бүтээгдэхүүний мэдээлэл буруу эсвэл хэт урт байна' }, { status: 400 })
     }
     if (downloadUrl === undefined || (downloadUrl && requiresOrderLink) || !validLicenseConfig(duration) || !validProductOffer(price, downloadUrl, duration, oldPrice)) {
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
         slug: `${slugBase}-${Date.now().toString(36)}`,
         shortDesc,
         description,
+        searchKeywords: searchKeywords || null,
         price,
         downloadUrl,
         requiresOrderLink,
