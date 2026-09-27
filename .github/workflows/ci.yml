@@ -48,6 +48,9 @@ jobs:
       - name: Prepare isolated database
         run: bunx prisma db push
 
+      - name: Safe production startup rehearsal
+        run: bun tests/production-startup.test.mjs
+
       - name: Lint
         run: bun run lint
 

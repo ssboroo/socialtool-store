@@ -45,6 +45,9 @@ test('local production API: registration, admin, image upload and account-isolat
       if (server.exitCode !== null) throw new Error('Server failed to start: ' + logs)
       await new Promise(r => setTimeout(r, 250))
     }
+    const readiness = await request('/api/health/ready')
+    assert.equal(readiness.status, 200)
+    assert.equal((await readiness.json()).status, 'ok')
     const register = email => request('/api/auth/register', json({ name: 'Local Test', phone: '00000000', email, password }))
     const a = await register(`a-${suffix}@example.invalid`)
     assert.equal(a.status, 200)
