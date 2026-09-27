@@ -16,7 +16,7 @@ export async function POST(req:NextRequest){
  const productId=typeof b.productId==='string'&&b.productId.length<=120?b.productId:null
  const submitted=typeof b.query==='string'?b.query.trim().slice(0,80):null
  // Never store likely email addresses, phone numbers or payment identifiers as search terms.
- const query=submitted&&!/@|(?:^|\\D)\\d{7,}(?:\\D|$)/.test(submitted)?submitted:null
+ const query=submitted&&!/@|(?:^|\D)\d{7,}(?:\D|$)/.test(submitted)?submitted:null
  if(b.type==='search' && (!query||query.length<2))return NextResponse.json({ok:true})
  if(productId){const exists=await db.product.findUnique({where:{id:productId},select:{id:true}});if(!exists)return NextResponse.json({error:'Бараа олдсонгүй'},{status:400})}
  try {
