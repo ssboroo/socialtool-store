@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Search, ChevronDown, PackageOpen, CircleAlert, House, Headphones, ArrowRight, Truck, ShieldCheck, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { ProductCard, type Product } from './product-card'
 
 import { CategoryIcon } from './category-icon'
 import { Hero, StoreIntroduction } from './hero'
+import { trackStoreEvent } from '@/lib/store-analytics'
 
 interface Category {
   id: string
@@ -25,6 +26,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
   const pageSize = 8
   const [activeCat, setActiveCat] = useState<string>('all')
   const [query, setQuery] = useState('')
+  const lastTrackedSearch = useRef('')
   const [sort, setSort] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured')
 
   useEffect(() => {
@@ -73,7 +75,11 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
         })
         if (!res.ok) throw new Error('Unable to load products')
         const data = (await res.json()) as Product[]
-        if (!controller.signal.aborted) { setProducts(data); setPage(1) }
+        if (!controller.signal.aborted) { setProducts(data); setPage(1);
+          const term = query.trim().toLowerCase()
+          if (term.length >= 2 && term !== lastTrackedSearch.current) { trackStoreEvent('search', { query: term }); lastTrackedSearch.current = term }
+          if (!term) lastTrackedSearch.current = ''
+        }
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return
         if (!controller.signal.aborted) setFailed(true)
