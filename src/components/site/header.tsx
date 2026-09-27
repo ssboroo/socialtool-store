@@ -132,7 +132,7 @@ export function Header() {
               <Search className="size-5" />
             </button>
 
-            <button type="button" onClick={wishlist.show} aria-label={`Хүслийн жагсаалт${wishlist.savedIds.length ? `, ${wishlist.savedIds.length} бараа` : ''}`} className="relative grid size-9 place-items-center rounded-full text-[#102A43] hover:bg-[#E8F1FF]"><Heart className="size-5" />{wishlist.savedIds.length > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">{wishlist.savedIds.length}</span>}</button>
+            <button type="button" onClick={wishlist.show} aria-label={`Хүслийн жагсаалт${wishlist.savedIds.length ? `, ${wishlist.savedIds.length} бараа` : ''}`} className="relative grid size-9 place-items-center rounded-full text-[#102A43] hover:bg-[#E8F1FF]"><Heart className="size-5" />{wishlist.savedIds.length > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">{wishlist.savedIds.length}</span>}{wishlist.items.some(item => item.priceDropped) && <span className="absolute -bottom-1 -right-1 size-2.5 rounded-full border-2 border-white bg-green-500" aria-label="Хадгалсан барааны үнэ буурсан" />}</button>
 
             <button
               type="button"
