@@ -1,7 +1,7 @@
 'use client'
 import { create } from 'zustand'
 
-type SavedProduct={id:string;name:string;shortDesc:string;category:string;price:number;oldPrice:number|null;image:string|null;icon:string;available:boolean;slug:string}
+type SavedProduct={id:string;name:string;shortDesc:string;category:string;price:number;oldPrice:number|null;image:string|null;icon:string;available:boolean;slug:string;priceWhenSaved?:number;priceDropped?:boolean}
 type WishlistStore={ids:string[];items:SavedProduct[];ownerId:string|null;open:boolean;busy:boolean;setOpen:(open:boolean)=>void;refresh:(owner:string|null)=>Promise<void>;toggle:(productId:string)=>Promise<boolean>}
 export const useWishlistStore=create<WishlistStore>((set,get)=>({
  ids:[],items:[],ownerId:null,open:false,busy:false,
