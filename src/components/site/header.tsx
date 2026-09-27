@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
+import { Search, Heart, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { Notifications } from './notifications'
 import { Logo } from './logo'
@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 import { cn } from '@/lib/utils'
+import { useWishlist } from './wishlist-provider'
+import { SearchSuggestions } from './search-suggestions'
 
 const NAV = [
   { label: 'Нүүр', href: '#top' },
@@ -30,6 +32,8 @@ export function Header() {
   const openAuth = useUIStore((s) => s.openAuth)
   const openAccount = useUIStore((s) => s.openAccount)
   const { customer, logout, loading } = useCustomer()
+  const wishlist = useWishlist()
+  const chooseSuggestion = (id: string) => { useUIStore.getState().setSelectedProduct(id); setSearchOpen(false); setMobileOpen(false) }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -112,6 +116,7 @@ export function Header() {
                 placeholder="Хэрэгсэл хайх..."
                 className="h-9 w-44 rounded-full border-[#D6E4FF] bg-white pl-9 shadow-sm focus-visible:border-[#1677FF] focus-visible:ring-[#1677FF]/20 xl:w-44"
               />
+              <SearchSuggestions query={query} onSelect={chooseSuggestion} />
             </form>
 
             <button
@@ -126,6 +131,8 @@ export function Header() {
             >
               <Search className="size-5" />
             </button>
+
+            <button type="button" onClick={wishlist.show} aria-label={`Хүслийн жагсаалт${wishlist.savedIds.length ? `, ${wishlist.savedIds.length} бараа` : ''}`} className="relative grid size-9 place-items-center rounded-full text-[#102A43] hover:bg-[#E8F1FF]"><Heart className="size-5" />{wishlist.savedIds.length > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">{wishlist.savedIds.length}</span>}</button>
 
             <button
               type="button"
@@ -235,6 +242,7 @@ export function Header() {
               placeholder="Хэрэгсэл хайх..."
               className="h-10 rounded-full border-[#D6E4FF] bg-[#F5F9FF] pl-9"
             />
+            <SearchSuggestions query={query} onSelect={chooseSuggestion} />
           </form>
         </div>
       )}
