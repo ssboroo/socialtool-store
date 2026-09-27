@@ -76,7 +76,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
     else if (result === 'error') toast.error('Хадгалж чадсангүй')
   }
 
-  return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
+  return <article className={cn('shop-product relative',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
     <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
       <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode={product.icon === "Custom" ? "image" : "icon"} className="aspect-[16/10] w-full"/>
     </button>
