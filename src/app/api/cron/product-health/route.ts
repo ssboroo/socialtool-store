@@ -19,6 +19,13 @@ async function scan(req: NextRequest) {
     report.issues.filter(issue => issue.severity !== 'info').map(issue => issue.productId + ':' + issue.code).sort().join('|'),
   ).digest('hex')
   const last = await db.siteSetting.findUnique({ where: { key: 'private.productHealthDigest' } })
+  if (!report.totals.critical && !report.totals.warning && last?.value !== fingerprint) {
+    await db.siteSetting.upsert({
+      where: { key: 'private.productHealthDigest' },
+      create: { key: 'private.productHealthDigest', value: fingerprint },
+      update: { value: fingerprint },
+    })
+  }
   if (report.totals.critical + report.totals.warning && last?.value !== fingerprint) {
     const notable = report.issues.slice(0, 6).map(issue =>
       '• ' + escapeTelegramHtml(issue.name) + ' — ' + escapeTelegramHtml(issue.message)).join('\n')
