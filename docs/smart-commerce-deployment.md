@@ -39,7 +39,7 @@ bunx prisma generate
 
 ## 5. Өдөр бүрийн шалгалт + Telegram (optional)
 
-Серверт **`PRODUCT_HEALTH_CRON_SECRET`** нэртэй 24+ тэмдэгттэй нууц үг тохируулна. Hosting cron scheduler-ээр өдөрт нэг удаа, жишээ нь Улаанбаатарын 09:00-д энэ HTTPS endpoint руу Bearer header-тай GET/POST илгээнэ:
+Серверт **`PRODUCT_HEALTH_CRON_SECRET`** нэртэй 24+ тэмдэгттэй нууц үг тохируулна. Repository-ийн **Settings → Secrets and variables → Actions** хэсэгт мөн `PRODUCT_HEALTH_CRON_SECRET`-ийг production server дээр тавьсан яг ижил утгаар нэмнэ. `.github/workflows/product-health.yml` нь өдөр бүр Улаанбаатарын 09:00-д HTTPS endpoint-ийг автоматаар дуудна; secret байхгүй үед алдаа үүсгэхгүй, ажиллагааг алгасна. Хүсвэл hosting cron scheduler-ээр мөн өдөрт нэг удаа дараах байдлаар GET/POST илгээнэ (хоёр scheduler нэгэн зэрэг ажиллуулах шаардлагагүй):
 
 ```sh
 curl -fsS -H "Authorization: Bearer $PRODUCT_HEALTH_CRON_SECRET" \
