@@ -5,6 +5,8 @@ import { FacebookShare } from '@/components/admin/facebook-share'
 import { TelegramPublisher } from '@/components/admin/telegram-publisher'
 import { AdminLogin } from '@/components/admin/login'
 import { AdminOverview } from '@/components/admin/overview'
+import { AdminAnalytics } from '@/components/admin/analytics'
+import { AdminProductHealth } from '@/components/admin/product-health'
 import { AdminOrders } from '@/components/admin/orders'
 import { AdminProducts } from '@/components/admin/products'
 import { ProductAdminTools } from '@/components/admin/product-admin-tools'
@@ -27,7 +29,7 @@ import { Logo } from '@/components/site/logo'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, ShoppingBag, Package, MessageCircle, LogOut, ExternalLink,
-  Tag, Star, HelpCircle, Gift, Users, Settings, Database, KeyRound,
+  Tag, Star, HelpCircle, Gift, Users, Settings, Database, KeyRound, ChartNoAxesCombined, ClipboardCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -42,10 +44,12 @@ interface Category {
 type TabId =
   | 'overview' | 'orders' | 'products' | 'suppliers' | 'fulfillment' | 'categories'
   | 'reviews' | 'faqs' | 'promotions' | 'customers'
-  | 'chat' | 'settings' | 'telegram' | 'facebook'
+  | 'chat' | 'settings' | 'telegram' | 'facebook' | 'analytics' | 'product-health'
 
 const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'overview', label: 'Тойм', Icon: LayoutDashboard },
+  { id: 'analytics', label: 'Аналитик', Icon: ChartNoAxesCombined },
+  { id: 'product-health', label: 'Барааны чанар', Icon: ClipboardCheck },
   { id: 'orders', label: 'Захиалга', Icon: ShoppingBag },
   { id: 'products', label: 'Бүтээгдэхүүн', Icon: Package },
   { id: 'suppliers', label: 'Нийлүүлэгч', Icon: Database },
@@ -68,6 +72,7 @@ export default function AdminPage() {
   const [sessionChecked, setSessionChecked] = useState(false)
   const [tab, setTab] = useState<TabId>('overview')
   const [categories, setCategories] = useState<Category[]>([])
+  const [productSearch, setProductSearch] = useState('')
 
   useEffect(() => {
     fetch('/api/admin/session', { cache: 'no-store' })
@@ -149,8 +154,10 @@ export default function AdminPage() {
 
         <div className="flex-1">
           {tab === 'overview' && <AdminOverview token={token} />}
+          {tab === 'analytics' && <AdminAnalytics />}
+          {tab === 'product-health' && <AdminProductHealth onLocate={name => { setProductSearch(name); setTab('products') }} />}
           {tab === 'orders' && <AdminOrders token={token} />}
-          {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><BulkPriceManager categories={categories} /><AdminProducts token={token} categories={categories} /></>}
+          {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><BulkPriceManager categories={categories} /><AdminProducts token={token} categories={categories} initialSearch={productSearch} /></>}
           {tab === 'suppliers' && <><G2GBulkDraftImport /><G2GManualProductCard /><G2GRepriceCard /><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
           {tab === 'fulfillment' && <G2GFulfillment />}
           {tab === 'categories' && <AdminCategories token={token} />}
