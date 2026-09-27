@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag, Heart, Loader2 } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { Notifications } from './notifications'
 import { Logo } from './logo'
@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 import { cn } from '@/lib/utils'
+import { useWishlist } from '@/hooks/use-wishlist'
+import { trackEvent } from '@/lib/analytics-client'
 
 const NAV = [
   { label: 'Нүүр', href: '#top' },
@@ -25,10 +27,15 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [suggestions, setSuggestions] = useState<{id:string;name:string;category:string;price:number}[]>([])
+  const [searching, setSearching] = useState(false)
   const count = useCartStore((s) => s.count())
   const openCart = useCartStore((s) => s.open)
   const openAuth = useUIStore((s) => s.openAuth)
   const openAccount = useUIStore((s) => s.openAccount)
+  const openWishlist = useUIStore((s) => s.openWishlist)
+  const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
+  const { count: wishlistCount } = useWishlist()
   const { customer, logout, loading } = useCustomer()
 
   useEffect(() => {
@@ -46,6 +53,14 @@ export function Header() {
     }
   }, [menuOpen])
 
+  useEffect(() => {
+    const value=query.trim()
+    if(value.length<2){queueMicrotask(()=>{setSuggestions([]);setSearching(false)});return}
+    const controller=new AbortController();queueMicrotask(()=>{if(!controller.signal.aborted)setSearching(true)})
+    const timer=setTimeout(()=>{void fetch('/api/search?q='+encodeURIComponent(value),{signal:controller.signal,cache:'no-store'}).then(r=>r.json()).then(data=>{if(!controller.signal.aborted)setSuggestions(Array.isArray(data.results)?data.results.slice(0,6):[])}).catch(()=>{}).finally(()=>{if(!controller.signal.aborted)setSearching(false)})},180)
+    return()=>{clearTimeout(timer);controller.abort()}
+  },[query])
+
   const sendSearch = () => {
     const value = query.trim()
     try {
@@ -53,6 +68,7 @@ export function Header() {
       else sessionStorage.removeItem('st-search')
     } catch {}
     window.dispatchEvent(new CustomEvent('st-search', { detail: value }))
+    if(value) trackEvent('search',{query:value})
   }
 
   const handleNav = (href: string) => {
@@ -103,7 +119,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-0 sm:gap-2">
-            <form onSubmit={submitSearch} className="relative hidden items-center md:flex">
+            <form onSubmit={submitSearch} className="relative hidden items-center md:flex" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))setSuggestions([])}}>
               <Search className="pointer-events-none absolute left-3 size-4 text-[#5B7290]" />
               <Input
                 aria-label="Хэрэгсэл хайх"
@@ -112,6 +128,9 @@ export function Header() {
                 placeholder="Хэрэгсэл хайх..."
                 className="h-9 w-44 rounded-full border-[#D6E4FF] bg-white pl-9 shadow-sm focus-visible:border-[#1677FF] focus-visible:ring-[#1677FF]/20 xl:w-44"
               />
+              {(searching||suggestions.length>0)&&query.trim().length>=2&&<div className="absolute right-0 top-[calc(100%+8px)] z-[80] w-[min(360px,80vw)] overflow-hidden rounded-2xl border border-[#D6E4FF] bg-white shadow-premium-lg">
+                {searching?<div className="flex items-center gap-2 px-4 py-4 text-xs text-[#5B7290]"><Loader2 className="size-4 animate-spin"/>Хайж байна…</div>:suggestions.map(item=><button key={item.id} type="button" onMouseDown={e=>e.preventDefault()} onClick={()=>{setSuggestions([]);setQuery(item.name);setSelectedProduct(item.id);trackEvent('search',{query})}} className="flex w-full items-center justify-between gap-3 border-b border-[#EEF4FF] px-4 py-3 text-left last:border-b-0 hover:bg-[#F5F9FF]"><span className="min-w-0"><strong className="block truncate text-sm text-[#102A43]">{item.name}</strong><span className="text-[11px] text-[#5B7290]">{item.category}</span></span><span className="shrink-0 text-xs font-bold text-[#0B4DBA]">{item.price.toLocaleString('mn-MN')}₮</span></button>)}
+              </div>}
             </form>
 
             <button
@@ -125,6 +144,10 @@ export function Header() {
               aria-expanded={searchOpen}
             >
               <Search className="size-5" />
+            </button>
+
+            <button type="button" onClick={()=>{if(customer)openWishlist();else openAuth('login')}} className="relative grid size-9 place-items-center rounded-full text-[#102A43] transition-colors hover:bg-[#E8F1FF]" aria-label={'Хүслийн жагсаалт'+(wishlistCount?', '+wishlistCount:'')}>
+              <Heart className={cn('size-5',wishlistCount>0&&'fill-red-500 text-red-500')}/>{wishlistCount>0&&<span className="absolute -right-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-[18px] text-white">{wishlistCount>99?'99+':wishlistCount}</span>}
             </button>
 
             <button
@@ -172,6 +195,7 @@ export function Header() {
                     >
                       <UserIcon className="size-4 text-[#1677FF]" /> Профайл
                     </button>
+                    <button type="button" onClick={(e)=>{e.stopPropagation();setMenuOpen(false);openWishlist()}} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[#102A43] hover:bg-[#E8F1FF]"><Heart className="size-4 text-red-500"/> Хүслийн жагсаалт</button>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setMenuOpen(false); openAccount('orders') }}
@@ -261,6 +285,7 @@ export function Header() {
                 >
                   <UserIcon className="size-4 text-[#1677FF]" /> Миний бүртгэл
                 </button>
+                <button type="button" onClick={() => { setMobileOpen(false); openWishlist() }} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#102A43] hover:bg-[#E8F1FF]"><Heart className="size-4 text-red-500"/> Хүслийн жагсаалт</button>
                 <button type="button" onClick={() => { setMobileOpen(false); openAccount('orders') }} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#102A43] hover:bg-[#E8F1FF]">Миний захиалга</button>
                 <button
                   type="button"

@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Star, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
+import { Star, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff, Heart } from 'lucide-react'
 import { useUIStore } from '@/store/cart'
 import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
@@ -19,6 +19,8 @@ import { LicenseSelector } from './license-selector'
 import { ProductDescription } from './product-description'
 import { toast } from 'sonner'
 import { freeDownloadUrl } from '@/lib/free-download'
+import { useWishlist } from '@/hooks/use-wishlist'
+import { trackEvent } from '@/lib/analytics-client'
 
 interface Product {
   id: string
@@ -48,6 +50,8 @@ export function ProductDetailModal() {
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
   const openCart = useCartStore((s) => s.open)
   const add = useCartStore((s) => s.add)
+  const openAuth = useUIStore((s) => s.openAuth)
+  const { has, toggle } = useWishlist()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
   const [retry, setRetry] = useState(0)
@@ -89,7 +93,10 @@ export function ProductDetailModal() {
         return r.json() as Promise<Product>
       })
       .then((data) => {
-        if (!controller.signal.aborted) setProduct(data)
+        if (!controller.signal.aborted) {
+          setProduct(data)
+          trackEvent('product_view',{productId:data.id})
+        }
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
@@ -120,6 +127,7 @@ export function ProductDetailModal() {
       },
       qty
     )
+    trackEvent('add_to_cart',{productId:product.id,value:qty})
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
     setSelectedProduct(null)
     setTimeout(() => openCart(), 200)
@@ -177,9 +185,10 @@ export function ProductDetailModal() {
                 </span>
               </div>
 
-              <h2 className="mt-2 text-2xl font-extrabold text-[#102A43] leading-tight">
-                {product.name}
-              </h2>
+              <div className="mt-2 flex items-start gap-3">
+                <h2 className="min-w-0 flex-1 text-2xl font-extrabold text-[#102A43] leading-tight">{product.name}</h2>
+                <button type="button" onClick={async()=>{const result=await toggle(product.id);if(result==='login')openAuth('login');else if(result==='added')toast.success('Хүслийн жагсаалтад хадгаллаа');else if(result==='removed')toast.success('Хүслийн жагсаалтаас хаслаа')}} className="grid size-10 shrink-0 place-items-center rounded-full border border-[#D6E4FF] bg-white text-[#5B7290] hover:text-red-500" aria-label={has(product.id)?'Хүслийн жагсаалтаас хасах':'Хүслийн жагсаалтад хадгалах'}><Heart className={`size-5 ${has(product.id)?'fill-red-500 text-red-500':''}`}/></button>
+              </div>
               <p className="mt-1.5 text-sm text-[#5B7290]">{product.shortDesc}</p>
 
               <div className="mt-4 flex items-end gap-3">

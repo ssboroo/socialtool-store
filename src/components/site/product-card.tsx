@@ -8,7 +8,9 @@ import { licenseVariants } from '@/lib/license'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { freeDownloadUrl } from '@/lib/free-download'
-import { Download } from 'lucide-react'
+import { Download, Heart } from 'lucide-react'
+import { useWishlist } from '@/hooks/use-wishlist'
+import { trackEvent } from '@/lib/analytics-client'
 
 export interface Product {
   id: string
@@ -36,6 +38,8 @@ export interface Product {
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const add = useCartStore((s) => s.add)
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
+  const openAuth = useUIStore((s) => s.openAuth)
+  const { has, toggle } = useWishlist()
   const variants = licenseVariants(product.duration)
   const defaultVariant = variants[0]
   const downloadUrl = freeDownloadUrl(product)
@@ -58,15 +62,26 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       requiresOrderLink: product.requiresOrderLink,
       duration: defaultVariant?.term,
     })
+    trackEvent('add_to_cart',{productId:product.id,value:1})
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
   }
 
   const openDetail = () => setSelectedProduct(product.id)
+  const toggleWish = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const result = await toggle(product.id)
+    if (result === 'login') { openAuth('login'); return }
+    if (result === 'added') toast.success('Хүслийн жагсаалтад хадгаллаа')
+    else if (result === 'removed') toast.success('Хүслийн жагсаалтаас хаслаа')
+    else if (result === 'error') toast.error('Хадгалж чадсангүй')
+  }
 
-
-  return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
+  return <article className={cn('shop-product relative',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
     <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
       <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode={product.icon === "Custom" ? "image" : "icon"} className="aspect-[16/10] w-full"/>
+    </button>
+    <button type="button" onClick={toggleWish} className="absolute right-3 top-3 z-10 grid size-9 place-items-center rounded-full border border-white/80 bg-white/90 text-[#5B7290] shadow-sm backdrop-blur hover:text-red-500" aria-label={has(product.id)?'Хүслийн жагсаалтаас хасах':'Хүслийн жагсаалтад хадгалах'}>
+      <Heart className={cn('size-4',has(product.id)&&'fill-red-500 text-red-500')}/>
     </button>
     <div className="shop-product-body">
       <h3><button type="button" onClick={openDetail}>{product.name}</button></h3>

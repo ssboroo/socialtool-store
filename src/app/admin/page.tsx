@@ -23,11 +23,13 @@ import { AdminPromotions } from '@/components/admin/promotions'
 import { AdminCustomers } from '@/components/admin/customers'
 import { AdminSettings } from '@/components/admin/settings'
 import { AdminChat } from '@/components/admin/chat'
+import { AdminAnalytics } from '@/components/admin/analytics'
+import { AdminProductHealth } from '@/components/admin/product-health'
 import { Logo } from '@/components/site/logo'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, ShoppingBag, Package, MessageCircle, LogOut, ExternalLink,
-  Tag, Star, HelpCircle, Gift, Users, Settings, Database, KeyRound,
+  Tag, Star, HelpCircle, Gift, Users, Settings, Database, KeyRound, BarChart3, Activity,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -42,12 +44,14 @@ interface Category {
 type TabId =
   | 'overview' | 'orders' | 'products' | 'suppliers' | 'fulfillment' | 'categories'
   | 'reviews' | 'faqs' | 'promotions' | 'customers'
-  | 'chat' | 'settings' | 'telegram' | 'facebook'
+  | 'chat' | 'settings' | 'telegram' | 'facebook' | 'analytics' | 'health'
 
 const TABS: { id: TabId; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'overview', label: 'Тойм', Icon: LayoutDashboard },
   { id: 'orders', label: 'Захиалга', Icon: ShoppingBag },
   { id: 'products', label: 'Бүтээгдэхүүн', Icon: Package },
+  { id: 'analytics', label: 'Аналитик', Icon: BarChart3 },
+  { id: 'health', label: 'Product Health', Icon: Activity },
   { id: 'suppliers', label: 'Нийлүүлэгч', Icon: Database },
   { id: 'fulfillment', label: 'G2G хүргэлт', Icon: KeyRound },
   { id: 'categories', label: 'Ангилал', Icon: Tag },
@@ -151,6 +155,8 @@ export default function AdminPage() {
           {tab === 'overview' && <AdminOverview token={token} />}
           {tab === 'orders' && <AdminOrders token={token} />}
           {tab === 'products' && <><ProductAdminTools token={token} categories={categories} /><BulkPriceManager categories={categories} /><AdminProducts token={token} categories={categories} /></>}
+          {tab === 'analytics' && <AdminAnalytics token={token} />}
+          {tab === 'health' && <AdminProductHealth token={token} />}
           {tab === 'suppliers' && <><G2GBulkDraftImport /><G2GManualProductCard /><G2GRepriceCard /><SupplierFeedCard /><G2ASyncCard /><SupplierCatalog /></>}
           {tab === 'fulfillment' && <G2GFulfillment />}
           {tab === 'categories' && <AdminCategories token={token} />}
