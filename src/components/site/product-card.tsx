@@ -64,7 +64,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
   }
 
-  const openDetail = () => {trackStoreEvent('product_view',product.id);setSelectedProduct(product.id)}
+  const openDetail = () => setSelectedProduct(product.id)
 
 
   return <article className={cn('shop-product relative',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>

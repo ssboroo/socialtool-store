@@ -19,6 +19,7 @@ import { LicenseSelector } from './license-selector'
 import { ProductDescription } from './product-description'
 import { toast } from 'sonner'
 import { freeDownloadUrl } from '@/lib/free-download'
+import { trackStoreEvent } from '@/lib/analytics-client'
 
 interface Product {
   id: string
@@ -89,7 +90,7 @@ export function ProductDetailModal() {
         return r.json() as Promise<Product>
       })
       .then((data) => {
-        if (!controller.signal.aborted) setProduct(data)
+        if (!controller.signal.aborted) {setProduct(data);trackStoreEvent('product_view',data.id)}
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
@@ -120,6 +121,7 @@ export function ProductDetailModal() {
       },
       qty
     )
+    trackStoreEvent('add_to_cart',product.id)
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
     setSelectedProduct(null)
     setTimeout(() => openCart(), 200)
