@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag, Heart } from 'lucide-react'
 import { ThemeToggle } from './theme-toggle'
 import { Notifications } from './notifications'
 import { Logo } from './logo'
@@ -10,6 +10,9 @@ import { Input } from '@/components/ui/input'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 import { cn } from '@/lib/utils'
+import { SearchSuggestions } from './search-suggestions'
+import { trackStoreEvent } from '@/lib/analytics-client'
+import { useWishlistStore } from '@/store/wishlist'
 
 const NAV = [
   { label: 'Нүүр', href: '#top' },
@@ -26,6 +29,9 @@ export function Header() {
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const count = useCartStore((s) => s.count())
+  const wishlistCount=useWishlistStore(s=>s.ids.length)
+  const openWishlist=useWishlistStore(s=>s.setOpen)
+  const selectProduct=useUIStore(s=>s.setSelectedProduct)
   const openCart = useCartStore((s) => s.open)
   const openAuth = useUIStore((s) => s.openAuth)
   const openAccount = useUIStore((s) => s.openAccount)
@@ -53,6 +59,7 @@ export function Header() {
       else sessionStorage.removeItem('st-search')
     } catch {}
     window.dispatchEvent(new CustomEvent('st-search', { detail: value }))
+    if(value)trackStoreEvent('search',undefined,value)
   }
 
   const handleNav = (href: string) => {
@@ -112,6 +119,7 @@ export function Header() {
                 placeholder="Хэрэгсэл хайх..."
                 className="h-9 w-44 rounded-full border-[#D6E4FF] bg-white pl-9 shadow-sm focus-visible:border-[#1677FF] focus-visible:ring-[#1677FF]/20 xl:w-44"
               />
+              <SearchSuggestions query={query} onChoose={id=>{selectProduct(id);setQuery('')}}/>
             </form>
 
             <button
@@ -126,6 +134,8 @@ export function Header() {
             >
               <Search className="size-5" />
             </button>
+
+            <button type="button" onClick={()=>customer?openWishlist(true):openAuth('login')} className="relative grid size-9 place-items-center rounded-full text-[#102A43] hover:bg-[#E8F1FF]" aria-label={`Хүслийн жагсаалт (${wishlistCount})`} title="Хүслийн жагсаалт"><Heart className="size-5"/>{wishlistCount>0&&<span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1 text-[10px] text-white">{wishlistCount}</span>}</button>
 
             <button
               type="button"

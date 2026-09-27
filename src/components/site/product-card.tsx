@@ -9,6 +9,8 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { freeDownloadUrl } from '@/lib/free-download'
 import { Download } from 'lucide-react'
+import { WishlistButton } from './wishlist'
+import { trackStoreEvent } from '@/lib/analytics-client'
 
 export interface Product {
   id: string
@@ -58,13 +60,15 @@ export function ProductCard({ product, compact = false }: { product: Product; co
       requiresOrderLink: product.requiresOrderLink,
       duration: defaultVariant?.term,
     })
+    trackStoreEvent('add_to_cart',product.id)
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
   }
 
-  const openDetail = () => setSelectedProduct(product.id)
+  const openDetail = () => {trackStoreEvent('product_view',product.id);setSelectedProduct(product.id)}
 
 
-  return <article className={cn('shop-product',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
+  return <article className={cn('shop-product relative',compact&&'shop-product-compact',!product.available&&'shop-product-unavailable')}>
+    <WishlistButton productId={product.id}/>
     <button type="button" className="shop-product-art" onClick={openDetail} aria-label={product.name+' дэлгэрэнгүй'}>
       <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode={product.icon === "Custom" ? "image" : "icon"} className="aspect-[16/10] w-full"/>
     </button>

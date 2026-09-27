@@ -8,6 +8,7 @@ import { ProductCard, type Product } from './product-card'
 
 import { CategoryIcon } from './category-icon'
 import { Hero, StoreIntroduction } from './hero'
+import { trackStoreEvent } from '@/lib/analytics-client'
 
 interface Category {
   id: string
@@ -88,6 +89,12 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
     }
   }, [activeCat, query, sort, retry])
 
+
+  useEffect(()=>{
+    if(query.trim().length<2)return
+    const timer=setTimeout(()=>trackStoreEvent('search',undefined,query.trim()),1500)
+    return()=>clearTimeout(timer)
+  },[query])
 
   const categoryName = activeCat === '__free' ? 'Үнэгүй программууд' : activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
   const filterCategories = [{ id: 'all', slug: 'all', name: 'Бүх хэрэгсэл' }, { id: '__free', slug: '__free', name: 'Үнэгүй программууд' }, ...categories.filter(c => c.slug !== 'all')]

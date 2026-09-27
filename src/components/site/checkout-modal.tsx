@@ -1,6 +1,7 @@
 'use client'
 import { rememberChat, savedChats } from '@/lib/chat-history'
 import { cartKey } from '@/lib/license'
+import { trackStoreEvent } from '@/lib/analytics-client'
 import { isValidOrderLink } from '@/lib/order-link'
 
 import { useEffect, useState, useRef } from 'react'
@@ -150,6 +151,7 @@ export function CheckoutModal() {
   }
 
   const submitOrder = async () => {
+    trackStoreEvent('checkout_start')
     if (submittingRef.current || !validate()) return
     submittingRef.current = true
     setSubmitting(true)

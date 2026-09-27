@@ -13,6 +13,8 @@ import { ProductDetailModal } from '@/components/site/product-detail-modal'
 import { CheckoutModal } from '@/components/site/checkout-modal'
 import { LiveChat } from '@/components/site/live-chat'
 import { AuthGate } from '@/components/site/auth-gate'
+import { WishlistBootstrap } from '@/components/site/wishlist'
+import { ShoppingAdvisor } from '@/components/site/shopping-advisor'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,6 +43,7 @@ export default async function Home() {
     description: p.description,
     price: p.price,
     downloadUrl: p.downloadUrl,
+    requiresOrderLink: p.requiresOrderLink,
     oldPrice: p.oldPrice,
     discount: p.discount,
     icon: p.icon,
@@ -90,6 +93,8 @@ export default async function Home() {
       <CheckoutModal />
       <LiveChat />
       <AuthGate />
+      <WishlistBootstrap />
+      <ShoppingAdvisor />
     </div>
   )
 }
