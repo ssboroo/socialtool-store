@@ -37,6 +37,7 @@ interface Product {
   name: string
   slug: string
   shortDesc: string
+  searchKeywords?: string | null
   description: string
   price: number
   downloadUrl: string | null
@@ -264,6 +265,7 @@ function ProductFormDialog({
   const [form, setForm] = useState({
     name: '',
     shortDesc: '',
+    searchKeywords: '',
     description: '',
     price: '',
     isFree: false,
@@ -291,6 +293,7 @@ function ProductFormDialog({
       setForm({
         name: product.name,
         shortDesc: product.shortDesc,
+        searchKeywords: product.searchKeywords || '',
         description: product.description,
         price: String(product.price),
         isFree: product.price === 0,
@@ -313,6 +316,7 @@ function ProductFormDialog({
       setForm({
         name: '',
         shortDesc: '',
+        searchKeywords: '',
         description: '',
         price: '',
         isFree: false,
@@ -370,6 +374,7 @@ function ProductFormDialog({
     onSave({
       name: form.name.trim(),
       shortDesc: form.shortDesc,
+      searchKeywords: form.searchKeywords,
       description: form.description,
       price: form.isFree ? 0 : Number(form.price),
       downloadUrl: form.isFree ? form.downloadUrl.trim() : null,
