@@ -60,12 +60,12 @@ interface Product {
 
 const ICONS = ['Facebook', 'Music2', 'Instagram', 'Twitter', 'Send', 'Mail', 'Sparkles', 'LayoutGrid', 'Package', 'CS2', 'Valorant', 'Dota2', 'Custom']
 
-export function AdminProducts({ token, categories }: { token: string; categories: Category[] }) {
+export function AdminProducts({ token, categories, initialSearch = '' }: { token: string; categories: Category[]; initialSearch?: string }) {
   const [selected, setSelected] = useState<string[]>([])
   const [bulkProducts, setBulkProducts] = useState<Product[] | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(initialSearch)
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
   const [quick, setQuick] = useState<Product | null>(null)
@@ -101,6 +101,7 @@ export function AdminProducts({ token, categories }: { token: string; categories
       const result = await res.json()
       if (!res.ok) throw new Error(result.error)
       toast.success(isEdit ? 'Шинэчлэгдлээ' : 'Үүсгэгдлээ')
+      if (Array.isArray(result.qualityWarnings) && result.qualityWarnings.length) toast.warning(`Бүтээгдэхүүнд ${result.qualityWarnings.length} чанарын анхааруулга байна. Барааны чанар цэсээс шалгана уу.`)
       setEditing(null)
       setCreating(false)
       setCopy(null)
