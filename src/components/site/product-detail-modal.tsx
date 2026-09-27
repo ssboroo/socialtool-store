@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Star, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
+import { Star, Heart, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
 import { useUIStore } from '@/store/cart'
 import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
@@ -19,6 +19,8 @@ import { LicenseSelector } from './license-selector'
 import { ProductDescription } from './product-description'
 import { toast } from 'sonner'
 import { freeDownloadUrl } from '@/lib/free-download'
+import { useWishlist } from './wishlist-provider'
+import { trackStoreEvent } from '@/lib/store-analytics'
 
 interface Product {
   id: string
@@ -45,6 +47,7 @@ interface Product {
 
 export function ProductDetailModal() {
   const selectedId = useUIStore((s) => s.selectedProductId)
+  const wishlist = useWishlist()
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
   const openCart = useCartStore((s) => s.open)
   const add = useCartStore((s) => s.add)
@@ -89,7 +92,7 @@ export function ProductDetailModal() {
         return r.json() as Promise<Product>
       })
       .then((data) => {
-        if (!controller.signal.aborted) setProduct(data)
+        if (!controller.signal.aborted) { setProduct(data); trackStoreEvent('product_view', { productId: data.id }) }
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
@@ -120,6 +123,7 @@ export function ProductDetailModal() {
       },
       qty
     )
+    trackStoreEvent('cart_add', { productId: product.id })
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
     setSelectedProduct(null)
     setTimeout(() => openCart(), 200)
@@ -177,6 +181,7 @@ export function ProductDetailModal() {
                 </span>
               </div>
 
+              <button type="button" onClick={() => void wishlist.toggle(product.id)} disabled={wishlist.busyId === product.id} aria-pressed={wishlist.savedIds.includes(product.id)} className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-[#D6E4FF] bg-white px-3 py-1.5 text-xs font-semibold text-[#0B4DBA] hover:bg-[#E8F1FF]"><Heart className={`size-4 ${wishlist.savedIds.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />{wishlist.savedIds.includes(product.id) ? 'Хадгалсан' : 'Хүслийн жагсаалтад'}</button>
               <h2 className="mt-2 text-2xl font-extrabold text-[#102A43] leading-tight">
                 {product.name}
               </h2>
