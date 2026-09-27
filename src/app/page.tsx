@@ -39,6 +39,8 @@ export default async function Home() {
     slug: p.slug,
     shortDesc: p.shortDesc,
     description: p.description,
+    searchKeywords: p.searchKeywords,
+    requiresOrderLink: p.requiresOrderLink,
     price: p.price,
     downloadUrl: p.downloadUrl,
     oldPrice: p.oldPrice,
