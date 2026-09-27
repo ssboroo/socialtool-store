@@ -12,6 +12,8 @@ import { CartDrawer } from '@/components/site/cart-drawer'
 import { ProductDetailModal } from '@/components/site/product-detail-modal'
 import { CheckoutModal } from '@/components/site/checkout-modal'
 import { LiveChat } from '@/components/site/live-chat'
+import { WishlistDrawer } from '@/components/site/wishlist-drawer'
+import { ShoppingAssistant } from '@/components/site/shopping-assistant'
 import { AuthGate } from '@/components/site/auth-gate'
 
 export const dynamic = 'force-dynamic'
@@ -88,6 +90,8 @@ export default async function Home() {
       <CartDrawer />
       <ProductDetailModal />
       <CheckoutModal />
+      <WishlistDrawer />
+      <ShoppingAssistant />
       <LiveChat />
       <AuthGate />
     </div>
