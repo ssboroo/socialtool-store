@@ -50,6 +50,8 @@ model Product {
   updatedAt         DateTime    @updatedAt
   categoryRef       Category    @relation(fields: [categoryId], references: [id])
   orderItems        OrderItem[]
+  wishlistedBy      WishlistItem[]
+  analyticsEvents   AnalyticsEvent[]
 }
 
 model Order {
@@ -160,6 +162,7 @@ model Customer {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   orders       Order[]
+  wishlist     WishlistItem[]
 }
 
 model Faq {
@@ -230,4 +233,28 @@ model SupplierCatalogItem {
   @@index([supplier, serviceName])
   @@index([brandName])
   @@index([published])
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([productId])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  type      String
+  productId String?
+  query     String?
+  createdAt DateTime @default(now())
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt, type])
+  @@index([productId, type])
 }
