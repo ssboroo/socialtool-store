@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { smartSearch } from '@/lib/smart-search'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -14,7 +15,6 @@ export async function GET(req: NextRequest) {
     downloadUrl?: { not: null }
     featured?: boolean
     category?: string
-    OR?: { name?: { contains: string }; shortDesc?: { contains: string }; description?: { contains: string } }[]
   } = { available: true }
 
   if (featuredOnly) where.featured = true
@@ -25,20 +25,16 @@ export async function GET(req: NextRequest) {
     if (cat) where.category = cat.name
   }
 
-  if (q) {
-    where.OR = [
-      { name: { contains: q } },
-      { shortDesc: { contains: q } },
-      { description: { contains: q } },
-    ]
-  }
-
   let orderBy: { featured?: 'desc'; rating?: 'desc'; price?: 'asc' | 'desc' }[] = [{ featured: 'desc' }, { rating: 'desc' }]
   if (sort === 'price-asc') orderBy = [{ price: 'asc' }]
   else if (sort === 'price-desc') orderBy = [{ price: 'desc' }]
   else if (sort === 'rating') orderBy = [{ rating: 'desc' }, { featured: 'desc' }]
 
-  const products = await db.product.findMany({ where, orderBy })
+  const candidates = await db.product.findMany({ where, orderBy })
+  let products = q ? smartSearch(candidates, q, 100) : candidates
+  if (q && sort === 'price-asc') products = [...products].sort((a,b)=>a.price-b.price)
+  else if (q && sort === 'price-desc') products = [...products].sort((a,b)=>b.price-a.price)
+  else if (q && sort === 'rating') products = [...products].sort((a,b)=>b.rating-a.rating)
 
   return NextResponse.json(
     products.map((p) => ({
