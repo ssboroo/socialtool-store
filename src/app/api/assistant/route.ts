@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { rankProducts } from '@/lib/smart-search'
-import { detectProductBrandName } from '@/lib/product-brand'
-import { formatTugrik } from '@/lib/format'
 import { getCustomerFromRequest } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
