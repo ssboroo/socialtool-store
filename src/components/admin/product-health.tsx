@@ -8,7 +8,7 @@ type Issue={productId:string;productName:string;severity:'critical'|'warning'|'i
 type Data={summary:{products:number;healthy:number;critical:number;warning:number;info:number};issues:Issue[]}
 export function AdminProductHealth({token}:{token:string}){
   const [data,setData]=useState<Data|null>(null);const [loading,setLoading]=useState(true);const [filter,setFilter]=useState<'all'|'critical'|'warning'|'info'>('all');const [reload,setReload]=useState(0)
-  useEffect(()=>{const c=new AbortController();setLoading(true);fetch('/api/admin/product-health',{headers:{authorization:'Bearer '+token},signal:c.signal,cache:'no-store'}).then(r=>r.json()).then(d=>{if(!c.signal.aborted)setData(d)}).finally(()=>{if(!c.signal.aborted)setLoading(false)});return()=>c.abort()},[token,reload])
+  useEffect(()=>{const c=new AbortController();queueMicrotask(()=>{if(!c.signal.aborted)setLoading(true)});fetch('/api/admin/product-health',{headers:{authorization:'Bearer '+token},signal:c.signal,cache:'no-store'}).then(r=>r.json()).then(d=>{if(!c.signal.aborted)setData(d)}).finally(()=>{if(!c.signal.aborted)setLoading(false)});return()=>c.abort()},[token,reload])
   const issues=useMemo(()=>data?.issues.filter(i=>filter==='all'||i.severity===filter)||[],[data,filter])
   if(!data&&loading)return <div className="py-24 text-center text-[#5B7290]">Бүтээгдэхүүн шалгаж байна…</div>
   if(!data)return <div className="py-24 text-center text-[#5B7290]">Шалгалтын мэдээлэл олдсонгүй</div>
