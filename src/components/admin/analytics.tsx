@@ -17,7 +17,7 @@ function Ranking({title,rows}:{title:string;rows:Row[]}){
 }
 export function AdminAnalytics({token}:{token:string}){
   const [days,setDays]=useState(30);const [data,setData]=useState<Data|null>(null);const [loading,setLoading]=useState(true)
-  useEffect(()=>{const c=new AbortController();setLoading(true);fetch('/api/admin/analytics?days='+days,{signal:c.signal,headers:{authorization:'Bearer '+token},cache:'no-store'}).then(r=>r.json()).then(d=>{if(!c.signal.aborted)setData(d)}).finally(()=>{if(!c.signal.aborted)setLoading(false)});return()=>c.abort()},[days,token])
+  useEffect(()=>{const c=new AbortController();queueMicrotask(()=>{if(!c.signal.aborted)setLoading(true)});fetch('/api/admin/analytics?days='+days,{signal:c.signal,headers:{authorization:'Bearer '+token},cache:'no-store'}).then(r=>r.json()).then(d=>{if(!c.signal.aborted)setData(d)}).finally(()=>{if(!c.signal.aborted)setLoading(false)});return()=>c.abort()},[days,token])
   if(loading&&!data)return <div className="py-24 text-center text-[#5B7290]">Аналитик ачаалж байна…</div>
   if(!data)return <div className="py-24 text-center text-[#5B7290]">Аналитик ачаалж чадсангүй</div>
   const cards=[
