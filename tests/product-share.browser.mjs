@@ -27,7 +27,7 @@ try {
   assert.equal(await page.locator('.hero-app').first().evaluate(el => getComputedStyle(el).animationName), 'none')
   assert.equal(await pause.isVisible(), false)
   await page.setViewportSize({ width: 390, height: 844 })
-  assert.equal(await page.locator('.catalog-mobile-promo').isVisible(), true)
+  assert.equal(await page.locator('.catalog-mobile-promo').count(), 0)
   if (output) await page.screenshot({ path: path.join(output, 'storefront-mobile.png') })
 
   const products = await (await page.request.get(`${base}/api/products`)).json()

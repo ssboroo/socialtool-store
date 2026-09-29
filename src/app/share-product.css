@@ -19,11 +19,4 @@
 .share-product-back { display:inline-flex; align-items:center; min-height:44px; margin-top:24px; color:var(--shop-blue); }
 .dark .product-share :is(a,button) { background:#203451; border-color:#48618a; color:#e7efff; }
 .dark .product-share .product-share-facebook { background:#165dcc; color:white; }
-.storefront-premium .catalog-mobile-promo { display:none; }
-@media(max-width:900px) {
-  .storefront-premium .catalog-mobile-promo { display:flex; align-items:center; gap:16px; padding:10px 16px 10px 0; margin-top:12px; min-height:88px; }
-  .catalog-mobile-promo img { width:100px; height:78px; margin:0; object-fit:cover; border-radius:12px; }
-  .storefront-premium .catalog-mobile-promo p { margin:0; font-weight:650; font-size:13px; }
-  .catalog-mobile-promo > svg { flex-shrink:0; }
-}
 @media(max-width:600px) { .share-product-page { padding:24px 12px; } .share-product-card { grid-template-columns:minmax(0,1fr); padding:20px; gap:24px; } }
