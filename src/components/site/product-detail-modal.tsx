@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Star, Heart, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
+import { Star, Heart, ShoppingCart, Check, ShieldCheck, Zap, Loader2, ChevronDown, PlayCircle, ImageIcon, X, CircleOff } from 'lucide-react'
 import { useUIStore } from '@/store/cart'
 import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
@@ -147,8 +147,9 @@ export function ProductDetailModal() {
             <Loader2 className="size-8 animate-spin text-[#1677FF]" />
           </div>
         ) : product ? (
-          <div className="grid sm:grid-cols-2 max-h-[92vh] overflow-y-auto custom-scroll">
-            <div className="relative bg-gradient-to-br from-[#E8F1FF] to-[#F5F9FF] p-6 sm:p-8">
+          <div className="max-h-[92vh] overflow-y-auto custom-scroll" key={product.id}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 !pr-0">
+            <div className="relative min-w-0 bg-gradient-to-br from-[#E8F1FF] to-[#F5F9FF] p-6 sm:p-8">
               <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
                 <span className="rounded-full bg-white/90 backdrop-blur border border-[#D6E4FF] px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA]">
                   {product.category}
@@ -168,7 +169,7 @@ export function ProductDetailModal() {
               {product.available && <ProductShare id={product.id} name={product.name} />}
             </div>
 
-            <div className="p-6 sm:p-8 flex flex-col">
+            <div className="min-w-0 p-6 sm:p-8 flex flex-col">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -214,11 +215,14 @@ export function ProductDetailModal() {
               </div>
 
               {product.price>0&&<LicenseSelector options={options} value={selectedDuration} onChange={setDuration} />}
+            </div>
+            </div>
 
+            <div className="px-6 sm:px-8 pb-6 product-detail-sections">
               {features.length > 0 && (
-                <div className="mt-5">
-                  <h4 className="text-sm font-bold text-[#102A43]">Боломжууд</h4>
-                  <ul className="mt-2.5 space-y-1.5">
+                <details open className="group border-t border-[#E4ECF7]">
+                  <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-[#102A43]">Багцад юу багтах вэ?<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
+                  <ul className="pb-5 space-y-2.5">
                     {features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2 text-sm text-[#5B7290]">
                         <Check className="mt-0.5 size-4 shrink-0 text-[#16A34A]" />
@@ -226,14 +230,19 @@ export function ProductDetailModal() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </details>
               )}
 
-              <div className="mt-5 rounded-xl bg-[#F5F9FF] p-3.5">
-                <h4 className="text-xs font-bold text-[#102A43] uppercase tracking-wide">Тайлбар</h4>
+              <details className="group border-t border-[#E4ECF7]">
+                <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-[#102A43]">Бүтээгдэхүүний тухай<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
+                <div className="pb-5">
                 <ProductDescription text={product.description} />
-              </div>
+                </div>
+              </details>
 
+              {(getYouTubeId(product.tutorialVideoUrl || '') || parseImageList(product.instructionImages).length > 0) && <details className="group border-t border-[#E4ECF7]" onToggle={(event) => { if (!event.currentTarget.open) setVideoPlaying(false) }}>
+                <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-[#102A43]">Хэрхэн ашиглах вэ?<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
+                <div className="pb-5">
               {(() => {
                 const ytId = product.tutorialVideoUrl ? getYouTubeId(product.tutorialVideoUrl) : null
                 if (!ytId) return null
@@ -311,7 +320,13 @@ export function ProductDetailModal() {
                 )
               })()}
 
-              {product.price===0 ? <div className="mt-auto pt-5 space-y-3">{downloadUrl ? <Button asChild className="w-full"><a href={downloadUrl} target="_blank" rel="noopener noreferrer">Үнэгүй татах <span className="sr-only">(шинэ цонхонд)</span></a></Button> : <Button disabled className="w-full">Татах боломжгүй</Button>}<p className="text-xs text-muted-foreground">Программын татах хуудас шинэ цонхонд нээгдэнэ. Төлбөр, захиалга үүсгэх шаардлагагүй.</p></div> : <div className="mt-auto pt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                </div>
+              </details>}
+              <p className="mt-3 rounded-xl bg-[#F5F9FF] px-4 py-3 text-xs leading-relaxed text-[#5B7290]">Худалдан авахаас өмнө “Бүтээгдэхүүний тухай” хэсэг дэх ашиглах эрх, хугацаа болон нөхцөлийг уншина уу.</p>
+            </div>
+
+            <div className="sticky bottom-0 z-10 border-t border-[#E4ECF7] bg-white px-6 py-4 sm:px-8">
+              {product.price===0 ? <div className="space-y-3">{downloadUrl ? <Button asChild className="w-full"><a href={downloadUrl} target="_blank" rel="noopener noreferrer">Үнэгүй татах <span className="sr-only">(шинэ цонхонд)</span></a></Button> : <Button disabled className="w-full">Татах боломжгүй</Button>}<p className="text-xs text-muted-foreground">Программын татах хуудас шинэ цонхонд нээгдэнэ. Төлбөр, захиалга үүсгэх шаардлагагүй.</p></div> : <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
                   <button
                     type="button"
