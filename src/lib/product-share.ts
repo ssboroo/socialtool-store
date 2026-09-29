@@ -1,8 +1,9 @@
 import { licenseVariants } from '@/lib/license'
+import { productPath } from '@/lib/share-link'
 
 type ShareProduct = { id: string; name: string; shortDesc: string; price: number; duration?: string | null }
 export function productShareUrl(id: string, origin: string) {
-  return new URL('/share/product/' + encodeURIComponent(id), origin).href
+  return new URL(productPath(id), origin).href
 }
 export function productShareText(p: ShareProduct, origin: string) {
   const money = (value: number) => value === 0 ? 'Үнэгүй' : value.toLocaleString('en-US') + ' ₮'

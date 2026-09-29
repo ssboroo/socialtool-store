@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { productShareText, productShareUrl, publicProductImage } from '@/lib/product-share'
+import { siteUrl } from '@/lib/site-url'
 
 type Product = { id: string; name: string; shortDesc: string; price: number; duration?: string | null; image?: string | null; available: boolean }
 const control = 'w-full rounded-xl border border-slate-300 bg-white p-3 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white'
@@ -22,7 +23,7 @@ export function FacebookShare() {
     // Defer effect-owned state resets so React can complete the render first.
     queueMicrotask(() => {
       if (controller.signal.aborted) return
-      setOrigin(window.location.origin)
+      setOrigin(siteUrl())
       setLoading(true); setError(''); setSelected(null); setDraft('')
     })
     fetch('/api/admin/products', { cache: 'no-store', signal: controller.signal })
@@ -55,6 +56,10 @@ export function FacebookShare() {
       <div className="min-w-0 space-y-4 rounded-2xl border p-4 sm:p-6">
         <h3 className="font-bold">Пост бэлтгэх</h3>
         {selected ? <>
+          <a href={url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-2xl border border-blue-100 bg-blue-50">
+            <img src={selected.image?.startsWith('https://') && image ? image : `/share/product/${encodeURIComponent(selected.id)}/image`} alt={`${selected.name} хуваалцах зураг`} width={1200} height={630} className="aspect-[1200/630] w-full object-contain" />
+            <span className="block p-3 text-sm font-semibold">{selected.name}</span>
+          </a>
           {image && <a href={image} target="_blank" rel="noopener noreferrer" className="block text-blue-600 underline">Бүтээгдэхүүний зураг нээх / хадгалах ↗</a>}
           <label className="block">Постын текст<textarea rows={12} className={control + ' mt-2 resize-y'} value={draft} onChange={e => setDraft(e.target.value)} /></label>
           <div className="flex flex-wrap gap-2">

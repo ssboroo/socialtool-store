@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { DescriptionEditor } from './description-editor'
 import { ProductDescription } from '@/components/site/product-description'
 import { ProductImage } from '@/components/site/product-illustration'
+import { ProductShare } from '@/components/site/product-share'
 import { formatTugrik } from '@/lib/format'
 import { licenseVariants } from '@/lib/license'
 import { toast } from 'sonner'
@@ -82,7 +83,7 @@ export function QuickProductEditor({ product, categories, token, onClose, onSave
     }catch(e){toast.error(e instanceof Error?e.message:'AI алдаа')}finally{setAiBusy(false)}
   }
   return <Sheet open onOpenChange={o=>{if(!o)close()}}><SheetContent className="w-full sm:max-w-6xl gap-0 overflow-hidden" aria-describedby="quick-editor-help">
-    <div className="border-b p-5 pr-12"><SheetTitle>Шуурхай засах</SheetTitle><SheetDescription id="quick-editor-help">Өөрчлөлтөө хадгалаад үргэлжлүүлэн засна. Ctrl+S / ⌘S</SheetDescription></div>
+    <div className="border-b p-5 pr-12"><SheetTitle>Шуурхай засах</SheetTitle><SheetDescription id="quick-editor-help">Өөрчлөлтөө хадгалаад үргэлжлүүлэн засна. Ctrl+S / ⌘S</SheetDescription>{product.available && <ProductShare id={product.id} name={product.name} />}</div>
     <form ref={formRef} onSubmit={save} className="flex min-h-0 min-w-0 flex-1 flex-col [&_button]:max-w-full [&_button]:whitespace-normal [&_button]:h-auto [&_button]:min-h-9 [&_label]:min-w-0 [&_label]:break-words [&_input]:min-w-0">
       <div className="min-h-0 flex-1 overflow-y-auto p-5">
         {savedDraft&&<div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-slate-900"><p>Хадгалаагүй ноорог байна.{savedDraft.version!==version?' Серверийн мэдээлэл өөрчлөгдсөн тул нооргоо сэргээсний дараа хуучин хувилбар гэж анхааруулна.':''}</p><Button type="button" onClick={()=>{setForm(savedDraft.form);setVersion(savedDraft.version);setSavedDraft(null)}}>Ноорог сэргээх</Button><Button type="button" variant="ghost" onClick={()=>{try{localStorage.removeItem(key)}catch{};setSavedDraft(null)}}>Ноорог устгах</Button></div>}

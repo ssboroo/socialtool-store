@@ -1,5 +1,6 @@
 'use client'
 import { licenseOptions, licenseVariants } from '@/lib/license'
+import { ProductShare } from '@/components/site/product-share'
 import { productImageSuggestions } from '@/lib/product-image-suggestions'
 import { BRAND_ICON_OPTIONS } from '@/lib/product-brand'
 import { QuickProductEditor, type QuickProduct } from './quick-product-editor'
@@ -214,6 +215,7 @@ export function AdminProducts({ token, categories, initialSearch = '' }: { token
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex flex-wrap items-center justify-end gap-1">
+                        {p.available && <ProductShare id={p.id} name={p.name} compact />}
                         <button
                           onClick={() => setQuick(p)}
                           className="grid size-8 place-items-center rounded-lg text-[#5B7290] hover:bg-[#E8F1FF] hover:text-[#1677FF]"

@@ -1,4 +1,5 @@
 'use client'
+import { scrollToStoreSection } from '@/lib/store-motion'
 
 import { useEffect, useState } from 'react'
 import { Search, Heart, ShoppingCart, Menu, X, ChevronDown, Zap, User as UserIcon, LogOut, ShoppingBag } from 'lucide-react'
@@ -62,14 +63,13 @@ export function Header() {
   const handleNav = (href: string) => {
     setMobileOpen(false)
     if (href === '#products' && query.trim()) sendSearch()
-    const el = document.querySelector(href)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollToStoreSection(href)
   }
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault()
     sendSearch()
-    document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollToStoreSection('#products')
     setSearchOpen(false)
   }
 

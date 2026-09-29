@@ -1,4 +1,5 @@
 'use client'
+import { scrollToStoreSection } from '@/lib/store-motion'
 
 import { useEffect, useState } from 'react'
 import { Gift, Timer, ArrowRight } from 'lucide-react'
@@ -39,7 +40,7 @@ export function PromoBanner({ promotion, settings }: {
   const discount = promotion?.discountPercent || Number(settings?.promoDiscountPercent || '30')
 
   const scroll = () =>
-    document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollToStoreSection('#products')
 
   return (
     <section className="store-service-section relative py-10 lg:py-14">

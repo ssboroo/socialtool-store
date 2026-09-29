@@ -12,6 +12,7 @@ import { Star, Heart, ShoppingCart, Check, ShieldCheck, Zap, Loader2, Clock, Pla
 import { useUIStore } from '@/store/cart'
 import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
+import { ProductShare } from './product-share'
 import { formatTugrik } from '@/lib/format'
 import { getYouTubeId, getYouTubeEmbedUrl, getYouTubeThumb, parseImageList } from '@/lib/media'
 import { licenseOptions, licensePrice } from '@/lib/license'
@@ -164,6 +165,7 @@ export function ProductDetailModal() {
                 ) : null}
               </div>
               <ProductImage image={product.image} icon={product.icon} alt={product.name} category={product.category} mode="auto" className={`aspect-square w-full mt-6 ${!product.available ? 'grayscale-[20%]' : ''}`} />
+              {product.available && <ProductShare id={product.id} name={product.name} />}
             </div>
 
             <div className="p-6 sm:p-8 flex flex-col">

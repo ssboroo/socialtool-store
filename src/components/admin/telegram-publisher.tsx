@@ -19,8 +19,10 @@ export function TelegramPublisher(){
   .then(([c,p])=>{if(active){setConfig(c);setChannelUrl(c.channelUrl);setProducts(p)}}).catch(e=>{if(active)setNotice(e.message)})
   return()=>{active=false}
  },[])
- useEffect(()=>{setPreview(null);operation.current='';if(!id)return
+ useEffect(()=>{
   const controller=new AbortController()
+  queueMicrotask(()=>{if(!controller.signal.aborted){setPreview(null);operation.current=''}})
+  if(!id)return()=>controller.abort()
   fetch('/api/admin/telegram?productId='+encodeURIComponent(id),{signal:controller.signal}).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error);return d})
   .then(d=>{if(!controller.signal.aborted){setPreview(d);setPhoto(!!d.image);operation.current=crypto.randomUUID()}})
   .catch(e=>{if(!controller.signal.aborted)setNotice(e.message)})

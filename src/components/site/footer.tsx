@@ -1,4 +1,5 @@
 'use client'
+import { scrollToStoreSection } from '@/lib/store-motion'
 
 import { useEffect, useState } from 'react'
 
@@ -15,7 +16,7 @@ const LINKS = [
 ]
 
 function scrollTo(href: string) {
-  document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  scrollToStoreSection(href)
 }
 
 export function Footer({ settings }: { settings?: Record<string, string> }) {
