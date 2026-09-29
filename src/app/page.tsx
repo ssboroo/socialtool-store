@@ -80,11 +80,11 @@ export default async function Home() {
       <main id="main-content" tabIndex={-1} className="flex-1">
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} settings={settings} />
         <PromoBanner promotion={serializedPromo} settings={settings} />
-        <TelegramChannel url={settings.telegramChannelUrl??'https://t.me/socialtoolstore'} />
-        <WhyChooseUs />
         <HowItWorks />
+        <WhyChooseUs />
         <Reviews reviews={reviews.map((r) => ({ id: r.id, name: r.name, role: r.role, rating: r.rating, content: r.content }))} />
         <Faq faqs={serializedFaqs} />
+        <TelegramChannel url={settings.telegramChannelUrl??'https://t.me/socialtoolstore'} />
       </main>
       <Footer settings={settings} />
 

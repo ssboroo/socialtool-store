@@ -1,7 +1,10 @@
 type TrackingEvent = 'product_view' | 'cart_add' | 'checkout_start' | 'search'
 let sessionId: string | null = null
+const publicAnalyticsEnabled = false
 
 function visitorSession() {
+  // Public collection stays off while the storefront has no privacy preference control.
+  if (!publicAnalyticsEnabled) return null
   if (typeof window === 'undefined') return null
   if (navigator.doNotTrack === '1' || localStorage.getItem('st-analytics-optout') === '1') return null
   if (sessionId) return sessionId
