@@ -1,16 +1,5 @@
 /* Dark surfaces preserve product artwork and brand CTA gradients. */
-.dark {
-  color-scheme: dark;
-  --background: #0b1220; --foreground: #e6edf7;
-  --card: #141f31; --card-foreground: #e6edf7;
-  --popover: #141f31; --popover-foreground: #e6edf7;
-  --secondary: #1d304a; --secondary-foreground: #c4dfff;
-  --muted: #1a2940; --muted-foreground: #a7b8d0;
-  --accent: #203753; --accent-foreground: #e6edf7;
-  --border: #30435d; --input: #30435d;
-  --sidebar: #111c2d; --sidebar-foreground: #e6edf7;
-  --sidebar-accent: #203753; --sidebar-accent-foreground: #e6edf7; --sidebar-border: #30435d;
-}
+.dark { color-scheme: dark; }
 html:not(.dark) { color-scheme: light; }
 .dark .product-description { color: #c4d2e6; }
 .dark .product-description :is(strong,h1,h2,h3) { color: #f0f6ff; }
@@ -170,8 +159,6 @@ html:not(.dark) { color-scheme: light; }
 .dark [class~="bg-white"]:is(button,a):hover { background-color: #203753; }
 
 /* Socialtool catalogue: shared light/dark surfaces, readable type and spacing. */
-:root { --shop-canvas:#f4f7fb; --shop-surface:#fff; --shop-ink:#14213d; --shop-muted:#536682; --shop-line:#e0e7f1; --shop-tint:#eaf2ff; --shop-blue:#0866ed; --background:var(--shop-canvas); --card:var(--shop-surface); --foreground:var(--shop-ink); }
-.dark { --shop-canvas:#080f1c; --shop-surface:#111e30; --shop-ink:#eff5ff; --shop-muted:#a9bbd3; --shop-line:#293b53; --shop-tint:#172e4d; --shop-blue:#398cff; --background:var(--shop-canvas); --card:var(--shop-surface); --foreground:var(--shop-ink); }
 body { background:var(--shop-canvas); color:var(--shop-ink); font-size:16px; line-height:1.6; }
 html { scroll-padding-top:90px; }
 h1,h2,h3 { overflow-wrap:anywhere; }

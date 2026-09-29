@@ -29,6 +29,7 @@ import {
 import { useUIStore, useCartStore } from '@/store/cart'
 import { useCustomer } from '@/hooks/use-customer'
 import { formatTugrik } from '@/lib/format'
+import { PurchasePrice } from './purchase-price'
 import { toast } from 'sonner'
 
 type Step = 'form' | 'pay' | 'status' | 'success' | 'failed'
@@ -264,13 +265,13 @@ export function CheckoutModal() {
                             <p className="text-xs text-[#5B7290]">{it.category}{it.duration ? ` · ${it.duration}` : ' · ширхэг'} ×{it.quantity}</p>
                           </div>
                           <span className="text-sm font-bold text-[#102A43]">
-                            {formatTugrik(it.price * it.quantity)}
+                            <PurchasePrice amount={it.price * it.quantity} />
                           </span>
                         </div>
                       ))}
                       <div className="flex items-center justify-between p-3 bg-white">
                         <span className="text-sm font-semibold text-[#102A43]">Нийт дүн</span>
-                        <span className="text-lg font-extrabold text-[#102A43]">{formatTugrik(total())}</span>
+                        <PurchasePrice amount={total()} className="text-lg" />
                       </div>
                     </div>
 

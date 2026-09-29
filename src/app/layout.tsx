@@ -3,6 +3,7 @@ import { siteUrl } from '@/lib/site-url'
 import { ThemeProvider } from '@/components/site/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
+import './theme-tokens.css'
 import './rubik-font.css'
 import './storefront.css'
 import './store-design.css'
@@ -13,6 +14,7 @@ import './premium-storefront.css'
 import './typography.css'
 import './card-system.css'
 import './share-product.css'
+import './customer-controls.css'
 
 const baseUrl = siteUrl()
 const brandLogo = `${baseUrl}/socialtool-logo.png`

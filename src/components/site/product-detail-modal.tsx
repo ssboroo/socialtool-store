@@ -12,6 +12,8 @@ import { Star, Heart, ShoppingCart, Check, ShieldCheck, Zap, Loader2, ChevronDow
 import { useUIStore } from '@/store/cart'
 import { useCartStore } from '@/store/cart'
 import { ProductImage } from './product-illustration'
+import { QuantityControl } from './quantity-control'
+import { PurchasePrice } from './purchase-price'
 import { ProductShare } from './product-share'
 import { formatTugrik } from '@/lib/format'
 import { getYouTubeId, getYouTubeEmbedUrl, getYouTubeThumb, parseImageList } from '@/lib/media'
@@ -50,7 +52,6 @@ export function ProductDetailModal() {
   const selectedId = useUIStore((s) => s.selectedProductId)
   const wishlist = useWishlist()
   const setSelectedProduct = useUIStore((s) => s.setSelectedProduct)
-  const openCart = useCartStore((s) => s.open)
   const add = useCartStore((s) => s.add)
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(false)
@@ -127,7 +128,6 @@ export function ProductDetailModal() {
     trackStoreEvent('cart_add', { productId: product.id })
     toast.success(`${product.name} сагсанд нэмэгдлээ`)
     setSelectedProduct(null)
-    setTimeout(() => openCart(), 200)
   }
 
   const features = product?.features
@@ -139,7 +139,7 @@ export function ProductDetailModal() {
       open={!!selectedId}
       onOpenChange={(o) => !o && setSelectedProduct(null)}
     >
-      <DialogContent className="customer-surface sm:max-w-2xl p-0 bg-white border-[#D6E4FF] overflow-hidden max-h-[92vh]">
+      <DialogContent className="customer-surface sm:max-w-2xl p-0 bg-card border-border overflow-hidden max-h-[92vh]">
         <DialogTitle className="sr-only">{product?.name || 'Хэрэгсэл'}</DialogTitle>
         <DialogDescription className="sr-only">Бүтээгдэхүүний мэдээлэл, үнэ болон сонголтууд</DialogDescription>
         {loading ? (
@@ -148,10 +148,10 @@ export function ProductDetailModal() {
           </div>
         ) : product ? (
           <div className="max-h-[92vh] overflow-y-auto custom-scroll" key={product.id}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 !pr-0">
+            <div className="product-summary-grid grid grid-cols-1 sm:grid-cols-2">
             <div className="relative min-w-0 bg-gradient-to-br from-[#E8F1FF] to-[#F5F9FF] p-6 sm:p-8">
               <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white/90 backdrop-blur border border-[#D6E4FF] px-2.5 py-1 text-[11px] font-semibold text-[#0B4DBA]">
+                <span className="rounded-full bg-card/90 backdrop-blur border border-border px-2.5 py-1 text-[11px] font-semibold text-primary">
                   {product.category}
                 </span>
                 {product.discount ? (
@@ -179,23 +179,21 @@ export function ProductDetailModal() {
                     />
                   ))}
                 </div>
-                <span className="text-xs text-[#5B7290]">
+                <span className="text-xs text-muted-foreground">
                   {product.reviewCount > 0 ? `${product.rating.toFixed(1)} · ${product.reviewCount} сэтгэгдэл` : 'Үнэлгээ хараахан байхгүй'}
                 </span>
               </div>
 
-              <button type="button" onClick={() => void wishlist.toggle(product.id)} disabled={wishlist.busyId === product.id} aria-pressed={wishlist.savedIds.includes(product.id)} className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-[#D6E4FF] bg-white px-3 py-1.5 text-xs font-semibold text-[#0B4DBA] hover:bg-[#E8F1FF]"><Heart className={`size-4 ${wishlist.savedIds.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />{wishlist.savedIds.includes(product.id) ? 'Хадгалсан' : 'Хүслийн жагсаалтад'}</button>
-              <h2 className="mt-2 text-2xl font-extrabold text-[#102A43] leading-tight">
+              <button type="button" onClick={() => void wishlist.toggle(product.id)} disabled={wishlist.busyId === product.id} aria-pressed={wishlist.savedIds.includes(product.id)} className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-primary hover:bg-accent"><Heart className={`size-4 ${wishlist.savedIds.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />{wishlist.savedIds.includes(product.id) ? 'Хадгалсан' : 'Хүслийн жагсаалтад'}</button>
+              <h2 className="mt-2 text-2xl font-extrabold text-foreground leading-tight">
                 {product.name}
               </h2>
-              <p className="mt-1.5 text-sm text-[#5B7290]">{product.shortDesc}</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">{product.shortDesc}</p>
 
               <div className="mt-4 flex items-end gap-3">
-                <span className="text-3xl font-extrabold text-[#102A43]">
-                  {product.price===0?'Үнэгүй':formatTugrik(licensePrice(product, selectedDuration))}
-                </span>
+                <PurchasePrice amount={product.price === 0 ? 0 : licensePrice(product, selectedDuration)} className="text-3xl" />
                 {product.oldPrice ? (
-                  <span className="text-sm text-[#5B7290] line-through">
+                  <span className="text-sm text-muted-foreground line-through">
                     {formatTugrik(product.oldPrice)}
                   </span>
                 ) : null}
@@ -205,7 +203,7 @@ export function ProductDetailModal() {
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#E6F7EB] px-2.5 py-1 text-xs font-semibold text-[#16A34A]">
                   <Check className="size-3.5" /> Баталгаатай
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#E8F1FF] px-2.5 py-1 text-xs font-semibold text-[#1677FF]">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1 text-xs font-semibold text-[#1677FF]">
                   <Zap className="size-3.5" /> Дижитал бүтээгдэхүүн
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#F0EAFF] px-2.5 py-1 text-xs font-semibold text-[#8B5CF6]">
@@ -220,11 +218,11 @@ export function ProductDetailModal() {
 
             <div className="px-6 sm:px-8 pb-6 product-detail-sections">
               {features.length > 0 && (
-                <details open className="group border-t border-[#E4ECF7]">
-                  <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-[#102A43]">Багцад юу багтах вэ?<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
+                <details open className="group border-t border-border">
+                  <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-foreground">Багцад юу багтах вэ?<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
                   <ul className="pb-5 space-y-2.5">
                     {features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-[#5B7290]">
+                      <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <Check className="mt-0.5 size-4 shrink-0 text-[#16A34A]" />
                         {feature}
                       </li>
@@ -233,25 +231,25 @@ export function ProductDetailModal() {
                 </details>
               )}
 
-              <details className="group border-t border-[#E4ECF7]">
-                <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-[#102A43]">Бүтээгдэхүүний тухай<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
+              <details className="group border-t border-border">
+                <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-foreground">Бүтээгдэхүүний тухай<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
                 <div className="pb-5">
                 <ProductDescription text={product.description} />
                 </div>
               </details>
 
-              {(getYouTubeId(product.tutorialVideoUrl || '') || parseImageList(product.instructionImages).length > 0) && <details className="group border-t border-[#E4ECF7]" onToggle={(event) => { if (!event.currentTarget.open) setVideoPlaying(false) }}>
-                <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-[#102A43]">Хэрхэн ашиглах вэ?<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
+              {(getYouTubeId(product.tutorialVideoUrl || '') || parseImageList(product.instructionImages).length > 0) && <details className="group border-t border-border" onToggle={(event) => { if (!event.currentTarget.open) setVideoPlaying(false) }}>
+                <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-3 py-3 text-sm font-semibold text-foreground">Хэрхэн ашиглах вэ?<ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary>
                 <div className="pb-5">
               {(() => {
                 const ytId = product.tutorialVideoUrl ? getYouTubeId(product.tutorialVideoUrl) : null
                 if (!ytId) return null
                 return (
                   <div className="mt-5">
-                    <h4 className="text-sm font-bold text-[#102A43] flex items-center gap-1.5">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                       <PlayCircle className="size-4 text-[#1677FF]" /> Ашиглах заавар видео
                     </h4>
-                    <div className="mt-2.5 relative overflow-hidden rounded-xl border border-[#D6E4FF] bg-black/5 aspect-video">
+                    <div className="mt-2.5 relative overflow-hidden rounded-xl border border-border bg-black/5 aspect-video">
                       {videoPlaying ? (
                         <iframe
                           src={getYouTubeEmbedUrl(ytId) + '&autoplay=1'}
@@ -293,7 +291,7 @@ export function ProductDetailModal() {
                 if (images.length === 0) return null
                 return (
                   <div className="mt-5">
-                    <h4 className="text-sm font-bold text-[#102A43] flex items-center gap-1.5">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                       <ImageIcon className="size-4 text-[#1677FF]" /> Хийх зааврын зураг ({images.length})
                     </h4>
                     <div className="mt-2.5 grid grid-cols-3 gap-2">
@@ -302,7 +300,7 @@ export function ProductDetailModal() {
                           type="button"
                           key={i}
                           onClick={() => setActiveImage(src)}
-                          className="group relative aspect-video overflow-hidden rounded-lg border border-[#D6E4FF] bg-[#F5F9FF]"
+                          className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted"
                           aria-label={`Зураг ${i + 1}`}
                         >
                           <img
@@ -322,34 +320,12 @@ export function ProductDetailModal() {
 
                 </div>
               </details>}
-              <p className="mt-3 rounded-xl bg-[#F5F9FF] px-4 py-3 text-xs leading-relaxed text-[#5B7290]">Худалдан авахаас өмнө “Бүтээгдэхүүний тухай” хэсэг дэх ашиглах эрх, хугацаа болон нөхцөлийг уншина уу.</p>
+              <p className="mt-3 rounded-xl bg-muted px-4 py-3 text-xs leading-relaxed text-muted-foreground">Худалдан авахаас өмнө “Бүтээгдэхүүний тухай” хэсэг дэх ашиглах эрх, хугацаа болон нөхцөлийг уншина уу.</p>
             </div>
 
-            <div className="sticky bottom-0 z-10 border-t border-[#E4ECF7] bg-white px-6 py-4 sm:px-8">
+            <div className="sticky bottom-0 z-10 border-t border-border bg-card px-6 py-4 sm:px-8">
               {product.price===0 ? <div className="space-y-3">{downloadUrl ? <Button asChild className="w-full"><a href={downloadUrl} target="_blank" rel="noopener noreferrer">Үнэгүй татах <span className="sr-only">(шинэ цонхонд)</span></a></Button> : <Button disabled className="w-full">Татах боломжгүй</Button>}<p className="text-xs text-muted-foreground">Программын татах хуудас шинэ цонхонд нээгдэнэ. Төлбөр, захиалга үүсгэх шаардлагагүй.</p></div> : <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <div className="inline-flex items-center rounded-xl border border-[#D6E4FF] bg-white">
-                  <button
-                    type="button"
-                    aria-label="Тоо ширхэг багасгах"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    className="grid size-10 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
-                    disabled={qty <= 1 || !product.available}
-                  >
-                    −
-                  </button>
-                  <span className="min-w-10 text-center text-sm font-bold text-[#102A43]">
-                    {qty}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="Тоо ширхэг нэмэх"
-                    onClick={() => setQty((q) => Math.min(99, q + 1))}
-                    className="grid size-10 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
-                    disabled={qty >= 99 || !product.available}
-                  >
-                    +
-                  </button>
-                </div>
+                <QuantityControl value={qty} onChange={setQty} disabled={!product.available} />
                 <Button
                   onClick={handleAdd}
                   disabled={!product.available}
@@ -372,7 +348,7 @@ export function ProductDetailModal() {
           >
             <button
               type="button"
-              className="absolute top-4 right-4 grid size-10 place-items-center rounded-full bg-white/15 backdrop-blur text-white hover:bg-white/25"
+              className="absolute top-4 right-4 grid size-10 place-items-center rounded-full bg-card/15 backdrop-blur text-white hover:bg-card/25"
               onClick={(e) => { e.stopPropagation(); setActiveImage(null) }}
               aria-label="Хаах"
             >

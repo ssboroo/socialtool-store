@@ -11,11 +11,10 @@ import { Footer } from '@/components/site/footer'
 import { CartDrawer } from '@/components/site/cart-drawer'
 import { ProductDetailModal } from '@/components/site/product-detail-modal'
 import { CheckoutModal } from '@/components/site/checkout-modal'
-import { LiveChat } from '@/components/site/live-chat'
+import { SupportHub } from '@/components/site/support-hub'
 import { AuthGate } from '@/components/site/auth-gate'
 import { WishlistProvider } from '@/components/site/wishlist-provider'
 import { WishlistDrawer } from '@/components/site/wishlist-drawer'
-import { AIShoppingAssistant } from '@/components/site/ai-shopping-assistant'
 
 export const dynamic = 'force-dynamic'
 
@@ -93,8 +92,7 @@ export default async function Home() {
       <CartDrawer />
       <ProductDetailModal />
       <CheckoutModal />
-      <LiveChat />
-      <AIShoppingAssistant />
+      <SupportHub />
       <WishlistDrawer />
       <AuthGate />
     </div></WishlistProvider>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -12,7 +12,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { cartKey } from '@/lib/license'
-import { formatTugrik } from '@/lib/format'
+import { QuantityControl } from './quantity-control'
+import { PurchasePrice } from './purchase-price'
+import { LicenseTermLabel } from './license-selector'
 import { ProductIllustration } from './product-illustration'
 
 export function CartDrawer() {
@@ -36,14 +38,14 @@ export function CartDrawer() {
     <Sheet open={isOpen} onOpenChange={(o) => !o && close()}>
       <SheetContent
         side="right"
-        className="customer-surface w-full p-0 bg-white border-[#D6E4FF] sm:max-w-md"
+        className="customer-surface w-full p-0 bg-card border-border sm:max-w-md"
       >
-        <SheetHeader className="border-b border-[#EEF4FF] px-5 pt-5 pb-3">
-          <SheetTitle className="flex items-center gap-2 text-[#102A43]">
+        <SheetHeader className="border-b border-border px-5 pt-5 pb-3">
+          <SheetTitle className="flex items-center gap-2 text-foreground">
             <ShoppingCart className="size-5 text-[#1677FF]" />
             Таны сагс
           </SheetTitle>
-          <SheetDescription className="text-[#5B7290]">
+          <SheetDescription className="text-muted-foreground">
             {items.length === 0 ? 'Сагс хоосон байна' : `${items.length} төрлийн хэрэгсэл`}
             {syncBusy ? ' · шинэчилж байна…' : ''}
           </SheetDescription>
@@ -51,11 +53,11 @@ export function CartDrawer() {
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-            <div className="grid size-20 place-items-center rounded-2xl bg-[#E8F1FF]">
+            <div className="grid size-20 place-items-center rounded-2xl bg-accent">
               <ShoppingBag className="size-9 text-[#1677FF]" />
             </div>
-            <h3 className="mt-5 text-base font-bold text-[#102A43]">Сагс хоосон байна</h3>
-            <p className="mt-1 text-sm text-[#5B7290]">Хэрэгсэл сонгож сагсанд нэмээрэй</p>
+            <h3 className="mt-5 text-base font-bold text-foreground">Сагс хоосон байна</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Хэрэгсэл сонгож сагсанд нэмээрэй</p>
             <Button
               onClick={close}
               className="mt-5 rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA]"
@@ -71,51 +73,31 @@ export function CartDrawer() {
                 return (
                   <div
                     key={key}
-                    className="flex min-h-[98px] items-center gap-3 rounded-2xl border border-[#D6E4FF] bg-white p-3 shadow-premium"
+                    className="flex min-h-[98px] items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-premium"
                   >
                     <ProductIllustration icon={it.icon} name={it.name} category={it.category} compact className="size-[72px] shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h4 className="line-clamp-2 min-h-[40px] text-sm font-bold leading-5 text-[#102A43]">{it.name}</h4>
-                          <p className="text-xs text-[#5B7290]">{it.category}</p>
+                          <h4 className="line-clamp-2 min-h-[40px] text-sm font-bold leading-5 text-foreground">{it.name}</h4>
+                          <p className="text-xs text-muted-foreground">{it.category}</p>
                           {it.duration ? (
-                            <p className="mt-0.5 text-[11px] font-semibold text-[#0B4DBA]">{it.duration}</p>
+                            <LicenseTermLabel value={it.duration} />
                           ) : null}
                         </div>
                         <button
                           type="button"
                           onClick={() => remove(key)}
                           disabled={syncBusy}
-                          className="grid size-8 shrink-0 place-items-center rounded-lg text-[#5B7290] transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                           aria-label={`${it.name} сагснаас устгах`}
                         >
                           <Trash2 className="size-4" />
                         </button>
                       </div>
-                      <div className="mt-2 flex min-h-8 items-center justify-between gap-2">
-                        <div className="inline-flex items-center rounded-lg border border-[#D6E4FF] bg-white">
-                          <button
-                            type="button"
-                            onClick={() => setQty(key, it.quantity - 1)}
-                            className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
-                            disabled={it.quantity <= 1 || syncBusy}
-                            aria-label="Тоо ширхэг багасгах"
-                          >
-                            <Minus className="size-3.5" />
-                          </button>
-                          <span className="min-w-7 text-center text-sm font-bold text-[#102A43]">{it.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => setQty(key, it.quantity + 1)}
-                            className="grid size-8 place-items-center text-[#5B7290] hover:text-[#1677FF] disabled:opacity-40"
-                            disabled={it.quantity >= 99 || syncBusy}
-                            aria-label="Тоо ширхэг нэмэх"
-                          >
-                            <Plus className="size-3.5" />
-                          </button>
-                        </div>
-                        <span className="text-sm font-bold text-[#102A43]">{formatTugrik(it.price * it.quantity)}</span>
+                      <div className="mt-2 flex flex-wrap min-h-8 items-center justify-between gap-2">
+                        <QuantityControl value={it.quantity} onChange={value => setQty(key, value)} disabled={syncBusy} />
+                        <PurchasePrice amount={it.price * it.quantity} className="text-sm" />
                       </div>
                     </div>
                   </div>
@@ -123,10 +105,10 @@ export function CartDrawer() {
               })}
             </div>
 
-            <div className="space-y-3 border-t border-[#EEF4FF] bg-[#F5F9FF]/60 p-5">
+            <div className="space-y-3 border-t border-border bg-muted/60 p-5">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#5B7290]">Нийт дүн</span>
-                <span className="text-2xl font-extrabold text-[#102A43]">{formatTugrik(total())}</span>
+                <span className="text-sm text-muted-foreground">Нийт дүн</span>
+                <PurchasePrice amount={total()} className="text-2xl" />
               </div>
               <Button
                 onClick={handleCheckout}
@@ -136,7 +118,7 @@ export function CartDrawer() {
                 Төлбөр төлөх
                 <ArrowRight className="size-4" />
               </Button>
-              <p className="text-center text-xs text-[#5B7290]">Аюулгүй төлбөр — QPay</p>
+              <p className="text-center text-xs text-muted-foreground">Аюулгүй төлбөр — QPay</p>
             </div>
           </>
         )}

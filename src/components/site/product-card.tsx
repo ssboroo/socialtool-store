@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ProductImage } from './product-illustration'
 import { useCartStore, useUIStore } from '@/store/cart'
 import { formatTugrik } from '@/lib/format'
+import { PurchasePrice } from './purchase-price'
 import { licenseVariants } from '@/lib/license'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -77,7 +78,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
     <div className="shop-product-body">
       <h3><button type="button" onClick={openDetail}>{product.name}</button></h3>
       <p className="shop-product-summary">{product.shortDesc}</p>
-      <div className="shop-product-price"><strong>{product.price===0?'Үнэгүй':formatTugrik(defaultVariant?.price??product.price)}</strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}</div>
+      <div className="shop-product-price"><strong><PurchasePrice amount={product.price === 0 ? 0 : defaultVariant?.price ?? product.price} /></strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}</div>
       {product.price===0 ? downloadUrl ? <Button asChild className="shop-product-buy"><a href={downloadUrl} target="_blank" rel="noopener noreferrer"><Download size={16}/>Үнэгүй татах<span className="sr-only"> — {product.name}, шинэ цонхонд</span></a></Button> : <Button disabled className="shop-product-buy">Татах боломжгүй</Button> : <Button onClick={handleAdd} disabled={!product.available} className="shop-product-buy">
         {product.available?(variants.length>1?'Сонголт хийх':'Сагсанд нэмэх'):'Түр дууссан'}
       </Button>}

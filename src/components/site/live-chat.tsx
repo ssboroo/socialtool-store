@@ -4,7 +4,7 @@ import { rememberChat, savedChats } from '@/lib/chat-history'
 
 import { useEffect, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
-import { MessageCircle, X, Send, Phone, User, Loader2, Sparkles, ExternalLink } from 'lucide-react'
+import { MessageCircle, Send, Phone, User, Loader2, Sparkles, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { telegramUsername, telegramUrl } from '@/lib/public-contact'
@@ -17,14 +17,15 @@ interface ChatMsg {
   createdAt: string
 }
 
-export function LiveChat() {
+type ChatVisibility = { open: boolean }
+
+export function LiveChat(props: ChatVisibility) {
   const { customer, loading } = useCustomer()
   if (loading) return null
-  return <ChatPanel key={customer?.id || 'guest'} />
+  return <ChatPanel key={customer?.id || 'guest'} {...props} />
 }
 
-function ChatPanel() {
-  const [open, setOpen] = useState(false)
+function ChatPanel({ open }: ChatVisibility) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [registered, setRegistered] = useState(false)
@@ -36,13 +37,6 @@ function ChatPanel() {
   const active = useRef(true)
   const socketRef = useRef<Socket | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  // open from FAQ "Админтай холбогдох"
-  useEffect(() => {
-    const openHandler = () => setOpen(true)
-    window.addEventListener('st-open-chat', openHandler)
-    return () => window.removeEventListener('st-open-chat', openHandler)
-  }, [])
 
   useEffect(() => {
     const restore = (id: string) => {
@@ -191,31 +185,14 @@ function ChatPanel() {
 
   return (
     <>
-      {/* Floating button */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-5 right-5 z-50 group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] px-4 py-3.5 text-white shadow-premium-lg hover:shadow-premium-lg transition-all hover:scale-105"
-        aria-label="Админтай холбогдох"
-      >
-        <span className="absolute -inset-0.5 rounded-full bg-[#1677FF]/30 blur-md group-hover:opacity-100 opacity-0 transition-opacity" />
-        <MessageCircle className="relative size-5" />
-        <span className="relative text-sm font-bold hidden sm:inline">Админтай холбогдох</span>
-        {!open && (
-          <span className="absolute -top-1 -right-1 flex size-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16A34A] opacity-75" />
-            <span className="relative inline-flex size-3 rounded-full bg-[#16A34A]" />
-          </span>
-        )}
-      </button>
-
       {/* Chat panel */}
       {open && (
-        <div className="customer-surface store-chat fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-[380px] max-h-[600px] h-[80vh] max-h-[560px] rounded-2xl bg-white border border-[#D6E4FF] shadow-premium-lg overflow-hidden flex flex-col animate-in slide-in-from-bottom-2">
+        <div role="region" aria-label="Админтай холбогдох" className="support-panel store-chat overflow-hidden flex flex-col">
           {/* header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1677FF] to-[#0B4DBA] text-white">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="grid size-9 place-items-center rounded-full bg-white/20">
+                <div className="grid size-9 place-items-center rounded-full bg-card/20">
                   <Sparkles className="size-4" />
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-[#16A34A] border-2 border-white" />
@@ -227,13 +204,6 @@ function ChatPanel() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="grid size-8 place-items-center rounded-full hover:bg-white/15 transition-colors"
-              aria-label="Хаах"
-            >
-              <X className="size-4" />
-            </button>
           </div>
 
           {!registered ? (
@@ -242,33 +212,33 @@ function ChatPanel() {
                 <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-[#1677FF] to-[#0B4DBA] shadow-premium">
                   <MessageCircle className="size-7 text-white" />
                 </div>
-                <h3 className="mt-4 text-base font-bold text-[#102A43]">Тавтай морил!</h3>
-                <p className="mt-1 text-sm text-[#5B7290]">
+                <h3 className="mt-4 text-base font-bold text-foreground">Тавтай морил!</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Тантай холбогдохын тулд нэр, утас оруулна уу. Мессеж илгээхэд админд мэдэгдэнэ.
                 </p>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                     <User className="size-3.5" /> Нэр
                   </label>
                   <Input
                     aria-label="Нэр" value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Таны нэр"
-                    className="mt-1 border-[#D6E4FF]"
+                    className="mt-1 border-border"
                     onKeyDown={(e) => e.key === 'Enter' && register()}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#102A43] flex items-center gap-1">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                     <Phone className="size-3.5" /> Утас (заавал биш)
                   </label>
                   <Input
                     aria-label="Утас" value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="99112233"
-                    className="mt-1 border-[#D6E4FF]"
+                    className="mt-1 border-border"
                     onKeyDown={(e) => e.key === 'Enter' && register()}
                   />
                 </div>
@@ -284,7 +254,7 @@ function ChatPanel() {
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-[#D6E4FF] bg-white px-4 py-2.5 text-sm font-semibold text-[#0B4DBA] hover:bg-[#E8F1FF] transition-colors"
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-primary hover:bg-accent transition-colors"
                 >
                   <ExternalLink className="size-4" />
                   Telegram · @{telegramUsername}
@@ -293,7 +263,7 @@ function ChatPanel() {
             </div>
           ) : (
             <>
-              <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3 bg-[#F5F9FF]/40">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3 bg-muted/40">
                 {messages.map((m) => (
                   <div
                     key={m.id}
@@ -303,18 +273,18 @@ function ChatPanel() {
                       className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${
                         m.sender === 'customer'
                           ? 'bg-gradient-to-br from-[#1677FF] to-[#0B4DBA] text-white rounded-br-md shadow-premium'
-                          : 'bg-white border border-[#D6E4FF] text-[#102A43] rounded-bl-md shadow-premium'
+                          : 'bg-card border border-border text-foreground rounded-bl-md shadow-premium'
                       }`}
                     >
                       <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>
-                      <p className={`mt-1 text-[10px] ${m.sender === 'customer' ? 'text-white/70' : 'text-[#5B7290]'}`}>
+                      <p className={`mt-1 text-[10px] ${m.sender === 'customer' ? 'text-white/70' : 'text-muted-foreground'}`}>
                         {new Date(m.createdAt).toLocaleTimeString('mn-MN', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="border-t border-[#EEF4FF] p-3 bg-white">
+              <div className="border-t border-border p-3 bg-card">
                 <div className="flex items-end gap-2">
                   <textarea aria-label="Мессеж"
                     value={input}
@@ -322,7 +292,7 @@ function ChatPanel() {
                     onKeyDown={handleKey}
                     placeholder="Мессеж бичнэ үү..."
                     rows={1}
-                    className="flex-1 resize-none max-h-24 rounded-xl border border-[#D6E4FF] bg-[#F5F9FF]/50 px-3 py-2.5 text-sm text-[#102A43] placeholder:text-[#5B7290]/60 focus:border-[#1677FF] focus:outline-none focus:ring-2 focus:ring-[#1677FF]/10 custom-scroll"
+                    className="flex-1 resize-none max-h-24 rounded-xl border border-border bg-muted/50 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-[#1677FF] focus:outline-none focus:ring-2 focus:ring-[#1677FF]/10 custom-scroll"
                   />
                   <Button
                     onClick={send}
@@ -337,7 +307,7 @@ function ChatPanel() {
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] text-[#5B7290] hover:text-[#1677FF]"
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-[#1677FF]"
                 >
                   <ExternalLink className="size-3" /> Telegram · @{telegramUsername}
                 </a>
