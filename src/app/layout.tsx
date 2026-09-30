@@ -15,6 +15,7 @@ import './typography.css'
 import './card-system.css'
 import './share-product.css'
 import './customer-controls.css'
+import './adobe-partner-carousel.css'
 
 const baseUrl = siteUrl()
 const brandLogo = `${baseUrl}/socialtool-logo.png`
