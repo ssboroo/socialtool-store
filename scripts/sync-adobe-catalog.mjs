@@ -62,7 +62,17 @@ async function main() {
       requiresOrderLink: false,
       searchKeywords: name.toLowerCase() + ';adobe;official license;албан ёсны лиценз',
     }
-    await db.product.upsert({ where: { slug }, update: data, create: data })
+    await db.product.upsert({
+      where: { slug },
+      update: {
+        name, shortDesc, features,
+        icon: 'Adobe',
+        category: 'Adobe',
+        categoryId: cat.id,
+        searchKeywords: data.searchKeywords,
+      },
+      create: data,
+    })
   }
   console.info('[Adobe catalog] synced', names.length, 'products')
 }
