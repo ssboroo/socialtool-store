@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Pause, Play, Sparkles, LayoutGrid, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play, Sparkles, LayoutGrid, ShieldCheck } from 'lucide-react'
 import { ProductIconTile, detectProductIcon } from './product-icon'
 import type { Product } from './product-card'
 import './hero-product-icons.css'
@@ -27,6 +27,8 @@ export function Hero({settings,productCount,categoryCount,products}:{settings?:R
   const [paused,setPaused]=useState(false)
   const [reducedMotion,setReducedMotion]=useState(true)
   const [group,setGroup]=useState(0)
+  const [slide,setSlide]=useState(0)
+
   const brands=useMemo(()=>{
     const seen=new Set<string>()
     return products.filter(product=>{
@@ -37,7 +39,41 @@ export function Hero({settings,productCount,categoryCount,products}:{settings?:R
       return true
     })
   },[products])
+
   const groupCount=Math.ceil(brands.length/6)
+  const slides=useMemo(()=>[
+    {
+      eyebrow:'Таны дижитал боломжууд — нэг дор',
+      title:'Ажлаа хялбарчил.',
+      accent:'Илүү их боломжийг нээ.',
+      description:settings?.heroSubtext||'Сошиал медиа, программ болон AI хэрэгслүүд. Хэрэгтэй бүхнээ нэг дороос сонгоорой.',
+      primary:settings?.heroPrimaryCta||'Бүх хэрэгсэл үзэх',
+      primaryHref:'#products',
+      secondary:settings?.heroSecondaryCta||'Хэрхэн захиалах вэ?',
+      secondaryHref:'#how',
+    },
+    {
+      eyebrow:'Adobe Partner Connection',
+      title:'Adobe бүтээгдэхүүн.',
+      accent:'Баталгаатай reseller сувгаар.',
+      description:'Socialtool нь Adobe Partner Connection Reseller Program-д идэвхтэй бүртгэлтэй. Adobe SKU, үнэ болон лицензийн нөхцөл баталгаажмагц бүтээгдэхүүнүүд худалдаанд идэвхжинэ.',
+      primary:'Adobe бүтээгдэхүүн үзэх',
+      primaryHref:'#products',
+      secondary:'Reseller статус',
+      secondaryHref:'#products',
+    },
+    {
+      eyebrow:'AI · Software · Social tools',
+      title:'Нэг дэлгүүр.',
+      accent:'Олон төрлийн дижитал хэрэгсэл.',
+      description:'AI эрх, программ хангамжийн лиценз болон сошиал медиа хэрэгслүүдийг нэг дороос сонгоорой.',
+      primary:'Ангилал үзэх',
+      primaryHref:'#categories',
+      secondary:'Захиалгын заавар',
+      secondaryHref:'#how',
+    },
+  ],[settings])
+
   useEffect(()=>{
     const query=window.matchMedia('(prefers-reduced-motion: reduce)')
     const update=()=>setReducedMotion(query.matches)
@@ -45,6 +81,7 @@ export function Hero({settings,productCount,categoryCount,products}:{settings?:R
     query.addEventListener('change',update)
     return()=>query.removeEventListener('change',update)
   },[])
+
   useEffect(()=>{
     if(paused||reducedMotion||groupCount<2) return
     const timer=window.setInterval(()=>{
@@ -52,15 +89,39 @@ export function Hero({settings,productCount,categoryCount,products}:{settings?:R
     },5000)
     return()=>window.clearInterval(timer)
   },[paused,reducedMotion,groupCount])
+
+  useEffect(()=>{
+    if(paused||reducedMotion||slides.length<2) return
+    const timer=window.setInterval(()=>{
+      if(!document.hidden) setSlide(value=>(value+1)%slides.length)
+    },5200)
+    return()=>window.clearInterval(timer)
+  },[paused,reducedMotion,slides.length])
+
   const activeGroup=groupCount?group%groupCount:0
   const visibleBrands=brands.slice(activeGroup*6,activeGroup*6+6)
-  return <section id="top" className={`shop-hero animated-shop-hero ${paused?'hero-motion-paused':''}`}>
+  const activeSlide=slides[slide%slides.length]
+  const moveSlide=(delta:number)=>setSlide(value=>(value+delta+slides.length)%slides.length)
+
+  return <section id="top" className={`shop-hero animated-shop-hero ${paused?'hero-motion-paused':''}`} aria-roledescription="carousel" aria-label="Socialtool үндсэн мэдээллийн слайд">
     <div className="shop-hero-inner">
-      <div className="shop-hero-copy">
-        <span className="catalog-eyebrow"><Sparkles size={15}/>Таны дижитал боломжууд — нэг дор</span>
-        <h1>Ажлаа хялбарчил.<span>Илүү их боломжийг нээ.</span></h1>
-        <p>{settings?.heroSubtext||'Сошиал медиа, программ болон AI хэрэгслүүд. Хэрэгтэй бүхнээ нэг дороос сонгоорой.'}</p>
-        <div className="shop-hero-actions"><a href="#products" className="shop-primary-link">{settings?.heroPrimaryCta||'Бүх хэрэгсэл үзэх'}<ArrowRight className="size-4"/></a><a href="#how" className="shop-secondary-link"><Play className="size-4"/>{settings?.heroSecondaryCta||'Хэрхэн захиалах вэ?'}</a></div>
+      <div className="shop-hero-copy hero-copy-slider">
+        <span className="catalog-eyebrow"><Sparkles size={15}/>{activeSlide.eyebrow}</span>
+        <div key={slide} className="hero-copy-slide">
+          <h1>{activeSlide.title}<span>{activeSlide.accent}</span></h1>
+          <p>{activeSlide.description}</p>
+          <div className="shop-hero-actions">
+            <a href={activeSlide.primaryHref} className="shop-primary-link" onClick={()=>{if(slide===1) window.dispatchEvent(new CustomEvent('st-category',{detail:categoriesAdobeSlug(products)}))}}>{activeSlide.primary}<ArrowRight className="size-4"/></a>
+            <a href={activeSlide.secondaryHref} className="shop-secondary-link"><Play className="size-4"/>{activeSlide.secondary}</a>
+          </div>
+        </div>
+        <div className="hero-slider-controls">
+          <button type="button" onClick={()=>moveSlide(-1)} aria-label="Өмнөх слайд"><ChevronLeft size={16}/></button>
+          <div className="hero-slider-dots" aria-label="Слайд сонгох">
+            {slides.map((_,i)=><button type="button" key={i} aria-label={`${i+1}-р слайд`} aria-current={i===slide?'true':undefined} onClick={()=>setSlide(i)}><span className={i===slide?'active':''}/></button>)}
+          </div>
+          <button type="button" onClick={()=>moveSlide(1)} aria-label="Дараах слайд"><ChevronRight size={16}/></button>
+        </div>
         <div className="hero-facts">
           <div><LayoutGrid/><span><strong>{productCount}</strong><small>Хэрэгсэл</small></span></div>
           <div><Sparkles/><span><strong>{categoryCount}</strong><small>Ангилал</small></span></div>
@@ -75,9 +136,14 @@ export function Hero({settings,productCount,categoryCount,products}:{settings?:R
             <ProductIconTile name={product.name} category={product.category} icon={product.icon} compact/>
           </span>)}
         </div>
-
       </div>
       <button type="button" className="hero-motion-control" aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?'Хөдөлгөөн асаах':'Хөдөлгөөн зогсоох'}</span></button>
     </div>
   </section>
 }
+
+function categoriesAdobeSlug(products: Product[]) {
+  const adobe = products.find(p => /adobe/i.test([p.name, p.category].filter(Boolean).join(' ')))
+  return adobe?.category || 'adobe'
+}
+
