@@ -118,6 +118,11 @@ async function main() {
     console.info(errorPrefix, 'Database schema is already compatible.')
   }
 
+  // Keep the official Adobe catalog present without overwriting real prices later.
+  execFileSync('bun', ['scripts/sync-adobe-catalog.mjs'], {
+    cwd: appRoot, env: process.env, stdio: 'inherit', timeout: 60_000,
+  })
+
   if (checkOnly) {
     console.info(errorPrefix, 'Database readiness check passed (server not started).')
     return
