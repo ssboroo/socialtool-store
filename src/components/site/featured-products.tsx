@@ -8,6 +8,7 @@ import { ProductCard, type Product } from './product-card'
 
 import { CategoryIcon } from './category-icon'
 import { Hero, StoreIntroduction } from './hero'
+import { AdobeResellerProof } from './adobe-reseller-proof'
 import { trackStoreEvent } from '@/lib/store-analytics'
 
 interface Category {
@@ -25,6 +26,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
   const [page, setPage] = useState(1)
   const pageSize = 8
   const [activeCat, setActiveCat] = useState<string>('all')
+  const [showAdobeProof, setShowAdobeProof] = useState(true)
   const [query, setQuery] = useState('')
   const lastTrackedSearch = useRef('')
   const [sort, setSort] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured')
@@ -96,6 +98,8 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
 
 
   const categoryName = activeCat === '__free' ? 'Үнэгүй программууд' : activeCat === 'all' ? 'Бүх хэрэгсэл' : categories.find(c => c.slug === activeCat)?.name || 'Бүх хэрэгсэл'
+  const activeCategory = categories.find(c => c.slug === activeCat)
+  const isAdobeCategory = /adobe/i.test([activeCat, activeCategory?.name].filter(Boolean).join(' '))
   const filterCategories = [{ id: 'all', slug: 'all', name: 'Бүх хэрэгсэл' }, { id: '__free', slug: '__free', name: 'Үнэгүй программууд' }, ...categories.filter(c => c.slug !== 'all')]
   const gridClass = 'catalog-grid'
   const pageCount = Math.max(1, Math.ceil(products.length / pageSize))
@@ -124,6 +128,7 @@ export function FeaturedProducts({ categories, initialProducts, settings }: { ca
       </aside>
       <div className="catalog-results">
         <Hero products={initialProducts} settings={settings} productCount={initialProducts.filter(p=>p.available).length} categoryCount={filterCategories.length-2}/>
+        {isAdobeCategory && showAdobeProof ? <AdobeResellerProof compact onClose={() => setShowAdobeProof(false)} /> : null}
         <nav id="categories" className="catalog-chips" aria-label="Ангиллаар шүүх">
           {filterCategories.map(c=><button key={c.id} type="button" aria-pressed={activeCat===c.slug} onClick={()=>setActiveCat(c.slug)}><CategoryIcon name={c.name} slug={c.slug}/><span>{c.name}</span></button>)}
         </nav>
