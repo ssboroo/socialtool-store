@@ -15,7 +15,6 @@ import { SupportHub } from '@/components/site/support-hub'
 import { AuthGate } from '@/components/site/auth-gate'
 import { WishlistProvider } from '@/components/site/wishlist-provider'
 import { WishlistDrawer } from '@/components/site/wishlist-drawer'
-import { AdobeResellerProof } from '@/components/site/adobe-reseller-proof'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,7 +79,6 @@ export default async function Home() {
       <Header />
       <main id="main-content" tabIndex={-1} className="flex-1">
         <FeaturedProducts categories={serializedCategories} initialProducts={serializedProducts} settings={settings} />
-        <AdobeResellerProof />
         <PromoBanner promotion={serializedPromo} settings={settings} />
         <HowItWorks />
         <WhyChooseUs />
