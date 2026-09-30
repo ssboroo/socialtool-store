@@ -44,6 +44,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   const variants = licenseVariants(product.duration)
   const defaultVariant = variants[0]
   const downloadUrl = freeDownloadUrl(product)
+  const isAdobePending = product.category === 'Adobe' && product.price === 0
 
   const handleAdd = (e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -78,8 +79,8 @@ export function ProductCard({ product, compact = false }: { product: Product; co
     <div className="shop-product-body">
       <h3><button type="button" onClick={openDetail}>{product.name}</button></h3>
       <p className="shop-product-summary">{product.shortDesc}</p>
-      <div className="shop-product-price"><strong><PurchasePrice amount={product.price === 0 ? 0 : defaultVariant?.price ?? product.price} /></strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}</div>
-      {product.price===0 ? downloadUrl ? <Button asChild className="shop-product-buy"><a href={downloadUrl} target="_blank" rel="noopener noreferrer"><Download size={16}/>Үнэгүй татах<span className="sr-only"> — {product.name}, шинэ цонхонд</span></a></Button> : <Button disabled className="shop-product-buy">Татах боломжгүй</Button> : <Button onClick={handleAdd} disabled={!product.available} className="shop-product-buy">
+      <div className="shop-product-price"><strong>{isAdobePending ? 'Үнэ удахгүй' : <PurchasePrice amount={product.price === 0 ? 0 : defaultVariant?.price ?? product.price} />}</strong>{product.oldPrice?<del>{formatTugrik(product.oldPrice)}</del>:null}</div>
+      {isAdobePending ? <Button onClick={openDetail} className="shop-product-buy">SKU / үнэ хүлээгдэж байна</Button> : product.price===0 ? downloadUrl ? <Button asChild className="shop-product-buy"><a href={downloadUrl} target="_blank" rel="noopener noreferrer"><Download size={16}/>Үнэгүй татах<span className="sr-only"> — {product.name}, шинэ цонхонд</span></a></Button> : <Button disabled className="shop-product-buy">Татах боломжгүй</Button> : <Button onClick={handleAdd} disabled={!product.available} className="shop-product-buy">
         {product.available?(variants.length>1?'Сонголт хийх':'Сагсанд нэмэх'):'Түр дууссан'}
       </Button>}
     </div>
